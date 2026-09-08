@@ -87,7 +87,7 @@
 
   /* page layout: sticky control sidebar + main analysis column */
   .layout { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 18px; align-items: start; }
-  .sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 14px; max-height: calc(100vh - 28px); overflow-y: auto; }
+  .sidebar { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 14px; max-height: calc(100dvh - 28px); overflow-y: auto; }
   /* compact sidebar: smaller type + tighter padding so it takes less room */
   .sidebar .card { padding: 15px 16px; }
   .sidebar .card-title { font-size: 15px; }
@@ -212,7 +212,7 @@
   .liq .warn { color: var(--c-nails); font-weight: 600; }
 
   /* result tiles */
-  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 12px; margin-bottom: 18px; }
   .tile { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
   .tile.hero { background: var(--profit-soft); border-color: var(--profit); }
   .tile.hero.loss { background: var(--neg-soft); border-color: var(--neg); }
@@ -400,7 +400,7 @@
     --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#a83a2a; --neg-soft:rgba(168,58,42,0.12);
     --bbuy:#b0202f; --bfletch:#d98a8a;
   }
-  #view-bolts .row, #view-bolts .axis-row { grid-template-columns: 108px 1fr; }
+  #view-bolts .row, #view-bolts .axis-row { grid-template-columns: clamp(80px, 24vw, 108px) 1fr; }
   .sw.bbuy { background: var(--bbuy); } .sw.bfletch { background: var(--bfletch); }
   .bar.bbuy { top: 4px; background: var(--bbuy); } .bar.bfletch { top: 22px; background: var(--bfletch); }
   .bval.bbuy { top: 4px; line-height: 14px; color: var(--bbuy); }
@@ -513,9 +513,9 @@
   .chart { position: relative; min-height: 40px; }
   .row { display: grid; align-items: center; gap: 12px; padding: 7px 0; }
   .row + .row { border-top: 1px solid var(--line); }
-  #view-degrime .row, #view-degrime .axis-row { grid-template-columns: 96px 1fr; }
-  #view-gem .row, #view-gem .axis-row { grid-template-columns: 108px 1fr; }
-  #view-potions .row, #view-potions .axis-row { grid-template-columns: 120px 1fr; }
+  #view-degrime .row, #view-degrime .axis-row { grid-template-columns: clamp(76px, 22vw, 96px) 1fr; }
+  #view-gem .row, #view-gem .axis-row { grid-template-columns: clamp(80px, 24vw, 108px) 1fr; }
+  #view-potions .row, #view-potions .axis-row { grid-template-columns: clamp(86px, 26vw, 120px) 1fr; }
   .sw.pmix { background: var(--pmix); } .sw.pcombine { background: var(--pcombine); }
   .bar.pmix { top: 4px; background: var(--pmix); } .bar.pcombine { top: 22px; background: var(--pcombine); }
   .bval.pmix { top: 4px; line-height: 14px; color: var(--pmix); }
@@ -601,7 +601,7 @@
     header { margin-bottom: 16px; }
     .card { padding: 15px 14px; margin-top: 14px; }
     .layout, .two-col, .opts, .batch-grid, .cmp, .highlights, .sidebar .opts { grid-template-columns: 1fr; }
-    .tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tiles { gap: 10px; }
     .card-head { flex-direction: column; align-items: stretch; gap: 8px; }
     .card-head .toggle, .card-head .seg, .card-head .ha-search { align-self: stretch; width: 100%; }
     .card-head .toggle button { flex: 1; }
@@ -614,9 +614,24 @@
     footer { font-size: 11.5px; }
   }
   @media (max-width: 420px) {
-    .tiles { grid-template-columns: 1fr; }
     h1 { font-size: 25px; }
     .nav-tabs button { padding: 6px 8px; }
+  }
+  /* ultra-narrow: Galaxy Fold cover screen (~344px) and similar */
+  @media (max-width: 380px) {
+    .wrap { padding: 12px 10px 40px; }
+    .nav { padding: 8px 10px; gap: 6px; }
+    .nav-brand { font-size: 12px; margin-right: 0; }
+    .nav-tabs { padding: 2px; }
+    .nav-tabs button { padding: 6px 7px; font-size: 11px; }
+    .nav-prices .livebar, .nav-player .livebar { padding: 7px 10px; }
+    h1 { font-size: 22px; }
+    .card { padding: 13px 12px; }
+    .best-hero { gap: 6px 12px; }
+    .stack-legend { gap: 6px 10px; }
+    .assumptions { font-size: 11.5px; }
+    .chip { white-space: normal; }   /* let long assumption chips wrap instead of forcing page-width overflow */
+    th, td { padding: 5px 7px; }
   }
   /* touch devices: the mouse-follow tooltips can get stuck, and the data is already in the tables/cards */
   .is-touch .tip { display: none !important; }
@@ -2312,6 +2327,7 @@ window.Player.subscribe(function(p) {
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / herb</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
       <p class="card-note" id="dg-cardNote"></p>
@@ -2560,6 +2576,10 @@ const MODES = {
          step:5, vals:r=>[r.roiClean,r.roiUnf], fmt:v=>(v<0?"":"+")+v.toFixed(1)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"",
          step:100000, vals:r=>[r.hrClean,r.hrUnf], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xp:  { title:"Profit per XP",
+         note:"Net profit ÷ Herblore XP from cleaning each herb (plus Degrime's Magic XP when you cast the spell). What each xp of training is worth in gp.",
+         step:5, vals:r=>{ const x=r.hbXp+r.mgXp; return x>0?[r.profClean/x,r.profUnf/x]:[0,0]; },
+         fmt:v=>(v<0?"":"+")+(Math.abs(v)>=100?fmt(Math.round(v)):v.toFixed(1)), tick:v=>(v>0?"+":"")+(Number.isInteger(v)?v:v.toFixed(1)) },
 };
 function showTip(e,r){
   const bestUnf = r.profUnf >= r.profClean;
@@ -2594,9 +2614,10 @@ function renderChart(){
     axisEl.innerHTML = ""; return;
   }
   const allv = data.flatMap(M.vals);
-  const step = M.step;
-  const DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
-  const DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
+  let step = M.step;
+  let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
+  let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
+  while((DMAX-DMIN)/step>40){ step*=2; DMIN=Math.floor(DMIN/step)*step; DMAX=Math.ceil(DMAX/step)*step; }
   const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
@@ -2978,6 +2999,7 @@ window.Player.subscribe(function(p){
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / item</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
       <p class="card-note" id="gm-cardNote"></p>
@@ -3253,6 +3275,10 @@ const MODES = {
          vals:r=>[r.roiPlain, r.roiEnch], fmt:v=>(v<0?"":"+")+v.toFixed(1)+"%", tick:v=>(v>0?"+":"")+Math.round(v)+"%" },
   hr:  { title:"Profit per hour", note:"",
          vals:r=>[r.hrPlain, r.hrEnch], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xp:  { title:"Profit per XP",
+         note:"Net profit ÷ XP earned: Crafting to make the piece (plus cutting XP when you buy uncut gems), with Magic on top for the enchanted route.",
+         vals:r=>{ const base=r.craftXp+(opt.mat==="uncut"?r.cutXp:0); return [base>0?r.profPlain/base:null, (r.profEnch==null||base+r.enchXp<=0)?null:r.profEnch/(base+r.enchXp)]; },
+         fmt:v=>(v<0?"":"+")+(Math.abs(v)>=100?fmt(Math.round(v)):v.toFixed(1)), tick:v=>(v>0?"+":"")+(Number.isInteger(v)?v:v.toFixed(1)) },
 };
 let tipW=0, tipH=0, tipRaf=0, tipEv=null;
 function showTip(e,r){
@@ -3700,6 +3726,7 @@ window.Player.subscribe(function(p){
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / potion</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
       <p class="card-note" id="pt-cardNote"></p>
@@ -3961,6 +3988,10 @@ const MODES = {
          step:5, vals:r=>[r.roi3, r.roi4], fmt:v=>(v<0?"":"+")+v.toFixed(0)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"",
          step:100000, vals:r=>[hrCapped(r,3), hrCapped(r,4)], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xp:  { title:"Profit per XP",
+         note:"Net profit ÷ Herblore XP for making the potion — the same XP whether you finish at (3) or decant up to (4).",
+         step:1, vals:r=>{ const x=r.xpMake; return x>0?[r.prof3==null?null:r.prof3/x, r.prof4/x]:[null,null]; },
+         fmt:v=>(v<0?"":"+")+(Math.abs(v)>=100?fmt(Math.round(v)):v.toFixed(2)), tick:v=>(v>0?"+":"")+(Number.isInteger(v)?v:v.toFixed(1)) },
 };
 function showTip(e,r){
   const secLine = r.type==="mix" ? `Unf (${r.unfLabel}) + ${r.secName}<br>` : `${r.c.inputs.map(([n,,q])=>`${q}× ${n}`).join(" + ")}<br>`;
@@ -3983,9 +4014,10 @@ function renderChart(){
   const data = ROWS.filter(allowed).slice().sort((a,b)=>{ const bv=M.vals(b).filter(v=>v!=null), av=M.vals(a).filter(v=>v!=null); return Math.max(...bv)-Math.max(...av); });
   if(!data.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No potion matches your Herblore level${PNAME?` (${PNAME})`:""}. Clear the player or level up.</p>`; axisEl.innerHTML=""; return; }
   const allv = data.flatMap(M.vals).filter(v=>v!=null);
-  const step = M.step;
-  const DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
-  const DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
+  let step = M.step;
+  let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
+  let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
+  while((DMAX-DMIN)/step>40){ step*=2; DMIN=Math.floor(DMIN/step)*step; DMAX=Math.ceil(DMAX/step)*step; }
   const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
@@ -4916,6 +4948,7 @@ window.PriceHub.subscribe(applyPrices);
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / bolt</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
       <p class="card-note" id="bo-cardNote"></p>
@@ -5115,6 +5148,10 @@ const MODES = {
   roi: { title:"Return on gp invested", note:"Net profit ÷ gp per bolt (tips/inputs + enchant runes).",
          vals:r=>[r.roiBuy, fletchSideSrc()==="bars"?r.roiBars:r.roiFletch], fmt:v=>(v<0?"":"+")+v.toFixed(0)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"", vals:r=>[r.hrBuy, srcHr(r, fletchSideSrc())], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xp:  { title:"Profit per XP",
+         note:"Net profit ÷ Magic XP from enchanting (per bolt — one cast enchants 10). Fletching XP from tipping the bolts isn't counted.",
+         vals:r=>{ const x=r.enchXp/10, fp=srcProf(r,fletchSideSrc()); return x>0?[r.profBuy/x, fp==null?null:fp/x]:[null,null]; },
+         fmt:v=>(v<0?"":"+")+(Math.abs(v)>=100?fmt(Math.round(v)):v.toFixed(1)), tick:v=>(v>0?"+":"")+(Number.isInteger(v)?v:v.toFixed(1)) },
 };
 function showTip(e,r){
   const rl = r.b.runes.map(([id,q])=>`${q} ${RUNE_NAME[id]}`).join(" + ");
