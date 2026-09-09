@@ -701,6 +701,33 @@
     --line:#283037; --line-strong:#39434c; --accent:#5f95c8;
     --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
   }
+  /* ---- cooking (fire orange) ---- */
+  body[data-tab="cooking"] {
+    --bg:#f5ece4; --surface:#fdf7f0; --surface-2:#eeddce; --ink:#2a1c12; --ink-2:#5e4230; --muted:#977a60;
+    --line:#e6d3c0; --line-strong:#d3b393; --accent:#c05a24;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="cooking"] {
+        --bg:#160f0a; --surface:#20150e; --surface-2:#2b1d12; --ink:#f2e5d8; --ink-2:#d0b298; --muted:#a08268;
+        --line:#372617; --line-strong:#4d3521; --accent:#e07b3a;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="cooking"] {
+    --bg:#160f0a; --surface:#20150e; --surface-2:#2b1d12; --ink:#f2e5d8; --ink-2:#d0b298; --muted:#a08268;
+    --line:#372617; --line-strong:#4d3521; --accent:#e07b3a;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
+  /* cooking chart: one accent bar per food */
+  #view-cooking .row, #view-cooking .axis-row { grid-template-columns: clamp(84px, 25vw, 116px) 1fr; }
+  .sw.cook { background: var(--accent); }
+  .bar.cook { top: 13px; background: var(--accent); }
+  .bar.cook.neg { background: var(--neg); }
+  .bval.cook { top: 13px; line-height: 14px; color: var(--accent); }
+  .bval.cook.neg { color: var(--neg); }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -719,6 +746,7 @@
         <button data-view="grinding" role="tab">Grinding</button>
         <button data-view="planks" role="tab">Plank Make</button>
         <button data-view="smithing" role="tab">Smithing</button>
+        <button data-view="cooking" role="tab">Cooking</button>
       </div>
       <select id="navSelect" class="nav-select" hidden aria-label="Calculator"></select>
       <span class="nav-sub" id="navSub">live GE margins</span>
@@ -6413,13 +6441,528 @@ window.PriceHub.subscribe(applyPrices);
 window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; renderAll(); });
 })();
 </script>
+
+<section id="view-cooking" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">OSRS &middot; Cooking &middot; burn-adjusted</p>
+    <h1>Cooking Fish &amp; Meat</h1>
+    <p class="lede">Buy raw, cook it, sell it. The catch is <b>burning</b> &mdash; a burnt fish is worth <b>0 gp</b>. This prices every raw&rarr;cooked spread <b>net of your burn rate at your Cooking level</b>, so the "profit" already discounts the ones you torch. Covers the classic fish/meat plus the six <b>Sailing</b> trawling fish (giant krill &rarr; marlin), which burn far harder. Burn is OSRS-<b>exact</b> (the game's cooking-success formula, per-food, from the wiki). Pick your heat source (a <b>range</b> beats a fire; the <b>Hosidius</b> range adds a +5&ndash;10% success bonus), toggle <b>cooking gauntlets</b> for the big fish, and sells are after 2% GE tax.</p>
+    <div class="assumptions" id="ck-assumptions"></div>
+  </header>
+
+  <div class="layout">
+  <aside class="sidebar">
+
+    <section class="card">
+      <h2 class="card-title">Your setup</h2>
+      <p class="card-sub">Prices are live from the header bar. Look up an RSN above to auto-fill your Cooking level.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Cooking level</p>
+          <div class="timing-in" style="margin:0">
+            <label for="ck-lvl">level <input id="ck-lvl" type="number" min="1" max="99" step="1" value="99" inputmode="numeric"></label>
+          </div>
+          <p class="opt-note" id="ck-note-lvl"></p>
+        </div>
+        <div>
+          <p class="opt-label">Heat source</p>
+          <div class="toggle" id="ck-tg-source" role="group" aria-label="Heat source">
+            <button data-v="campfire">Campfire</button>
+            <button data-v="range" class="on">Range</button>
+            <button data-v="hos5">Hosidius 5%</button>
+            <button data-v="hos10">Hosidius 10%</button>
+          </div>
+          <p class="opt-note" id="ck-note-source"></p>
+        </div>
+        <div>
+          <p class="opt-label">Cooking gauntlets</p>
+          <div class="toggle" id="ck-tg-gaunt" role="group" aria-label="Cooking gauntlets">
+            <button data-v="off" class="on">Off</button>
+            <button data-v="on">On</button>
+          </div>
+          <p class="opt-note" id="ck-note-gaunt"></p>
+        </div>
+        <div>
+          <p class="opt-label">Food type</p>
+          <div class="toggle" id="ck-tg-kind" role="group" aria-label="Food type">
+            <button data-v="all" class="on">All</button>
+            <button data-v="fish">Fish</button>
+            <button data-v="meat">Meat</button>
+          </div>
+          <p class="opt-note" id="ck-note-kind"></p>
+        </div>
+        <div>
+          <p class="opt-label">Cook rate</p>
+          <div class="timing-in" style="margin:0">
+            <label for="ck-rate">foods / hr <input id="ck-rate" type="number" min="1" step="50" value="1500" inputmode="numeric"></label>
+          </div>
+          <p class="opt-note" id="ck-note-rate"></p>
+        </div>
+        <div>
+          <p class="opt-label">Karambwan cooking</p>
+          <div class="toggle" id="ck-tg-kbtick" role="group" aria-label="Karambwan cooking">
+            <button data-v="off" class="on">Normal</button>
+            <button data-v="on">1-tick</button>
+          </div>
+          <p class="opt-note" id="ck-note-kbtick"></p>
+        </div>
+        <div>
+          <p class="opt-label">Sort by</p>
+          <div class="toggle" id="ck-tg-sort" role="group" aria-label="Sort">
+            <button data-v="hr" class="on">gp/hr</button>
+            <button data-v="unit">gp/food</button>
+            <button data-v="roi">% ROI</button>
+          </div>
+          <p class="opt-note" id="ck-note-sort"></p>
+        </div>
+        <div>
+          <p class="opt-label">Buy raw at</p>
+          <div class="toggle" id="ck-tg-buyspeed" role="group" aria-label="Buy speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="ck-note-buyspeed"></p>
+        </div>
+        <div>
+          <p class="opt-label">Sell cooked at</p>
+          <div class="toggle" id="ck-tg-sellspeed" role="group" aria-label="Sell speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="ck-note-sellspeed"></p>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+
+  <div class="main">
+
+    <div class="two-col">
+      <div class="col">
+        <section class="card best-card" id="ck-bestCard">
+          <h2 class="card-title">Best gp/hour right now</h2>
+          <p class="card-sub" id="ck-bestSub">Most gp/hour &mdash; burn-adjusted profit per food &times; your cook rate, capped by the raw's 4h buy limit.</p>
+          <p class="best-headline" id="ck-bestHeadline"></p>
+          <div class="best-hero" id="ck-bestHero"></div>
+        </section>
+      </div>
+      <div class="col">
+        <section class="card xp-card" id="ck-xpCard">
+          <h2 class="card-title">Fattest margin per food</h2>
+          <p class="card-sub">The widest single-food spread after burn &mdash; best when you're buy-limit bound.</p>
+          <p class="best-headline" id="ck-xpHeadline"></p>
+          <div class="best-hero" id="ck-xpHero"></div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title" id="ck-cardTitle">Profit per food</h2>
+          <div class="legend">
+            <span><i class="sw cook"></i> <span id="ck-legend">burn-adjusted, at your level</span></span>
+          </div>
+        </div>
+        <div class="toggle" id="ck-toggle" role="tablist" aria-label="Chart metric">
+          <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / food</button>
+          <button data-mode="roi" role="tab" aria-selected="false">% return</button>
+          <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xp" role="tab" aria-selected="false">xp / hour</button>
+        </div>
+      </div>
+      <p class="card-note" id="ck-cardNote"></p>
+      <div class="chart" id="ck-chart"></div>
+      <div class="axis-row"><div></div><div class="axis" id="ck-axis"></div></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title" id="ck-tblTitle">Cooking spreads</h2>
+          <p class="card-note" id="ck-count"></p>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table id="ck-tbl">
+          <thead id="ck-thead"></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="opt-note" id="ck-tblNote"></p>
+    </section>
+
+    <footer id="ck-footer"></footer>
+  </div>
+  </div>
+</div>
+</section>
+<div class="tip" id="ck-tip"></div>
+
+<script>
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const root = el("view-cooking");
+const fmt = n => (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const fmtK = v => { const a=Math.abs(v); return a>=1e6 ? (v<0?"-":"")+(a/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,"")+"m" : a>=1000 ? (v<0?"-":"")+(a/1000).toFixed(a>=1e5?0:1).replace(/\.0$/,"")+"k" : fmt(v); };
+const geTax = p => p<50 ? 0 : Math.min(Math.floor(p*0.02), 5000000);
+const net = p => p - geTax(p);
+
+/* ------------------------------------------------------------------
+   Food table. Fields:
+     name, rawId, cookedId, cook (level to cook),
+     range  (stop-burn level on a range/oven),
+     fire   (stop-burn level on a fire/campfire),
+     gaunt  (stop-burn level on a range WITH cooking gauntlets, or null),
+     xp     (Cooking xp per successfully cooked food),
+     lim    (raw's 4h GE buy limit, from the wiki mapping API),
+     kind   ("fish" | "meat")
+   Stop-burn levels are community estimates (exact OSRS burn rates are
+   not officially published). The burn model below is calibrated to the
+   wiki's measured shark-with-gauntlets data: burn falls ~1% per level
+   below the stop-burn level (e.g. shark at 86 with gauntlets ~7%), NOT
+   a steep ramp from the cook level.
+   ------------------------------------------------------------------ */
+const FOODS = [
+  // meats
+  ["Raw chicken",   2138, 2140,  1, 31, 33, null,  30,13000, "meat"],
+  ["Raw beef",      2132, 2142,  1, 31, 33, null,  30,13000, "meat"],
+  ["Raw rabbit",    3226, 3228,  1, 31, 33, null,  30,13000, "meat"],
+  // fish
+  ["Raw shrimps",    317,  315,  1, 34, 34, null,  30,15000, "fish"],
+  ["Raw anchovies",  321,  319,  1, 34, 34, null,  30,13000, "fish"],
+  ["Raw sardine",    327,  325,  1, 38, 38, null,  40,15000, "fish"],
+  ["Raw herring",    345,  347,  5, 41, 41, null,  50,15000, "fish"],
+  ["Raw mackerel",   353,  355, 10, 45, 45, null,  60,15000, "fish"],
+  ["Raw trout",      335,  333, 15, 49, 50, null,  70,15000, "fish"],
+  ["Raw cod",        341,  339, 18, 51, 51, null,  75,15000, "fish"],
+  ["Raw pike",       349,  351, 20, 53, 54, null,  80,15000, "fish"],
+  ["Raw salmon",     331,  329, 25, 55, 58, null,  90,15000, "fish"],
+  ["Raw tuna",       359,  361, 30, 60, 63, null, 100,15000, "fish"],
+  ["Raw karambwan", 3142, 3144, 30, 99, 99, null, 190,13000, "fish"],
+  ["Raw lobster",    377,  379, 40, 74, 74, 64,  120,15000, "fish"],
+  ["Raw bass",       363,  365, 43, 79, 79, null, 130,15000, "fish"],
+  ["Raw swordfish",  371,  373, 45, 86, 86, 81,  140,15000, "fish"],
+  ["Raw monkfish",  7944, 7946, 62, 90, 92, 87,  120,13000, "fish"],
+  ["Raw shark",      383,  385, 80, 99, 99, 94,  210,15000, "fish"],
+  ["Raw sea turtle", 395,  397, 82, 99, 99, null, 211,15000, "fish"],
+  ["Raw anglerfish",13439,13441,84, 98, 98, 95,  230,15000, "fish"],
+  ["Raw dark crab", 11934,11936,90, 99, 99, 95,  215,15000, "fish"],
+  ["Raw manta ray",  389,  391, 91, 99, 99, null, 216,15000, "fish"],
+  // Sailing / deep-sea-trawling fish (11th field sail=true). Their burn uses the
+  // exact OSRS success formula via SUCCESS_CHART (see below), not the stop-level model,
+  // so the range/fire/gaunt columns here are placeholders and unused. They burn hard
+  // (e.g. bluefin ~68% at level 87 on a range) and only fully stop at 99 with the
+  // Hosidius elite-diary bonus or a cooking cape. Gauntlets do not help them.
+  ["Raw giant krill",32309,32312,69,99,99,null,177.5,15000,"fish",true],
+  ["Raw haddock",   32317,32320,73,99,99,null,180,  15000,"fish",true],
+  ["Raw yellowfin", 32325,32328,79,99,99,null,200,  15000,"fish",true],
+  ["Raw halibut",   32333,32336,83,99,99,null,212.5,15000,"fish",true],
+  ["Raw bluefin",   32341,32344,87,99,99,null,215,  15000,"fish",true],
+  ["Raw marlin",    32349,32352,91,99,99,null,225,  15000,"fish",true],
+];
+const KARAMBWAN = 3142;   // 1-tick cooking makes it far faster than any range fish
+/* ------------------------------------------------------------------
+   Exact cooking success/burn for every food, from the wiki's
+   {{Skilling success chart}} data (OSRS's real skilling-success formula).
+   Keyed by cooked item id. Per heat source a [low, high] control pair:
+     fire   — on a fire / campfire
+     range  — on a range/oven (== fire for low-level foods, key "fr")
+     gaunt  — range with cooking gauntlets (only the 5 gauntlet fish)
+     hos5   — Hosidius Kitchen (+5% bonus baked in)
+     hos10  — Hosidius Kitchen + elite Kourend diary (+10% baked in)
+     hos5g / hos10g — Hosidius with gauntlets (gauntlet fish only)
+   Hosidius pairs already include the bonus, so no separate adjustment.
+   Values pulled from the wiki, September 2026.
+   ------------------------------------------------------------------ */
+const fr = (l,h)=>({fire:[l,h], range:[l,h]});   // foods where fire and range are identical
+const SUCCESS_CHART = {
+  // meats
+  2140:{...fr(128,512), hos5:[140,524], hos10:[153,537]},   // cooked chicken
+  2142:{...fr(128,512), hos5:[140,524], hos10:[153,537]},   // cooked meat
+  3228:{...fr(128,512), hos5:[140,524], hos10:[153,537]},   // cooked rabbit
+  // fish (standard)
+  315:{...fr(128,512), hos5:[140,524], hos10:[153,537]},    // shrimps
+  319:{...fr(128,512), hos5:[140,524], hos10:[153,537]},    // anchovies
+  325:{...fr(118,492), hos5:[130,504], hos10:[143,517]},    // sardine
+  347:{...fr(108,472), hos5:[120,484], hos10:[133,497]},    // herring
+  355:{...fr(98,452),  hos5:[110,464], hos10:[123,477]},    // mackerel
+  333:{...fr(88,432),  hos5:[100,444], hos10:[113,457]},    // trout
+  339:{fire:[83,422], range:[88,432], hos5:[100,444], hos10:[113,457]},  // cod
+  351:{...fr(78,412),  hos5:[90,424],  hos10:[103,437]},    // pike
+  329:{...fr(68,392),  hos5:[80,404],  hos10:[93,417]},     // salmon
+  361:{...fr(58,372),  hos5:[70,384],  hos10:[83,397]},     // tuna
+  3144:{...fr(70,255), hos5:[82,267],  hos10:[95,280]},     // cooked karambwan
+  379:{...fr(38,332), gaunt:[55,368], hos5:[50,344], hos10:[63,357], hos5g:[67,380], hos10g:[80,393]}, // lobster
+  365:{...fr(33,312),  hos5:[45,324],  hos10:[58,337]},     // bass
+  373:{fire:[18,292], range:[30,310], gaunt:[30,310], hos5:[42,322], hos10:[55,335], hos5g:[42,322], hos10g:[55,335]}, // swordfish (gaunt == range)
+  7946:{fire:[11,275], range:[13,280], gaunt:[24,290], hos5:[25,292], hos10:[38,305], hos5g:[36,302], hos10g:[49,315]}, // monkfish
+  385:{fire:[1,202], range:[1,232], gaunt:[15,270], hos5:[13,244], hos10:[26,257], hos5g:[27,282], hos10g:[40,295]}, // shark
+  397:{fire:[1,202], range:[1,222], hos5:[13,234], hos10:[26,247]},  // sea turtle
+  13441:{fire:[1,200], range:[1,220], gaunt:[12,260], hos5:[13,232], hos10:[26,245], hos5g:[24,272], hos10g:[37,285]}, // anglerfish
+  11936:{...fr(10,222), hos5:[22,234], hos10:[35,247]},     // dark crab (no gauntlet effect)
+  391:{fire:[1,202], range:[1,222], hos5:[13,234], hos10:[26,247]},  // manta ray
+  // sailing / deep-sea-trawling fish
+  32312:{fire:[-229,242], range:[-239,252], hos5:[-227,264], hos10:[-214,277]},     // giant krill
+  32320:{fire:[-330,237], range:[-320,247], hos5:[-308,259], hos10:[-295,272]},     // haddock
+  32328:{fire:[-505,232], range:[-495,242], hos5:[-483,254], hos10:[-470,267]},     // yellowfin
+  32336:{fire:[-694,227], range:[-684,237], hos5:[-672,249], hos10:[-659,262]},     // halibut
+  32344:{fire:[-1007,222], range:[-997,232], hos5:[-985,244], hos10:[-972,257]},    // bluefin
+  32352:{fire:[-1626,217], range:[-1616,227], hos5:[-1604,239], hos10:[-1591,252]}, // marlin
+};
+/** True if cooking gauntlets change this food's burn. */
+function isGauntable(cookedId){ return !!(SUCCESS_CHART[cookedId]||{}).gaunt; }
+/** OSRS skilling-success interpolation: fraction of cooks that succeed at `level`. */
+function cookSuccess(low, high, level){
+  const v = Math.floor(low*(99-level)/98 + high*(level-1)/98 + 0.5) + 1;
+  return Math.min(Math.max(v/256, 0), 1);
+}
+/** The [low,high] control pair for a food under the current heat source + gauntlets. */
+function chartPair(cookedId){
+  const c = SUCCESS_CHART[cookedId];
+  if(!c){ return null; }
+  const g = opt.gaunt==="on" && !!c.gaunt;
+  if(opt.source==="campfire"){ return g ? c.gaunt : c.fire; }
+  if(opt.source==="range"){ return g ? c.gaunt : c.range; }
+  if(opt.source==="hos5"){ return g && c.hos5g ? c.hos5g : c.hos5; }
+  return g && c.hos10g ? c.hos10g : c.hos10;   // hos10
+}
+const GAUNT_FISH = "lobster, swordfish, monkfish, shark, anglerfish";
+
+let LAT = {}, ROWS = [], PLAYER = null, PNAME = null, PLVL = null;
+const opt = { source:"range", gaunt:"off", kind:"all", sort:"hr", buySpeed:"instant", sellSpeed:"instant", kbtick:"off" };
+let LVL = 99, RATE = 1500, MODE = "gp";
+const LS_KEY = "cooking-unified-v1";
+const chart = el("ck-chart"), axisEl = el("ck-axis"), tip = el("ck-tip");
+const hi = id => (LAT[id]||{}).high || 0;
+const lo = id => (LAT[id]||{}).low  || 0;
+const buyPrice  = id => opt.buySpeed==="patient"  ? (lo(id)||hi(id)) : (hi(id)||lo(id));
+const sellPrice = id => opt.sellSpeed==="patient" ? (hi(id)||lo(id)) : (lo(id)||hi(id));
+
+/**
+ * Burn probability for a food at the current Cooking level and setup, from
+ * OSRS's exact cooking-success formula (SUCCESS_CHART) — burn = 1 - success.
+ * Below the cook level it's a guaranteed fail (you can't cook it yet).
+ */
+function burnChance(f){
+  if(LVL < f.cook){ return 1; }
+  const pair = chartPair(f.cookedId);
+  if(!pair){ return 0; }
+  return Math.max(0, Math.min(1, 1 - cookSuccess(pair[0], pair[1], LVL)));
+}
+/** Cooking actions/hr for a food: karambwan can be 1-ticked, everything else is standard range cooking. */
+function cookRate(f){
+  if(f.rawId===KARAMBWAN){ return opt.kbtick==="on" ? 4500 : 1200; }
+  return RATE;
+}
+
+function compute(){
+  const out = [];
+  for(const a of FOODS){
+    const f = { name:a[0], rawId:a[1], cookedId:a[2], cook:a[3], range:a[4], fire:a[5], gaunt:a[6], xp:a[7], lim:a[8], kind:a[9], sail:a[10]===true };
+    if(opt.kind!=="all" && f.kind!==opt.kind){ continue; }
+    const buy = buyPrice(f.rawId), sell = sellPrice(f.cookedId);
+    if(!buy || !sell){ continue; }
+    const burn = burnChance(f);
+    const revenue = net(sell) * (1 - burn);
+    const profit = revenue - buy;
+    const effRate = Math.min(cookRate(f), (f.lim||Infinity)/4);
+    out.push({
+      name:f.name, rawId:f.rawId, cook:f.cook, xp:f.xp, lim:f.lim, kind:f.kind, gauntable:isGauntable(f.cookedId),
+      buy, sell, burn, rate:effRate,
+      profit, roi: buy>0 ? profit/buy*100 : 0,
+      gpHr: profit*effRate, xpHr: f.xp*(1-burn)*effRate,
+    });
+  }
+  const key = opt.sort==="unit" ? (r=>r.profit) : opt.sort==="roi" ? (r=>r.roi) : (r=>r.gpHr);
+  out.sort((x,y)=>key(y)-key(x));
+  ROWS = out;
+}
+
+function sourceLabel(){
+  return opt.source==="campfire" ? "Campfire (fire)" : opt.source==="range" ? "Range" : opt.source==="hos5" ? "Hosidius range (-5% burn)" : "Hosidius range (-10% burn)";
+}
+function gateChip(){
+  if(PLVL==null){ return ""; }
+  return `<span class="chip">Level from <b>${PNAME}</b> &middot; Cooking ${PLVL}</span>`;
+}
+function updateChips(){
+  el("ck-assumptions").innerHTML = [
+    gateChip(),
+    `<span class="chip">Cooking <b>${LVL}</b></span>`,
+    `<span class="chip">${sourceLabel()}</span>`,
+    opt.gaunt==="on" ? `<span class="chip">Gauntlets <b>on</b></span>` : "",
+    `<span class="chip"><b>2%</b> GE sell tax</span>`,
+    `<span class="chip">burnt food = <b>0 gp</b></span>`,
+  ].filter(Boolean).join("");
+}
+function reqWarn(r){ return LVL<r.cook ? ` <span class="best-tag unf">&#9888; Cook ${r.cook}</span>` : ""; }
+function burnCls(b){ return b<=0 ? "pos" : b>=0.30 ? "negv" : ""; }
+function burnStr(b){ return (b*100).toFixed(b>0 && b<0.1 ? 1 : 0)+"%"; }
+
+function renderBest(){
+  const cookable = ROWS.filter(r=>LVL>=r.cook);
+  const pool = cookable.length ? cookable : ROWS;
+  const byHr = pool.slice().sort((a,b)=>b.gpHr-a.gpHr)[0];
+  const byU = pool.slice().sort((a,b)=>b.profit-a.profit)[0];
+  if(!byHr){
+    el("ck-bestHeadline").innerHTML = `No live prices for these foods right now &mdash; try Refresh in the header.`;
+    el("ck-bestHero").innerHTML=""; el("ck-xpHeadline").innerHTML=""; el("ck-xpHero").innerHTML=""; return;
+  }
+  el("ck-bestHeadline").innerHTML = `<b>${byHr.name.replace("Raw ","")}</b> &mdash; raw ${fmt(byHr.buy)}, cooked ${fmt(byHr.sell)}, ${burnStr(byHr.burn)} burnt.`;
+  el("ck-bestHero").innerHTML = [
+    [`${byHr.gpHr<0?"":"+"}${fmtK(byHr.gpHr)}`, `gp / hr`],
+    [`${byHr.profit<0?"":"+"}${fmt(byHr.profit)}`, `gp / food`],
+    [`${burnStr(byHr.burn)}`, "burn rate"],
+  ].map(([n,l])=>`<div><div class="num ${n.startsWith("-")?"loss":""}">${n}</div><div class="lab">${l}</div></div>`).join("");
+  el("ck-xpHeadline").innerHTML = `<b>${byU.name.replace("Raw ","")}</b>: <b>${byU.profit<0?"":"+"}${fmt(byU.profit)}</b> gp/food (${byU.roi.toFixed(1)}% ROI, ${burnStr(byU.burn)} burnt).`;
+  el("ck-xpHero").innerHTML = [
+    [`${byU.profit<0?"":"+"}${fmt(byU.profit)}`, `gp / food`],
+    [`${byU.roi.toFixed(1)}%`, "return on spend"],
+    [`${fmtK(byU.xpHr)}`, "xp / hr"],
+  ].map(([n,l])=>`<div><div class="num ${n.startsWith("-")?"loss":""}">${n}</div><div class="lab">${l}</div></div>`).join("");
+}
+const tb = root.querySelector("#ck-tbl tbody");
+function renderTable(){
+  el("ck-thead").innerHTML = `<tr><th>Food</th><th>Buy raw</th><th>Sell cooked</th><th>Burn</th><th>Profit / food</th><th>ROI</th><th>cook/hr</th><th>gp/hr *</th><th>xp/hr</th></tr>`;
+  tb.innerHTML = ROWS.map(r=>{
+    const pc = r.profit<0 ? "negv" : "pos", sign = r.profit<0?"":"+";
+    return `<tr><td>${r.name}${reqWarn(r)}</td>`+
+    `<td class="mono">${fmt(r.buy)}</td>`+
+    `<td class="mono">${fmt(r.sell)}</td>`+
+    `<td class="mono ${burnCls(r.burn)}">${burnStr(r.burn)}</td>`+
+    `<td class="mono ${pc}">${sign}${fmt(r.profit)}</td>`+
+    `<td class="mono ${pc}">${r.roi.toFixed(1)}%</td>`+
+    `<td class="mono">${fmt(r.rate)}</td>`+
+    `<td class="mono ${r.gpHr<0?"negv":"pos"}">${r.gpHr<0?"":"+"}${fmtK(r.gpHr)}</td>`+
+    `<td class="mono">${fmtK(r.xpHr)}</td></tr>`;
+  }).join("");
+  el("ck-tblTitle").textContent = opt.kind==="fish" ? "Fish spreads" : opt.kind==="meat" ? "Meat spreads" : "Cooking spreads";
+  el("ck-count").textContent = `${fmt(ROWS.length)} food${ROWS.length===1?"":"s"} priced`;
+  el("ck-tblNote").innerHTML = `* <b>gp/hr</b> = burn-adjusted profit/food &times; cook/hr (the smaller of your cook rate and the raw's 4h buy limit &divide; 4). Source: <b>${sourceLabel()}</b>${opt.gaunt==="on"?" with gauntlets":""}. Burn uses OSRS's <b>exact</b> cooking-success formula for every food, from the wiki's per-food data (e.g. bluefin ~68% at 87 on a range, shark ~7% at 86 with gauntlets).`;
+}
+const MODES = {
+  gp:  { title:"Profit per food", legend:"burn-adjusted, after 2% tax",
+         note:"Cooked sold at insta-sell after tax, times (1 - burn), minus the raw at insta-buy. Bars left of the line lose money once burn is counted.",
+         step:20, val:r=>r.profit, fmt:v=>(v<0?"":"+")+fmt(v), tick:v=>(v>0?"+":"")+v },
+  roi: { title:"Return on gp invested", legend:"net profit / raw cost",
+         note:"Burn-adjusted profit divided by the gp tied up in the raw food.",
+         step:5, val:r=>r.roi, fmt:v=>(v<0?"":"+")+v.toFixed(0)+"%", tick:v=>(v>0?"+":"")+v+"%" },
+  hr:  { title:"Profit per hour", legend:"cook rate, buy-limit capped",
+         note:"", step:50000, val:r=>r.gpHr, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xp:  { title:"Cooking XP per hour", legend:"successful cooks only",
+         note:"Cooking XP per hour, counting only food that doesn't burn: xp per food times (1 - burn) times your cook rate, capped by the raw's 4h buy limit.",
+         step:20000, val:r=>r.xpHr, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+};
+function showTip(e,r){
+  tip.innerHTML = `<span class="t-h">${r.name.replace("Raw ","")}</span>`+
+    `raw ${fmt(r.buy)} &rarr; cooked ${fmt(r.sell)}<br>`+
+    `Cooking ${r.cook}+ &middot; ${burnStr(r.burn)} burnt<br>`+
+    `<span class="${r.profit<0?'t-neg':'t-pos'}">${r.profit<0?'':'+'}${fmt(r.profit)}</span> gp/food &middot; ${r.roi.toFixed(0)}%<br>`+
+    `${fmtK(r.gpHr)} gp/hr &middot; ${fmtK(r.xpHr)} xp/hr`;
+  tip.style.opacity=1; moveTip(e);
+}
+function moveTip(e){ const pad=14; let x=e.clientX+pad,y=e.clientY+pad; const w=tip.offsetWidth,h=tip.offsetHeight; if(x+w>innerWidth){ x=e.clientX-w-pad; } if(y+h>innerHeight){ y=e.clientY-h-pad; } tip.style.left=x+"px"; tip.style.top=y+"px"; }
+function hideTip(){ tip.style.opacity=0; }
+function hrNote(){
+  const anyCap = ROWS.some(r=>r.rate < cookRate({rawId:r.rawId}));
+  return `Burn-adjusted profit/food times cook/hr &mdash; the smaller of your cook rate (${fmt(RATE)}/hr; karambwan ${opt.kbtick==="on"?"1-tick ~4,500":"~1,200"}/hr) and each raw's 4h GE buy limit &divide; 4${anyCap?" (which binds for some here)":""}.`;
+}
+function renderChart(){
+  const M = MODES[MODE];
+  el("ck-cardTitle").textContent = M.title;
+  el("ck-legend").textContent = M.legend;
+  el("ck-cardNote").innerHTML = MODE==="hr" ? hrNote() : M.note;
+  const data = ROWS.filter(r=>LVL>=r.cook).slice().sort((a,b)=>M.val(b)-M.val(a));
+  if(!data.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No food is cookable at Cooking ${LVL}. Raise the level or wait for prices.</p>`; axisEl.innerHTML=""; return; }
+  const allv = data.map(M.val);
+  let step = M.step;
+  let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
+  let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
+  while((DMAX-DMIN)/step>40){ step*=2; DMIN=Math.floor(DMIN/step)*step; DMAX=Math.ceil(DMAX/step)*step; }
+  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  chart.innerHTML="";
+  data.forEach(r=>{
+    const row=document.createElement("div"); row.className="row";
+    row.innerHTML=`<div class="rlabel">${r.name.replace("Raw ","")}<small>lvl ${r.cook}</small></div>`;
+    const track=document.createElement("div"); track.className="track";
+    for(let t=DMIN;t<=DMAX+0.5;t+=step){ const g=document.createElement("div"); g.className=t===0?"zero":"grid-t"; g.style.left=pct(t)+"%"; track.appendChild(g); }
+    const v=M.val(r), neg=v<0, p=pct(v);
+    const bar=document.createElement("div"); bar.className=`bar cook${neg?" neg":""}`;
+    if(neg){ bar.style.left=p+"%"; bar.style.width=(zeroPct-p)+"%"; }
+    else { bar.style.left=zeroPct+"%"; bar.style.width=(p-zeroPct)+"%"; }
+    track.appendChild(bar);
+    const lab=document.createElement("div"); lab.className=`bval cook${neg?" neg":""}`; lab.textContent=M.fmt(v);
+    if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; }
+    else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
+    track.appendChild(lab);
+    track.addEventListener("mousemove",moveTip);
+    track.addEventListener("mouseenter",e=>showTip(e,r));
+    track.addEventListener("mouseleave",hideTip);
+    row.appendChild(track); chart.appendChild(row);
+  });
+  axisEl.innerHTML="";
+  for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
+}
+function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
+
+const TOGGLES = { "ck-tg-source":{key:"source"}, "ck-tg-gaunt":{key:"gaunt"}, "ck-tg-kind":{key:"kind"}, "ck-tg-kbtick":{key:"kbtick"}, "ck-tg-sort":{key:"sort"}, "ck-tg-buyspeed":{key:"buySpeed"}, "ck-tg-sellspeed":{key:"sellSpeed"} };
+function syncToggle(id){ const def=TOGGLES[id]; [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[def.key])); }
+Object.keys(TOGGLES).forEach(id=>{ el(id).addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } opt[TOGGLES[id].key]=b.dataset.v; syncToggle(id); syncNotes(); renderAll(); }); });
+function syncNotes(){
+  el("ck-note-lvl").textContent = PLVL!=null ? `Auto-filled from ${PNAME}. Edit to model a different level.` : `Drives your burn rate. Look up an RSN in the header to auto-fill.`;
+  el("ck-note-source").textContent = opt.source==="campfire" ? `Fires/campfires burn a bit more than a range.` : opt.source==="range" ? `A range/oven burns less than a fire.` : opt.source==="hos5" ? `Hosidius Kitchen range: +5% cooking-success bonus (less burn).` : `Hosidius + Elite Kourend diary: +10% success bonus (zeroes sailing fish at 99).`;
+  el("ck-note-gaunt").textContent = opt.gaunt==="on" ? `Lowers the stop-burn level for ${GAUNT_FISH}. No effect on other foods.` : `Cooking gauntlets help only ${GAUNT_FISH}.`;
+  el("ck-note-kind").textContent = opt.kind==="fish" ? `Fish only.` : opt.kind==="meat" ? `Land meats only (rarely profitable).` : `Fish and meat together.`;
+  el("ck-note-rate").textContent = `Standard range cooking, whole inventory at once. ~1,500/hr AFK. Karambwan has its own rate below.`;
+  el("ck-note-kbtick").textContent = opt.kbtick==="on" ? `1-tick karambwan: ~4,500/hr (buy-limit capped to ~3,250/hr when flipping). Active clicking, not AFK.` : `Normal karambwan cooking (~1,200/hr, cooked one at a time).`;
+  el("ck-note-sort").textContent = opt.sort==="hr" ? `Rank by gp/hr (cook-rate and buy-limit capped).` : opt.sort==="unit" ? `Rank by the raw margin per food.` : `Rank by return on gp invested.`;
+  el("ck-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy raw at the bid - cheaper, waits to fill.` : `Insta-buy raw at the ask.`;
+  el("ck-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell cooked at the ask - more gp, waits.` : `Insta-sell cooked at the bid.`;
+}
+el("ck-lvl").addEventListener("input", e=>{ LVL=Math.max(1,Math.min(99,Math.round(+e.target.value)||1)); renderAll(); });
+el("ck-rate").addEventListener("input", e=>{ RATE=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
+el("ck-toggle").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } MODE=b.dataset.mode; [...el("ck-toggle").children].forEach(x=>{ const on=x===b; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); renderChart(); saveState(); });
+function syncMode(){ [...el("ck-toggle").children].forEach(x=>{ const on=x.dataset.mode===MODE; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); }
+el("ck-footer").innerHTML =
+  `Prices are live via the shared header bar. Profit per food = the cooked fish sold after 2% GE tax, <b>multiplied by (1 - your burn chance)</b>, minus the raw. A burnt food is worth nothing, so a high burn rate quietly eats the margin. `+
+  `<b>Burn is OSRS-exact</b> for every food, computed from the game's cooking-success formula using the wiki's per-food control values &mdash; not an estimate. So shark at 86 with gauntlets reads ~7% (not the old 30%), and the six <b>Sailing</b> fish (giant krill, haddock, yellowfin, halibut, bluefin, marlin) read true (bluefin ~68% at 87 on a range). A <b>range</b> beats a <b>fire/campfire</b>; the <b>Hosidius Kitchen</b> (+5%, +10% with the Elite Kourend diary) and <b>cooking gauntlets</b> each lower burn; gauntlets help only ${GAUNT_FISH} (and not at all on sailing fish). A cooking cape removes all burning. `+
+  `<b>Cook speed:</b> range fish are cooked a whole inventory at once (~1,500/hr); <b>karambwan</b> is cooked one at a time but can be <b>1-ticked</b> to ~4,500/hr (the fastest Cooking XP in the game) &mdash; for GE-flipping, the raw's ~15k/4h buy limit caps throughput at ~3,250&ndash;3,750/hr. `+
+  `Exact OSRS burn rates aren't officially published &mdash; stop-burn levels are community estimates, so treat gp/hr as a guide and re-check prices before committing gp.`;
+
+function pickLAT(raw, source){
+  if(source!=="m5"){ return raw.latest||{}; }
+  const out={}, m5=raw.m5||{}, lat=raw.latest||{};
+  const ids=new Set([...Object.keys(m5),...Object.keys(lat)]);
+  ids.forEach(id=>{ const a=m5[id]||{}, l=lat[id]||{}; out[id]={ high:(a.avgHighPrice ?? l.high ?? l.low), low:(a.avgLowPrice ?? l.low ?? l.high) }; });
+  return out;
+}
+function applyPrices(raw, source){ LAT = pickLAT(raw, source); renderAll(); }
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,LVL,RATE,MODE})); }catch(e){} }
+function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.LVL)){ LVL=Math.max(1,Math.min(99,s.LVL)); } if(Number.isFinite(s.RATE)){ RATE=Math.max(1,s.RATE); } if(s.MODE && MODES[s.MODE]){ MODE=s.MODE; } }
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); syncMode(); el("ck-lvl").value=LVL; el("ck-rate").value=RATE; syncNotes(); }
+
+loadState(); syncControls(); renderAll();
+window.PriceHub.subscribe(applyPrices);
+window.Player.subscribe(function(p){
+  PLAYER=p.levels||null; PNAME=p.name||null;
+  const c = PLAYER && Number.isFinite(PLAYER.cooking) ? PLAYER.cooking : null;
+  PLVL = c;
+  if(c!=null){ LVL=Math.max(1,Math.min(99,c)); el("ck-lvl").value=LVL; }
+  syncNotes(); renderAll();
+});
+})();
+</script>
 <script>
 (function(){
   "use strict";
   try { if(('ontouchstart' in window) || (navigator.maxTouchPoints > 0)){ document.documentElement.classList.add("is-touch"); } } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), cooking: document.getElementById("view-cooking") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", cooking: "cook fish & meat \u2014 burn-adjusted" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
