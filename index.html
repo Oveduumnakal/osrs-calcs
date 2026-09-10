@@ -2355,6 +2355,7 @@ window.Player.subscribe(function(p) {
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / herb</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xphr" role="tab" aria-selected="false">xp / hour</button>
           <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
@@ -2604,6 +2605,9 @@ const MODES = {
          step:5, vals:r=>[r.roiClean,r.roiUnf], fmt:v=>(v<0?"":"+")+v.toFixed(1)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"",
          step:100000, vals:r=>[r.hrClean,r.hrUnf], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xphr:{ title:"XP per hour",
+         note:"Herblore XP/hr from cleaning (plus Degrime's Magic XP when you cast it), at each route's rate capped by the buy limit. Cleaning trains the same XP whether you then sell clean or make (unf).",
+         step:20000, vals:r=>{ const xEach=r.hbXp+r.mgXp; return [r.effClean*xEach, r.effUnf*xEach]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xp:  { title:"Profit per XP",
          note:"Net profit ÷ Herblore XP from cleaning each herb (plus Degrime's Magic XP when you cast the spell). What each xp of training is worth in gp.",
          step:5, vals:r=>{ const x=r.hbXp+r.mgXp; return x>0?[r.profClean/x,r.profUnf/x]:[0,0]; },
@@ -3027,6 +3031,7 @@ window.Player.subscribe(function(p){
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / item</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xphr" role="tab" aria-selected="false">xp / hour</button>
           <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
@@ -3303,6 +3308,9 @@ const MODES = {
          vals:r=>[r.roiPlain, r.roiEnch], fmt:v=>(v<0?"":"+")+v.toFixed(1)+"%", tick:v=>(v>0?"+":"")+Math.round(v)+"%" },
   hr:  { title:"Profit per hour", note:"",
          vals:r=>[r.hrPlain, r.hrEnch], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xphr:{ title:"XP per hour",
+         note:"Crafting XP/hr to make the piece (plus cutting XP when you buy uncut gems), with Magic on top for the enchanted route — each at its own rate, capped by the buy limit.",
+         vals:r=>{ const baseXp=r.craftXp+(opt.mat==="uncut"?r.cutXp:0); return [r.effPlain*baseXp, r.profEnch==null?null:r.effEnch*(baseXp+r.enchXp)]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xp:  { title:"Profit per XP",
          note:"Net profit ÷ XP earned: Crafting to make the piece (plus cutting XP when you buy uncut gems), with Magic on top for the enchanted route.",
          vals:r=>{ const base=r.craftXp+(opt.mat==="uncut"?r.cutXp:0); return [base>0?r.profPlain/base:null, (r.profEnch==null||base+r.enchXp<=0)?null:r.profEnch/(base+r.enchXp)]; },
@@ -3754,6 +3762,7 @@ window.Player.subscribe(function(p){
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / potion</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xphr" role="tab" aria-selected="false">xp / hour</button>
           <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
@@ -4016,6 +4025,9 @@ const MODES = {
          step:5, vals:r=>[r.roi3, r.roi4], fmt:v=>(v<0?"":"+")+v.toFixed(0)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"",
          step:100000, vals:r=>[hrCapped(r,3), hrCapped(r,4)], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xphr:{ title:"XP per hour",
+         note:"Herblore XP/hr for making the potion, at each route's rate capped by the 2,000/4h sell limit. Decanting up to (4) is a touch slower, so its XP/hr is a little lower.",
+         step:20000, vals:r=>{ const x=r.xpMake; return x>0?[r.prof3==null?null:capOf(r,3)*x, capOf(r,4)*x]:[null,null]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xp:  { title:"Profit per XP",
          note:"Net profit ÷ Herblore XP for making the potion — the same XP whether you finish at (3) or decant up to (4).",
          step:1, vals:r=>{ const x=r.xpMake; return x>0?[r.prof3==null?null:r.prof3/x, r.prof4/x]:[null,null]; },
@@ -4976,6 +4988,7 @@ window.PriceHub.subscribe(applyPrices);
           <button data-mode="gp" class="on" role="tab" aria-selected="true">gp / bolt</button>
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
+          <button data-mode="xphr" role="tab" aria-selected="false">xp / hour</button>
           <button data-mode="xp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
@@ -5176,6 +5189,9 @@ const MODES = {
   roi: { title:"Return on gp invested", note:"Net profit ÷ gp per bolt (tips/inputs + enchant runes).",
          vals:r=>[r.roiBuy, fletchSideSrc()==="bars"?r.roiBars:r.roiFletch], fmt:v=>(v<0?"":"+")+v.toFixed(0)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"", vals:r=>[r.hrBuy, srcHr(r, fletchSideSrc())], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  xphr:{ title:"Magic XP per hour",
+         note:"Magic XP/hr from enchanting, at your bolts/hr capped by the 11k/4h buy limit. Same either way — the tip source doesn't change the enchant XP; Fletching/Smithing XP from making the bolts isn't counted.",
+         vals:r=>{ const x=r.effRate*r.enchXp/10; return [x, x]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xp:  { title:"Profit per XP",
          note:"Net profit ÷ Magic XP from enchanting (per bolt — one cast enchants 10). Fletching XP from tipping the bolts isn't counted.",
          vals:r=>{ const x=r.enchXp/10, fp=srcProf(r,fletchSideSrc()); return x>0?[r.profBuy/x, fp==null?null:fp/x]:[null,null]; },
@@ -6571,6 +6587,7 @@ window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; 
           <button data-mode="roi" role="tab" aria-selected="false">% return</button>
           <button data-mode="hr" role="tab" aria-selected="false">gp / hour</button>
           <button data-mode="xp" role="tab" aria-selected="false">xp / hour</button>
+          <button data-mode="gpxp" role="tab" aria-selected="false">gp / xp</button>
         </div>
       </div>
       <p class="card-note" id="ck-cardNote"></p>
@@ -6856,6 +6873,11 @@ const MODES = {
   xp:  { title:"Cooking XP per hour", legend:"successful cooks only",
          note:"Cooking XP per hour, counting only food that doesn't burn: xp per food times (1 - burn) times your cook rate, capped by the raw's 4h buy limit.",
          step:20000, val:r=>r.xpHr, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  gpxp:{ title:"Profit per XP", legend:"net gp per Cooking XP gained",
+         note:"Burn-adjusted profit per food &divide; the Cooking XP you actually gain (xp per food times the non-burn rate). What each xp of Cooking is worth in gp &mdash; negative means you pay to train.",
+         step:1, val:r=>{ const x=r.xp*(1-r.burn); return x>0?r.profit/x:0; },
+         fmt:v=>(v<0?"":"+")+(Math.abs(v)>=100?fmt(Math.round(v)):v.toFixed(1)),
+         tick:v=>(v>0?"+":"")+(Number.isInteger(v)?v:v.toFixed(1)) },
 };
 function showTip(e,r){
   tip.innerHTML = `<span class="t-h">${r.name.replace("Raw ","")}</span>`+
