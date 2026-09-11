@@ -292,7 +292,7 @@
   /* timing-model inputs (rates card) */
   .timing-in { display: flex; flex-wrap: wrap; gap: 9px 16px; align-items: center; margin: 0 0 14px; font-size: 12px; color: var(--ink-2); }
   .timing-in label { display: inline-flex; align-items: center; gap: 6px; }
-  .timing-in input[type="number"] { width: 60px; font: 500 13px "IBM Plex Mono", monospace; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 6px; text-align: right; }
+  .timing-in input:not([type="checkbox"]) { width: 60px; font: 500 13px "IBM Plex Mono", monospace; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 6px; text-align: right; }
   .timing-in input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; }
   .timing-in input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .rate-out { font: 700 14px "IBM Plex Mono", monospace; color: var(--profit); white-space: nowrap; }
@@ -7389,14 +7389,61 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
 })();
 </script>
 <script>
-/* Replace the (now-hidden) native number spinner with themed +/- buttons.
-   Runs on load and watches for number inputs added later by the calculators. */
+/* Number inputs: themed +/- steppers plus comma grouping (100000 -> 100,000).
+   The field is switched to type=text so commas can render; a per-element
+   value override keeps DISPLAY grouped but READS BACK as plain digits, so the
+   calculators' `+value` / parseInt reads all keep working unchanged. */
 (function(){
   "use strict";
+  const nat = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+
+  function group(v){
+    let s = (v == null ? "" : String(v)).trim();
+    const neg = s.charAt(0) === "-";
+    let d = s.replace(/[^0-9]/g, "");
+    d = d.replace(/^0+(?=\d)/, "");
+    if(d === ""){ return neg ? "-" : ""; }
+    return (neg ? "-" : "") + d.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+  function caretPos(formatted, digitsLeft){
+    if(digitsLeft <= 0){ return formatted.charAt(0) === "-" ? 1 : 0; }
+    let seen = 0;
+    for(let i = 0; i < formatted.length; i++){
+      if(formatted.charCodeAt(i) >= 48 && formatted.charCodeAt(i) <= 57){
+        seen++;
+        if(seen === digitsLeft){ return i + 1; }
+      }
+    }
+    return formatted.length;
+  }
+  function makeGrouped(inp){
+    Object.defineProperty(inp, "value", {
+      configurable: true,
+      get(){
+        return nat.get.call(this).replace(/,/g, "");
+      },
+      set(v){
+        const formatted = group(v);
+        if(document.activeElement === this){
+          const raw = nat.get.call(this);
+          const left = (raw.slice(0, this.selectionStart).match(/\d/g) || []).length;
+          nat.set.call(this, formatted);
+          const p = caretPos(formatted, left);
+          try { this.setSelectionRange(p, p); } catch(e){}
+        }
+        else {
+          nat.set.call(this, formatted);
+        }
+      }
+    });
+  }
+
   function bump(inp, dir){
-    const step = parseFloat(inp.step) || 1;
-    const min = inp.min === "" ? -Infinity : parseFloat(inp.min);
-    const max = inp.max === "" ? Infinity : parseFloat(inp.max);
+    const step = parseFloat(inp.getAttribute("step")) || 1;
+    const minA = inp.getAttribute("min");
+    const maxA = inp.getAttribute("max");
+    const min = minA === null ? -Infinity : parseFloat(minA);
+    const max = maxA === null ? Infinity : parseFloat(maxA);
     let v = parseFloat(inp.value);
     if(isNaN(v)){ v = 0; }
     v = v + dir * step;
@@ -7421,6 +7468,13 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   function enhance(inp){
     if(inp.dataset.stepped || inp.disabled){ return; }
     inp.dataset.stepped = "1";
+    if(inp.getAttribute("type") === "number"){
+      inp.type = "text";
+      inp.setAttribute("inputmode", "numeric");
+      inp.dataset.num = "1";
+      makeGrouped(inp);
+      inp.value = inp.value;   // render the initial value grouped
+    }
     const wrap = document.createElement("span");
     wrap.className = "num-stepper";
     inp.parentNode.insertBefore(wrap, inp);
@@ -7437,6 +7491,17 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
       enhance(list[i]);
     }
   }
+
+  /* Capture phase: regroup a grouped field before the app's own input handler
+     runs, so it always reads a clean number. The value setter keeps the caret. */
+  document.addEventListener("input", e =>
+  {
+    const t = e.target;
+    if(t && t.dataset && t.dataset.num){
+      t.value = t.value;
+    }
+  }, true);
+
   scan(document);
   if(typeof MutationObserver === "function"){
     const obs = new MutationObserver(muts =>
