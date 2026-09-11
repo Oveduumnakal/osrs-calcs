@@ -105,6 +105,8 @@
   .num-steps button:first-child { border-bottom: 1px solid var(--line-strong); }
   .num-steps button:hover { background: var(--surface); color: var(--ink); }
   .num-steps button:active { background: var(--accent); color: var(--surface); }
+  /* grouped number fields size to their content (the size attr) instead of a fixed px width */
+  input[data-num] { width: auto !important; min-width: 3ch; }
   body { background: var(--bg); color: var(--ink); font-family: "Inter", system-ui, sans-serif; }
   .wrap { max-width: 1470px; margin: 0 auto; padding: 32px 20px 64px; }
   header { margin-bottom: 22px; }
@@ -7424,6 +7426,7 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
       },
       set(v){
         const formatted = group(v);
+        this.size = Math.max(3, formatted.length);   // grow the box to fit the grouped text
         if(document.activeElement === this){
           const raw = nat.get.call(this);
           const left = (raw.slice(0, this.selectionStart).match(/\d/g) || []).length;
