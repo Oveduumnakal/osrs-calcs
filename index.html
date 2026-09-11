@@ -81,6 +81,30 @@
     --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.4);
   }
   * { box-sizing: border-box; }
+  /* drop the native number spinner — it renders as an unthemed white block; value stays typeable and adjusts with keyboard up/down or scroll */
+  input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  /* themed +/- stepper injected next to every number input (see enhance script) */
+  .num-stepper { display: inline-flex; align-items: stretch; vertical-align: middle; }
+  .num-steps { display: flex; flex-direction: column; margin-left: 4px; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; background: var(--surface-2); flex: 0 0 auto; }
+  .num-steps button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    flex: 1 1 0;
+    min-height: 11px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--ink-2);
+    cursor: pointer;
+    font: 700 8px/1 "Inter", system-ui, sans-serif;
+  }
+  .num-steps button:first-child { border-bottom: 1px solid var(--line-strong); }
+  .num-steps button:hover { background: var(--surface); color: var(--ink); }
+  .num-steps button:active { background: var(--accent); color: var(--surface); }
   body { background: var(--bg); color: var(--ink); font-family: "Inter", system-ui, sans-serif; }
   .wrap { max-width: 1470px; margin: 0 auto; padding: 32px 20px 64px; }
   header { margin-bottom: 22px; }
@@ -7362,6 +7386,75 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   try { const s = localStorage.getItem("unified-active-view"); if(s && views[s]){ start = s; } } catch(e){}
   show(start);
   fitNav();
+})();
+</script>
+<script>
+/* Replace the (now-hidden) native number spinner with themed +/- buttons.
+   Runs on load and watches for number inputs added later by the calculators. */
+(function(){
+  "use strict";
+  function bump(inp, dir){
+    const step = parseFloat(inp.step) || 1;
+    const min = inp.min === "" ? -Infinity : parseFloat(inp.min);
+    const max = inp.max === "" ? Infinity : parseFloat(inp.max);
+    let v = parseFloat(inp.value);
+    if(isNaN(v)){ v = 0; }
+    v = v + dir * step;
+    v = Math.min(max, Math.max(min, v));
+    v = Math.round(v * 1e6) / 1e6;
+    inp.value = String(v);
+    inp.dispatchEvent(new Event("input", { bubbles: true }));
+    inp.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+  function mkBtn(inp, dir, glyph, label){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.tabIndex = -1;
+    b.textContent = glyph;
+    b.setAttribute("aria-label", label);
+    b.addEventListener("click", () =>
+    {
+      bump(inp, dir);
+    });
+    return b;
+  }
+  function enhance(inp){
+    if(inp.dataset.stepped || inp.disabled){ return; }
+    inp.dataset.stepped = "1";
+    const wrap = document.createElement("span");
+    wrap.className = "num-stepper";
+    inp.parentNode.insertBefore(wrap, inp);
+    wrap.appendChild(inp);
+    const steps = document.createElement("span");
+    steps.className = "num-steps";
+    steps.appendChild(mkBtn(inp, 1, "▲", "increase"));
+    steps.appendChild(mkBtn(inp, -1, "▼", "decrease"));
+    wrap.appendChild(steps);
+  }
+  function scan(root){
+    const list = (root || document).querySelectorAll('input[type="number"]:not([data-stepped])');
+    for(let i = 0; i < list.length; i++){
+      enhance(list[i]);
+    }
+  }
+  scan(document);
+  if(typeof MutationObserver === "function"){
+    const obs = new MutationObserver(muts =>
+    {
+      for(const m of muts){
+        for(const node of m.addedNodes){
+          if(node.nodeType !== 1){ continue; }
+          if(node.matches && node.matches('input[type="number"]')){
+            enhance(node);
+          }
+          else if(node.querySelectorAll){
+            scan(node);
+          }
+        }
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
 })();
 </script>
 </body>
