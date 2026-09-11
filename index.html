@@ -393,6 +393,15 @@
   }
   .nav-sub { font-size: 11.5px; font-family: "IBM Plex Mono", monospace; color: var(--muted); margin-left: auto; }
   @media (max-width: 720px) { .nav-sub { display: none; } }
+  /* sun/moon light-dark toggle (knob covers the inactive icon; recolors per tab) */
+  .theme-toggle { position: relative; width: 52px; height: 27px; border-radius: 999px; border: 1px solid var(--line-strong); background: var(--surface-2); cursor: pointer; padding: 0; flex: 0 0 auto; }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .theme-toggle .ti { position: absolute; top: 50%; transform: translateY(-50%); color: var(--ink-2); pointer-events: none; }
+  .theme-toggle .sun { left: 6px; }
+  .theme-toggle .moon { right: 6px; }
+  .theme-toggle .knob { position: absolute; top: 2px; left: 2px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); box-shadow: 0 1px 3px rgba(0,0,0,0.28); transition: transform 0.28s cubic-bezier(0.4,0.1,0.3,1.35); }
+  .theme-toggle.is-light .knob { transform: translateX(25px); }
+  @media (max-width: 720px) { .theme-toggle { margin-left: auto; } }
 
   /* ---- shared price + player bars in the header ---- */
   .nav-prices { border-top: 1px solid var(--line); }
@@ -700,7 +709,7 @@
   }
   body[data-tab="grinding"] {
     --bg:#eceef0; --surface:#f8f9fb; --surface-2:#dee2e6; --ink:#20262b; --ink-2:#495159; --muted:#7a838c;
-    --line:#d3d8dd; --line-strong:#b8bfc7; --accent:#4a7a82;
+    --line:#d3d8dd; --line-strong:#b8bfc7; --accent:#4f6d78;
     --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
   }
   body[data-tab="planks"] {
@@ -717,12 +726,12 @@
     @media (prefers-color-scheme: dark) {
       body[data-tab="tanning"] {
         --bg:#171009; --surface:#211810; --surface-2:#2c2115; --ink:#f0e5d5; --ink-2:#cbb595; --muted:#9c8467;
-        --line:#352819; --line-strong:#4a3826; --accent:#d68a4a;
+        --line:#352819; --line-strong:#4a3826; --accent:#c58a58;
         --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
       }
       body[data-tab="grinding"] {
         --bg:#0f1214; --surface:#171b1e; --surface-2:#212629; --ink:#e6eaed; --ink-2:#b0b8be; --muted:#7d868d;
-        --line:#2a3034; --line-strong:#3b434a; --accent:#5fa0aa;
+        --line:#2a3034; --line-strong:#3b434a; --accent:#7295a0;
         --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
       }
       body[data-tab="planks"] {
@@ -739,12 +748,12 @@
   }
   :root[data-theme="dark"] body[data-tab="tanning"] {
     --bg:#171009; --surface:#211810; --surface-2:#2c2115; --ink:#f0e5d5; --ink-2:#cbb595; --muted:#9c8467;
-    --line:#352819; --line-strong:#4a3826; --accent:#d68a4a;
+    --line:#352819; --line-strong:#4a3826; --accent:#c58a58;
     --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
   }
   :root[data-theme="dark"] body[data-tab="grinding"] {
     --bg:#0f1214; --surface:#171b1e; --surface-2:#212629; --ink:#e6eaed; --ink-2:#b0b8be; --muted:#7d868d;
-    --line:#2a3034; --line-strong:#3b434a; --accent:#5fa0aa;
+    --line:#2a3034; --line-strong:#3b434a; --accent:#7295a0;
     --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
   }
   :root[data-theme="dark"] body[data-tab="planks"] {
@@ -767,14 +776,14 @@
     @media (prefers-color-scheme: dark) {
       body[data-tab="cooking"] {
         --bg:#160f0a; --surface:#20150e; --surface-2:#2b1d12; --ink:#f2e5d8; --ink-2:#d0b298; --muted:#a08268;
-        --line:#372617; --line-strong:#4d3521; --accent:#e07b3a;
+        --line:#372617; --line-strong:#4d3521; --accent:#e8622a;
         --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
       }
     }
   }
   :root[data-theme="dark"] body[data-tab="cooking"] {
     --bg:#160f0a; --surface:#20150e; --surface-2:#2b1d12; --ink:#f2e5d8; --ink-2:#d0b298; --muted:#a08268;
-    --line:#372617; --line-strong:#4d3521; --accent:#e07b3a;
+    --line:#372617; --line-strong:#4d3521; --accent:#e8622a;
     --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
   }
   /* cooking chart: one accent bar per food */
@@ -840,6 +849,7 @@
 </style>
 </head>
 <body data-tab="sanfew">
+  <script>try{var _t=localStorage.getItem("theme");if(_t==="dark"||_t==="light"){document.documentElement.setAttribute("data-theme",_t);}}catch(e){}</script>
   <div class="nav-wrap">
     <nav class="nav">
       <span class="nav-brand">OSRS Profit Calcs<span class="dot">.</span></span>
@@ -860,6 +870,11 @@
       </div>
       <select id="navSelect" class="nav-select" hidden aria-label="Calculator"></select>
       <span class="nav-sub" id="navSub">live GE margins</span>
+      <button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-label="Toggle light or dark theme" aria-checked="false" title="Toggle light / dark">
+        <svg class="ti sun" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.4M12 19.6V22M2 12h2.4M19.6 12H22M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M19.4 4.6l-1.7 1.7M6.3 17.7l-1.7 1.7"/></svg>
+        <svg class="ti moon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.9A9 9 0 1 1 11.1 3 7 7 0 0 0 21 12.9z"/></svg>
+        <span class="knob"></span>
+      </button>
     </nav>
     <div class="nav-prices">
       <div class="livebar">
@@ -7417,6 +7432,41 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   try { const s = localStorage.getItem("unified-active-view"); if(s && views[s]){ start = s; } } catch(e){}
   show(start);
   fitNav();
+})();
+</script>
+<script>
+/* Light/dark theme toggle (sun/moon slider). Stored choice wins; otherwise
+   follows the OS preference. Sets data-theme, which the palette CSS reads. */
+(function(){
+  "use strict";
+  const root = document.documentElement;
+  const tog = document.getElementById("themeToggle");
+  if(!tog){ return; }
+  const mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function effective(){
+    const dt = root.getAttribute("data-theme");
+    if(dt === "dark" || dt === "light"){ return dt; }
+    return (mq && mq.matches) ? "dark" : "light";
+  }
+  function sync(){
+    const e = effective();
+    tog.classList.toggle("is-light", e === "light");
+    tog.setAttribute("aria-checked", e === "dark" ? "true" : "false");
+  }
+  sync();
+  tog.addEventListener("click", () =>
+  {
+    const next = effective() === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch(e){}
+    sync();
+  });
+  if(mq && mq.addEventListener){
+    mq.addEventListener("change", () =>
+    {
+      if(!root.getAttribute("data-theme")){ sync(); }
+    });
+  }
 })();
 </script>
 <script>
