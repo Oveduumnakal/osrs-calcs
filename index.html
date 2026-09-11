@@ -849,7 +849,7 @@
 </style>
 </head>
 <body data-tab="sanfew">
-  <script>try{var _t=localStorage.getItem("theme");if(_t==="dark"||_t==="light"){document.documentElement.setAttribute("data-theme",_t);}}catch(e){}</script>
+  <script>try{var _t=localStorage.getItem("theme");document.documentElement.setAttribute("data-theme",(_t==="light"||_t==="dark")?_t:"dark");}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script>
   <div class="nav-wrap">
     <nav class="nav">
       <span class="nav-brand">OSRS Profit Calcs<span class="dot">.</span></span>
