@@ -6626,6 +6626,14 @@ window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; 
           <p class="opt-note" id="ck-note-gaunt"></p>
         </div>
         <div>
+          <p class="opt-label">Cooking cape</p>
+          <div class="toggle" id="ck-tg-cape" role="group" aria-label="Cooking cape">
+            <button data-v="off" class="on">Off</button>
+            <button data-v="on">On</button>
+          </div>
+          <p class="opt-note" id="ck-note-cape"></p>
+        </div>
+        <div>
           <p class="opt-label">Food type</p>
           <div class="toggle" id="ck-tg-kind" role="group" aria-label="Food type">
             <button data-v="all" class="on">All</button>
@@ -6876,7 +6884,7 @@ function chartPair(cookedId){
 const GAUNT_FISH = "lobster, swordfish, monkfish, shark, anglerfish";
 
 let LAT = {}, ROWS = [], PLAYER = null, PNAME = null, PLVL = null;
-const opt = { source:"range", gaunt:"off", kind:"all", sort:"hr", buySpeed:"instant", sellSpeed:"instant", kbtick:"off" };
+const opt = { source:"range", gaunt:"off", cape:"off", kind:"all", sort:"hr", buySpeed:"instant", sellSpeed:"instant", kbtick:"off" };
 let LVL = 99, RATE = 1500, MODE = "gp";
 const LS_KEY = "cooking-unified-v1";
 const chart = el("ck-chart"), axisEl = el("ck-axis"), tip = el("ck-tip");
@@ -6892,6 +6900,7 @@ const sellPrice = id => opt.sellSpeed==="patient" ? (hi(id)||lo(id)) : (lo(id)||
  */
 function burnChance(f){
   if(LVL < f.cook){ return 1; }
+  if(opt.cape==="on" && LVL>=99){ return 0; }
   const pair = chartPair(f.cookedId);
   if(!pair){ return 0; }
   return Math.max(0, Math.min(1, 1 - cookSuccess(pair[0], pair[1], LVL)));
@@ -6938,6 +6947,7 @@ function updateChips(){
     `<span class="chip">Cooking <b>${LVL}</b></span>`,
     `<span class="chip">${sourceLabel()}</span>`,
     opt.gaunt==="on" ? `<span class="chip">Gauntlets <b>on</b></span>` : "",
+    opt.cape==="on" && LVL>=99 ? `<span class="chip">Cooking cape <b>on</b> &middot; no burn</span>` : "",
     `<span class="chip"><b>2%</b> GE sell tax</span>`,
     `<span class="chip">burnt food = <b>0 gp</b></span>`,
   ].filter(Boolean).join("");
@@ -7057,13 +7067,14 @@ function renderChart(){
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
 
-const TOGGLES = { "ck-tg-source":{key:"source"}, "ck-tg-gaunt":{key:"gaunt"}, "ck-tg-kind":{key:"kind"}, "ck-tg-kbtick":{key:"kbtick"}, "ck-tg-sort":{key:"sort"}, "ck-tg-buyspeed":{key:"buySpeed"}, "ck-tg-sellspeed":{key:"sellSpeed"} };
+const TOGGLES = { "ck-tg-source":{key:"source"}, "ck-tg-gaunt":{key:"gaunt"}, "ck-tg-cape":{key:"cape"}, "ck-tg-kind":{key:"kind"}, "ck-tg-kbtick":{key:"kbtick"}, "ck-tg-sort":{key:"sort"}, "ck-tg-buyspeed":{key:"buySpeed"}, "ck-tg-sellspeed":{key:"sellSpeed"} };
 function syncToggle(id){ const def=TOGGLES[id]; [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[def.key])); }
 Object.keys(TOGGLES).forEach(id=>{ el(id).addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } opt[TOGGLES[id].key]=b.dataset.v; syncToggle(id); syncNotes(); renderAll(); }); });
 function syncNotes(){
   el("ck-note-lvl").textContent = PLVL!=null ? `Auto-filled from ${PNAME}. Edit to model a different level.` : `Drives your burn rate. Look up an RSN in the header to auto-fill.`;
   el("ck-note-source").textContent = opt.source==="campfire" ? `Fires/campfires burn a bit more than a range.` : opt.source==="range" ? `A range/oven burns less than a fire.` : opt.source==="hos5" ? `Hosidius Kitchen range: +5% cooking-success bonus (less burn).` : `Hosidius + Elite Kourend diary: +10% success bonus (zeroes sailing fish at 99).`;
   el("ck-note-gaunt").textContent = opt.gaunt==="on" ? `Lowers the stop-burn level for ${GAUNT_FISH}. No effect on other foods.` : `Cooking gauntlets help only ${GAUNT_FISH}.`;
+  el("ck-note-cape").textContent = opt.cape==="on" ? (LVL>=99 ? `Cooking cape equipped: zero burn on every food.` : `Cooking cape needs 99 Cooking to wear — no effect until then.`) : `The cape (99 Cooking) stops all burning when worn.`;
   el("ck-note-kind").textContent = opt.kind==="fish" ? `Fish only.` : opt.kind==="meat" ? `Land meats only (rarely profitable).` : `Fish and meat together.`;
   el("ck-note-rate").textContent = `Standard range cooking, whole inventory at once. ~1,500/hr AFK. Karambwan has its own rate below.`;
   el("ck-note-kbtick").textContent = opt.kbtick==="on" ? `1-tick karambwan: ~4,500/hr (buy-limit capped to ~3,250/hr when flipping). Active clicking, not AFK.` : `Normal karambwan cooking (~1,200/hr, cooked one at a time).`;
@@ -7071,7 +7082,7 @@ function syncNotes(){
   el("ck-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy raw at the bid - cheaper, waits to fill.` : `Insta-buy raw at the ask.`;
   el("ck-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell cooked at the ask - more gp, waits.` : `Insta-sell cooked at the bid.`;
 }
-el("ck-lvl").addEventListener("input", e=>{ LVL=Math.max(1,Math.min(99,Math.round(+e.target.value)||1)); renderAll(); });
+el("ck-lvl").addEventListener("input", e=>{ LVL=Math.max(1,Math.min(99,Math.round(+e.target.value)||1)); syncNotes(); renderAll(); });
 el("ck-rate").addEventListener("input", e=>{ RATE=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
 el("ck-toggle").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } MODE=b.dataset.mode; [...el("ck-toggle").children].forEach(x=>{ const on=x===b; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); renderChart(); saveState(); });
 function syncMode(){ [...el("ck-toggle").children].forEach(x=>{ const on=x.dataset.mode===MODE; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); }
