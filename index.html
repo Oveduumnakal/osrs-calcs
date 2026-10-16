@@ -371,7 +371,7 @@
   .nav-select { font: 600 13px "Inter", sans-serif; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 9px; padding: 8px 12px; cursor: pointer; }
   .nav-select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   /* drop the native dropdown arrow (unthemed OS chrome) for a palette-matched caret */
-  .nav-select, .batch-in select {
+  .nav-select, .batch-in select, #rn-staff {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
@@ -382,13 +382,14 @@
   }
   :root:not([data-theme="light"]) {
     @media (prefers-color-scheme: dark) {
-      .nav-select, .batch-in select {
+      .nav-select, .batch-in select, #rn-staff {
         background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23c3bba4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
       }
     }
   }
   :root[data-theme="dark"] .nav-select,
-  :root[data-theme="dark"] .batch-in select {
+  :root[data-theme="dark"] .batch-in select,
+  :root[data-theme="dark"] #rn-staff {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5 6 6.5 11 1.5' fill='none' stroke='%23c3bba4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
   .nav-sub { font-size: 11.5px; font-family: "IBM Plex Mono", monospace; color: var(--muted); margin-left: auto; }
@@ -647,6 +648,8 @@
   /* ---- batch selectors (degrime + gem shopping lists) ---- */
   .batch-in select { font: 600 13px "Inter", sans-serif; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 7px; padding: 6px 8px; cursor: pointer; }
   .batch-in select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #rn-staff { font: 600 13px "Inter", sans-serif; color: var(--ink); background-color: var(--surface); border: 1px solid var(--line-strong); border-radius: 7px; padding: 6px 30px 6px 8px; cursor: pointer; width: 100%; }
+  #rn-staff:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
   /* ---- details in degrime/gem main column ---- */
   #view-degrime details:not(.prices), #view-gem details:not(.prices) { margin-top: 8px; }
@@ -813,6 +816,25 @@
     --line:#2a2f45; --line-strong:#3b4162; --accent:#8388f2;
     --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
   }
+  body[data-tab="sailing"] {
+    --bg:#e8f1f1; --surface:#f5fafa; --surface-2:#d6e6e6; --ink:#0f2426; --ink-2:#2f5357; --muted:#5f8185;
+    --line:#cfe0e0; --line-strong:#a9c6c7; --accent:#0e7c86;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="sailing"] {
+        --bg:#081315; --surface:#0e1c1f; --surface-2:#142629; --ink:#dcefef; --ink-2:#9fc4c6; --muted:#6f9a9d;
+        --line:#1b3134; --line-strong:#284649; --accent:#35c2c9;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="sailing"] {
+    --bg:#081315; --surface:#0e1c1f; --surface-2:#142629; --ink:#dcefef; --ink-2:#9fc4c6; --muted:#6f9a9d;
+    --line:#1b3134; --line-strong:#284649; --accent:#35c2c9;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
   .rn-cols { display:grid; grid-template-columns:minmax(320px, 360px) minmax(0, 1fr); gap:18px; align-items:start; }
   .rn-right { display:flex; flex-direction:column; gap:18px; min-width:0; }
   @media (max-width: 900px){ .rn-cols { grid-template-columns:1fr; } }
@@ -866,6 +888,7 @@
         <button data-view="planks" role="tab">Plank Make</button>
         <button data-view="smithing" role="tab">Smithing</button>
         <button data-view="cooking" role="tab">Cooking</button>
+        <button data-view="sailing" role="tab">Sailing</button>
         <button data-view="rune" role="tab">Rune Calculator</button>
       </div>
       <select id="navSelect" class="nav-select" hidden aria-label="Calculator"></select>
@@ -1020,7 +1043,7 @@
       const skills = data && data.latestSnapshot && data.latestSnapshot.data && data.latestSnapshot.data.skills;
       if(!skills){ throw new Error("no skill data"); }
       const lv = {};
-      ["crafting","herblore","magic","smithing","cooking","farming","mining","fletching"].forEach(k => { lv[k] = (skills[k] && skills[k].level) || 1; });
+      ["crafting","herblore","magic","smithing","cooking","farming","mining","fletching","construction"].forEach(k => { lv[k] = (skills[k] && skills[k].level) || 1; });
       player.name = data.displayName || name;
       player.levels = lv;
       psave(); pBroadcast();
@@ -1045,7 +1068,7 @@
   el("plName").addEventListener("keydown", e => { if(e.key === "Enter"){ lookup(el("plName").value); } });
   pload();
   if(player.name){ const i = el("plName"); if(i){ i.value = player.name; } }
-  if(player.levels){ const lv = player.levels; pStatus(`${player.name} \u00b7 Craft ${lv.crafting} \u00b7 Herb ${lv.herblore} \u00b7 Magic ${lv.magic} (saved)`, "ok"); }
+  if(player.levels){ const lv = player.levels; pStatus(`${player.name} \u00b7 Craft ${lv.crafting} \u00b7 Herb ${lv.herblore} \u00b7 Magic ${lv.magic}${lv.cooking!=null?` \u00b7 Cook ${lv.cooking}`:""} (saved)`, "ok"); }
 
   load();
   [...el("hub-src").children].forEach(b => b.classList.toggle("on", b.dataset.v===SOURCE));
@@ -1166,7 +1189,7 @@
     <summary>Edit GE prices</summary>
     <div class="price-grid" id="priceGrid"></div>
     <div class="price-actions">
-      <button id="resetPrices">Reset to wiki defaults</button>
+      <button id="resetPrices">Reset to live</button>
       <button id="resetSettings">Reset saved settings</button>
       <span class="ts" id="priceTs"></span>
     </div>
@@ -1336,6 +1359,12 @@ const P = {};
 Object.keys(DEFAULTS).forEach(k => { P[k] = DEFAULTS[k].v; });
 
 const opt = { base: "buy4", dust: "grind", dose: 4, neck: "none", goggles: false, decant: "manual", snapUnf: "buy", snap: "clean", buySpeed: "instant", sellSpeed: "instant" };
+/* looked-up player levels (set by the header lookup at the bottom of this script) */
+let PL = null, PLNAME = null;
+/* true when a looked-up player can't brew super restore (Herblore 63), so "Make" routes are out */
+const cantMake = () => PL != null && PL.herblore != null && PL.herblore < 63;
+/* hand-typed prices: key -> gp. Sticky across live refreshes until "Reset to live" */
+const MAN = {};
 /* cleaning a grimy snapdragon gives Herblore XP (level 59) */
 const CLEAN_SNAP_XP = 11.8;
 /* super restore sources: which dose you acquire, decant to the sell dose if they differ */
@@ -1713,7 +1742,7 @@ function renderLiquidity() {
    source the base super restore — including decanting (4)s down or (3)s up. */
 function baseRoutes(D) {
   const decantWord = opt.decant === "npc" ? "at Bob Barter" : "manually";
-  return Object.keys(SOURCES).map(id => {
+  return Object.keys(SOURCES).filter(id => !(id === "make" && cantMake())).map(id => {
     const s = SOURCES[id];
     const rc = sourceBaseCost(id, D);
     const decant = s.native !== D;
@@ -1954,6 +1983,7 @@ function renderBatch() {
 
   const rows = buildRows(dose, serums, secQty, SW);
   const buyTotal = rows.reduce((s, r) => s + r.q * r.unit, 0);
+  STK_IDS.batch = shopIds(rows, dose);
 
   document.getElementById("shopList").innerHTML = rows.map(r =>
     `<li class="${r.free && r.unit === 0 ? "free" : ""}">
@@ -1983,37 +2013,50 @@ function renderBatch() {
 function buildRows(dose, serums, secQty, snakeQty) {
   const rows = [];
   const s = SOURCES[opt.base];
+  const p0 = neckP();
+  let brews = 0;
   if (opt.base === "make") {
-    const brews = Math.ceil(serums * dose / 3);   // 3-dose brews to make, then decant
+    // 3-dose brews to make, then decant. Selling (4)s, the neck amulet's free (4) restores mean
+    // fewer brews (same model as makeOrBuyBase); selling (3)s it's one brew per serum.
+    brews = dose === 4 && p0 > 0 ? Math.ceil(serums * 4 / (3 + p0)) : Math.ceil(serums * dose / 3);
     if (opt.snapUnf === "make") {
-      rows.push({ name: opt.snap === "grimy" ? "Grimy snapdragon" : "Clean snapdragon",
-                  q: brews, unit: opt.snap === "grimy" ? P.snapGrimy : P.snapClean });
-      rows.push({ name: "Vial of water", q: brews, unit: P.vialWater });
+      const grimy = opt.snap === "grimy";
+      rows.push({ name: grimy ? "Grimy snapdragon" : "Clean snapdragon", id: grimy ? FIELD_MAP.snapGrimy.id : FIELD_MAP.snapClean.id,
+                  q: brews, unit: grimy ? P.snapGrimy : P.snapClean });
+      rows.push({ name: "Vial of water", id: FIELD_MAP.vialWater.id, q: brews, unit: P.vialWater });
     } else {
-      rows.push({ name: "Snapdragon (unf)", q: brews, unit: P.snapUnf });
+      rows.push({ name: "Snapdragon (unf)", id: FIELD_MAP.snapUnf.id, q: brews, unit: P.snapUnf });
     }
-    rows.push({ name: "Red spiders' eggs", q: brews, unit: P.redEggs });
+    rows.push({ name: "Red spiders' eggs", id: FIELD_MAP.redEggs.id, q: brews, unit: P.redEggs });
   } else {
     const potions = Math.ceil(serums * dose / s.native);
-    rows.push({ name: `Super restore (${s.native})`, q: potions, unit: s.unit() });
+    rows.push({ name: `Super restore (${s.native})`, id: s.native === 4 ? FIELD_MAP.sr4.id : FIELD_MAP.sr3.id, q: potions, unit: s.unit() });
   }
   // extra empty vials only when decanting DOWN (you end with more potions than you bought)
   if (s.native > dose) {
     const vials = Math.ceil(serums * (1 - dose / s.native));
-    rows.push({ name: `Empty vials (decant · ${opt.decant === "npc" ? "Bob +2" : "GE"})`, q: vials, unit: vialUnit() });
+    rows.push({ name: `Empty vials (decant · ${opt.decant === "npc" ? "Bob +2" : "GE"})`, id: FIELD_MAP.vial.id, q: vials, unit: vialUnit() });
   }
   if (opt.dust === "grind") {
-    rows.push({ name: "Unicorn horn", q: secQty, unit: P.horn });
+    rows.push({ name: "Unicorn horn", id: FIELD_MAP.horn.id, q: secQty, unit: P.horn });
   } else {
-    rows.push({ name: "Unicorn horn dust", q: secQty, unit: P.dust });
+    rows.push({ name: "Unicorn horn dust", id: FIELD_MAP.dust.id, q: secQty, unit: P.dust });
   }
-  rows.push({ name: "Nail beast nails", q: secQty, unit: P.nails });
+  rows.push({ name: "Nail beast nails", id: FIELD_MAP.nails.id, q: secQty, unit: P.nails });
   if (snakeQty != null) {
     rows.push({ name: "Snake weed", q: snakeQty, unit: P.snakeweed, free: true });
   }
-  if (opt.neck !== "none" && dose === 3) {
-    const procs = serums * EXTRA_DOSE_P[opt.neck];
-    rows.push({ name: "Amulet of chemistry (charges)", q: Math.ceil(procs / NECK_CHARGES[opt.neck]), unit: P.chemAmy });
+  // charges the neck amulet burns (matches econ / makeOrBuyBase): serum procs on (3)s, restore-brew procs when making
+  let procs = 0;
+  if (p0 > 0) {
+    if (opt.base === "make") {
+      procs = dose === 3 ? serums * (2 * p0 - p0 * p0) : p0 * brews;
+    } else if (dose === 3) {
+      procs = serums * p0;
+    }
+  }
+  if (procs > 0) {
+    rows.push({ name: "Amulet of chemistry (charges)", id: FIELD_MAP.chemAmy.id, q: Math.ceil(procs / NECK_CHARGES[opt.neck]), unit: P.chemAmy });
   }
   return rows;
 }
@@ -2072,6 +2115,7 @@ function renderBudget() {
     if (buyTotal <= GP || serums <= 0) { break; }
     serums--;
   } while (true);
+  STK_IDS.budget = shopIds(rows, dose);
   const totalProfit = serums * c.profit;
   const totalRevenue = serums * c.revenue;
   const totalDoses = serums * dose;
@@ -2127,18 +2171,26 @@ document.getElementById("gpPresets").addEventListener("click", e => {
   grid.addEventListener("input", e => {
     const inp = e.target.closest("input");
     if (!inp) { return; }
-    P[inp.dataset.k] = Math.max(0, +inp.value || 0);
+    const k = inp.dataset.k;
+    if (inp.value.trim() === "") {
+      delete MAN[k];
+      if (fetchedTs) { applySource(); return; }   // back to the live price
+    } else {
+      MAN[k] = Math.max(0, +inp.value || 0);
+      P[k] = MAN[k];
+    }
     render();
   });
   const d = new Date(PRICE_TS * 1000);
   document.getElementById("priceTs").textContent =
     "defaults: RuneScape Wiki real-time API, " + d.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   document.getElementById("resetPrices").addEventListener("click", () => {
+    Object.keys(MAN).forEach(k => { delete MAN[k]; });
     Object.keys(DEFAULTS).forEach(k => {
       P[k] = DEFAULTS[k].v;
       document.getElementById("p-" + k).value = P[k];
     });
-    render();
+    if (fetchedTs) { applySource(); } else { render(); }
   });
 })();
 
@@ -2146,15 +2198,16 @@ document.getElementById("gpPresets").addEventListener("click", e => {
    Builds a STKPL1 watchlist token for the items in the current shopping list so they can be
    pasted into the plugin's Import dialog. The plugin's decode() also accepts raw JSON, which
    is the fallback when the browser has no CompressionStream for gzip. */
-/* every tradeable item in the whole Sanfew chain — both super restores, snapdragon
-   (clean / grimy / unf), vial of water, red spiders' eggs, horn & dust, nail beast nails,
-   amulet of chemistry, empty vials, and both serum doses. Snake weed is untradeable, so it
-   has no GE id and isn't in FIELD_MAP — it's the one thing you can't track this way. */
-function stockpileIds() {
-  return Object.values(FIELD_MAP).map(m => m.id);
+/* the tradeable items on a shopping list plus the serum you sell. Snake weed is untradeable
+   (no GE id), so it's the one thing you can't track this way. */
+const STK_IDS = { batch: [], budget: [] };
+function shopIds(rows, dose) {
+  const ids = rows.filter(r => r.id).map(r => r.id);
+  ids.push(dose === 4 ? FIELD_MAP.sanfew4.id : FIELD_MAP.sanfew3.id);
+  return [...new Set(ids)];
 }
-function stockpileSnapshot() {
-  const items = stockpileIds().map(id => ({ id, mode: "TRACK", category: "Sanfew serum", favorite: false }));
+function stockpileSnapshot(ids) {
+  const items = ids.map(id => ({ id, mode: "TRACK", category: "Sanfew serum", favorite: false }));
   return { v: 1, items, categories: [{ name: "Sanfew serum", collapsed: false }] };
 }
 function base64UrlNoPad(bytes) {
@@ -2162,8 +2215,8 @@ function base64UrlNoPad(bytes) {
   for (let i = 0; i < bytes.length; i++) { bin += String.fromCharCode(bytes[i]); }
   return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-async function stockpileCode() {
-  const json = JSON.stringify(stockpileSnapshot());
+async function stockpileCode(ids) {
+  const json = JSON.stringify(stockpileSnapshot(ids));
   try {
     if (typeof CompressionStream === "function") {
       const stream = new Blob([json]).stream().pipeThrough(new CompressionStream("gzip"));
@@ -2173,8 +2226,8 @@ async function stockpileCode() {
   } catch (e) { /* fall back to raw JSON, which the importer also accepts */ }
   return json;
 }
-async function copyStockpile(btn) {
-  const code = await stockpileCode();
+async function copyStockpile(btn, ids) {
+  const code = await stockpileCode(ids);
   const label = btn.dataset.label || btn.textContent;
   btn.dataset.label = label;
   let ok = false;
@@ -2188,12 +2241,12 @@ async function copyStockpile(btn) {
   btn.classList.toggle("ok", ok);
   setTimeout(() => { btn.textContent = label; btn.classList.remove("ok"); }, 2400);
 }
-document.getElementById("copyStkplBatch").addEventListener("click", e => copyStockpile(e.currentTarget));
-document.getElementById("copyStkplBudget").addEventListener("click", e => copyStockpile(e.currentTarget));
+document.getElementById("copyStkplBatch").addEventListener("click", e => copyStockpile(e.currentTarget, STK_IDS.batch));
+document.getElementById("copyStkplBudget").addEventListener("click", e => copyStockpile(e.currentTarget, STK_IDS.budget));
 
 /* ---- footer ---- */
 document.getElementById("footer").innerHTML =
-  `Prices pull live from the <a href="https://prices.runescape.wiki" target="_blank" rel="noopener">RuneScape Wiki real-time API</a> (OSRS) on startup and on <b>Refresh</b> — <b>Latest</b> is the last insta-buy/sell, <b>5-min avg</b> is the trailing 5-minute mean (thin items with no recent 5-min trade fall back to Latest). Any field stays editable to override. ` +
+  `Prices pull live from the <a href="https://prices.runescape.wiki" target="_blank" rel="noopener">RuneScape Wiki real-time API</a> (OSRS) on startup and on <b>Refresh</b> — <b>Latest</b> is the last insta-buy/sell, <b>5-min avg</b> is the trailing 5-minute mean (thin items with no recent 5-min trade fall back to Latest). Any field stays editable: a typed price sticks through refreshes until <b>Reset to live</b> (clear a field to drop its override). ` +
   `<b>Recipe:</b> 1 super restore + 1 unicorn horn dust + 1 snake weed + 1 nail beast nails → 1 Sanfew serum of the same dose (Herblore 65, adds the three in sequence). ` +
   `<b>Snake weed</b> is picked from marshy jungle vines in the Kharazi Jungle — untradeable, so it costs time, not gp; that gate is why the serum holds a margin. ` +
   `<b>Base super restore</b> can be bought as (4)s, bought as (3)s, or brewed from 1 snapdragon (unf) + 1 red spiders' eggs (Herblore 63) — whichever isn't your sell dose is decanted to it. Decanting conserves doses and is free; the only gp is extra empty vials when you decant a (4) down to a (3) (one vial per ~4 potions). ` +
@@ -2269,6 +2322,7 @@ function m5Val(entry, side) {
 function applySource() {
   let fellBack = 0;
   Object.keys(FIELD_MAP).forEach(k => {
+    if (MAN[k] != null) { return; }            // a hand-typed price wins until Reset
     const m = FIELD_MAP[k];
     const L = latestVal(raw.latest[m.id], m.side);
     let v;
@@ -2296,7 +2350,7 @@ function applySource() {
 const LS_KEY = "sanfew-live-v1";
 function saveState() {
   try {
-    localStorage.setItem(LS_KEY, JSON.stringify({ opt, SW, GP, RATE, TIMING }));
+    localStorage.setItem(LS_KEY, JSON.stringify({ opt, SW, GP, RATE, TIMING, MAN }));
   } catch (e) { /* storage unavailable — run without persistence */ }
 }
 function loadState() {
@@ -2317,6 +2371,11 @@ function loadState() {
     if (Number.isFinite(s.TIMING.invSlots)) { TIMING.invSlots = Math.max(4, s.TIMING.invSlots); }
     if (typeof s.TIMING.countPrep === "boolean") { TIMING.countPrep = s.TIMING.countPrep; }
   }
+  if (s.MAN && typeof s.MAN === "object") {
+    Object.keys(s.MAN).forEach(k => {
+      if (DEFAULTS[k] && Number.isFinite(s.MAN[k])) { MAN[k] = Math.max(0, s.MAN[k]); P[k] = MAN[k]; }
+    });
+  }
 }
 /* wipe remembered toggles/inputs and reload to baked defaults (prices refetch live) */
 document.getElementById("resetSettings").addEventListener("click", () => {
@@ -2334,6 +2393,7 @@ function syncControls() {
   document.getElementById("tBank").value = TIMING.tBank;
   document.getElementById("invSlots").value = TIMING.invSlots;
   document.getElementById("countPrep").checked = TIMING.countPrep;
+  Object.keys(MAN).forEach(k => { document.getElementById("p-" + k).value = MAN[k]; });
   [...document.querySelectorAll("#gpPresets button")].forEach(b => b.classList.toggle("sel", +b.dataset.n === GP));
 }
 
@@ -2352,7 +2412,6 @@ window.PriceHub.subscribe(function(data, source){
 });
 
 /* ---- player-level gating (Herblore: serum 65, make super restore 63, clean grimy snapdragon 59) ---- */
-let PL = null, PLNAME = null;
 function sanfewGate() {
   const hb = PL ? PL.herblore : null;
   const lowMake = hb != null && hb < 63;     // brewing super restore (3) from scratch
@@ -2450,7 +2509,7 @@ window.Player.subscribe(function(p) {
       <div class="col">
         <section class="card best-card" id="dg-bestCard">
           <h2 class="card-title">Highest % return right now</h2>
-          <p class="card-sub">The best return on gp tied up per herb — net profit ÷ (grimy + vial + rune) — across both the clean and (unf) routes at live prices. Ranked, most-severe first.</p>
+          <p class="card-sub">The best return on gp tied up per herb — net profit ÷ (grimy + vial + rune) — across both the clean and (unf) routes at live prices. Ranked, best first.</p>
           <p class="best-headline" id="dg-bestHeadline"></p>
           <div class="best-hero" id="dg-bestHero"></div>
           <h4 class="best-rank-h">Every herb &amp; route, ranked by % return</h4>
@@ -2566,23 +2625,23 @@ window.Player.subscribe(function(p) {
 const el = id => document.getElementById(id);
 const root = el("view-degrime");
 
-// herb meta: ids + buy limit + manual-clean Herblore level & XP (wiki).
+// herb meta: ids + buy limit + manual-clean Herblore level & XP, and ul = Herblore level to make its (unf) (wiki).
 const HERBS = [
- {herb:"Guam",grimy:199,clean:249,unf:91,limit:13000,cl:3,cx:2.5},
- {herb:"Marrentill",grimy:201,clean:251,unf:93,limit:13000,cl:5,cx:3.8},
- {herb:"Tarromin",grimy:203,clean:253,unf:95,limit:13000,cl:11,cx:5},
- {herb:"Harralander",grimy:205,clean:255,unf:97,limit:13000,cl:20,cx:6.3},
- {herb:"Ranarr",grimy:207,clean:257,unf:99,limit:11000,cl:25,cx:7.5},
- {herb:"Toadflax",grimy:3049,clean:2998,unf:3002,limit:13000,cl:30,cx:8},
- {herb:"Irit",grimy:209,clean:259,unf:101,limit:13000,cl:40,cx:8.8},
- {herb:"Avantoe",grimy:211,clean:261,unf:103,limit:13000,cl:48,cx:10},
- {herb:"Kwuarm",grimy:213,clean:263,unf:105,limit:13000,cl:54,cx:11.3},
- {herb:"Huasca",grimy:30094,clean:30097,unf:30100,limit:null,cl:58,cx:11.8},
- {herb:"Snapdragon",grimy:3051,clean:3000,unf:3004,limit:11000,cl:59,cx:11.8},
- {herb:"Cadantine",grimy:215,clean:265,unf:107,limit:11000,cl:65,cx:12.5},
- {herb:"Lantadyme",grimy:2485,clean:2481,unf:2483,limit:11000,cl:67,cx:13.1},
- {herb:"Dwarf weed",grimy:217,clean:267,unf:109,limit:11000,cl:70,cx:13.8},
- {herb:"Torstol",grimy:219,clean:269,unf:111,limit:11000,cl:75,cx:15},
+ {herb:"Guam",grimy:199,clean:249,unf:91,limit:13000,cl:3,cx:2.5,ul:3},
+ {herb:"Marrentill",grimy:201,clean:251,unf:93,limit:13000,cl:5,cx:3.8,ul:5},
+ {herb:"Tarromin",grimy:203,clean:253,unf:95,limit:13000,cl:11,cx:5,ul:12},
+ {herb:"Harralander",grimy:205,clean:255,unf:97,limit:13000,cl:20,cx:6.3,ul:22},
+ {herb:"Ranarr",grimy:207,clean:257,unf:99,limit:11000,cl:25,cx:7.5,ul:30},
+ {herb:"Toadflax",grimy:3049,clean:2998,unf:3002,limit:13000,cl:30,cx:8,ul:34},
+ {herb:"Irit",grimy:209,clean:259,unf:101,limit:13000,cl:40,cx:8.8,ul:45},
+ {herb:"Avantoe",grimy:211,clean:261,unf:103,limit:13000,cl:48,cx:10,ul:50},
+ {herb:"Kwuarm",grimy:213,clean:263,unf:105,limit:13000,cl:54,cx:11.3,ul:55},
+ {herb:"Huasca",grimy:30094,clean:30097,unf:30100,limit:null,cl:58,cx:11.8,ul:58},
+ {herb:"Snapdragon",grimy:3051,clean:3000,unf:3004,limit:11000,cl:59,cx:11.8,ul:63},
+ {herb:"Cadantine",grimy:215,clean:265,unf:107,limit:11000,cl:65,cx:12.5,ul:66},
+ {herb:"Lantadyme",grimy:2485,clean:2481,unf:2483,limit:11000,cl:67,cx:13.1,ul:69},
+ {herb:"Dwarf weed",grimy:217,clean:267,unf:109,limit:11000,cl:70,cx:13.8,ul:72},
+ {herb:"Torstol",grimy:219,clean:269,unf:111,limit:11000,cl:75,cx:15,ul:78},
 ];
 const VIAL_ID = 227, NATURE_ID = 561, EARTH_ID = 557;
 const DEGRIME_MAGIC_XP = 83;   // magic xp per Degrime cast (cleans the whole inventory)
@@ -2611,9 +2670,19 @@ const sellPrice = id => OVER[id]!=null ? OVER[id] : (opt.sellSpeed==="patient" ?
 const vialPrice = () => buyPrice(VIAL_ID);
 
 function herbsPerInv(){ return opt.method==="degrime" ? Math.max(1, TIMING.invSlots-1) : TIMING.invSlots; }
+/* the unf step needs a herb + a vial per potion, so only half an inventory of herbs per trip */
+function unfPerInv(){ return Math.max(1, Math.floor(TIMING.invSlots/2)); }
 function cleanPerHerbTicks(){ return opt.method==="degrime" ? TIMING.tCast/herbsPerInv() : TIMING.tClean; }
+/* ticks per herb. Clean route: one pass of full inventories.
+   Unf route, manual: clean + mix in the same 14-herb inventory (one bank trip per 14).
+   Unf route, Degrime: a full-inventory clean pass, then a separate 14 herb + 14 vial mixing pass. */
+function ticksPerHerb(route){
+  if(route!=="unf"){ return cleanPerHerbTicks() + TIMING.tBank/herbsPerInv(); }
+  if(opt.method==="degrime"){ return cleanPerHerbTicks() + TIMING.tBank/herbsPerInv() + TIMING.tUnf + TIMING.tBank/unfPerInv(); }
+  return TIMING.tClean + TIMING.tUnf + TIMING.tBank/unfPerInv();
+}
 function derivedRate(route){
-  const tph = cleanPerHerbTicks() + (route==="unf"?TIMING.tUnf:0) + TIMING.tBank/herbsPerInv();
+  const tph = ticksPerHerb(route);
   return tph>0 ? 6000/tph : 0;
 }
 function runePerHerb(){
@@ -2646,7 +2715,8 @@ function computeRows(){
       hrClean: profClean*effClean, hrUnf: profUnf*effUnf,
       hbXp: herbloreXpEach(h.cx), mgXp: magicXpEach(),
       xpHrHb: effClean*herbloreXpEach(h.cx), xpHrMg: effClean*magicXpEach(),
-      cleanLvl: h.cl, allowed: !PLAYER || PLAYER.herblore >= h.cl,
+      cleanLvl: h.cl, unfLvl: h.ul, allowed: !PLAYER || PLAYER.herblore >= h.cl,
+      unfOK: !PLAYER || PLAYER.herblore >= h.ul,
     };
   });
 }
@@ -2678,7 +2748,7 @@ function renderBest(){
   const all = [];
   ROWS.filter(r=>r.allowed).forEach(r=>{
     all.push({ herb:r.herb, route:"clean", roi:r.roiClean, prof:r.profClean, hr:r.hrClean });
-    all.push({ herb:r.herb, route:"unf",   roi:r.roiUnf,   prof:r.profUnf,   hr:r.hrUnf   });
+    if(r.unfOK){ all.push({ herb:r.herb, route:"unf", roi:r.roiUnf, prof:r.profUnf, hr:r.hrUnf }); }
   });
   const green = all.filter(x=>x.prof>0).sort((a,b)=>b.roi-a.roi);
   if(!green.length){
@@ -2763,15 +2833,17 @@ function hrNote(){
 }
 function renderChart(){
   if(!ROWS.length){ return; }
-  const M = MODES[MODE];
+  const M0 = MODES[MODE];
+  const M = { ...M0, vals:r=>{ const v=M0.vals(r); return [v[0], r.unfOK ? v[1] : null]; } };
   el("dg-cardTitle").textContent = M.title;
   el("dg-cardNote").innerHTML = MODE==="hr" ? hrNote() : M.note;
-  const data = ROWS.filter(r=>r.allowed).slice().sort((a,b)=>Math.max(...M.vals(b))-Math.max(...M.vals(a)));
+  const top = r => Math.max(...M.vals(r).filter(v=>v!=null));
+  const data = ROWS.filter(r=>r.allowed).slice().sort((a,b)=>top(b)-top(a));
   if(!data.length){
     chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No herb here matches your Herblore level${PNAME?` (${PNAME})`:""}. Clear the player or level up to clean these.</p>`;
     axisEl.innerHTML = ""; return;
   }
-  const allv = data.flatMap(M.vals);
+  const allv = data.flatMap(M.vals).filter(v=>v!=null);
   let step = M.step;
   let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
   let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
@@ -2785,6 +2857,7 @@ function renderChart(){
     for(let t=DMIN;t<=DMAX+0.5;t+=step){ const g=document.createElement("div"); g.className=t===0?"zero":"grid-t"; g.style.left=pct(t)+"%"; track.appendChild(g); }
     const [vc,vu]=M.vals(r);
     [["clean",vc],["unf",vu]].forEach(([k,v])=>{
+      if(v==null){ const na=document.createElement("div"); na.className=`bval ${k} na`; na.textContent=`unf needs Herblore ${r.unfLvl}`; na.style.left=zeroPct+"%"; na.style.marginLeft="6px"; track.appendChild(na); return; }
       const neg=v<0,p=pct(v);
       const bar=document.createElement("div"); bar.className=`bar ${k}${neg?" neg":""}`;
       if(neg){ bar.style.left=p+"%"; bar.style.width=(zeroPct-p)+"%"; } else { bar.style.left=zeroPct+"%"; bar.style.width=(p-zeroPct)+"%"; }
@@ -2806,8 +2879,9 @@ function renderChart(){
 function renderRates(){
   const av = ROWS.filter(r=>r.allowed);
   if(!av.length){ el("dg-ratesTiles").innerHTML=""; el("dg-ratesNote").textContent = "No cleanable herb at your Herblore level — clear the player or level up."; return; }
-  const bestHr = av.reduce((m,r)=>Math.max(m, r.hrClean, r.hrUnf), -Infinity);
-  const bestHrRow = av.find(r=>Math.max(r.hrClean,r.hrUnf)===bestHr) || av[0];
+  const rowBest = r => r.unfOK ? Math.max(r.hrClean, r.hrUnf) : r.hrClean;
+  const bestHr = av.reduce((m,r)=>Math.max(m, rowBest(r)), -Infinity);
+  const bestHrRow = av.find(r=>rowBest(r)===bestHr) || av[0];
   const bestHb = av.reduce((m,r)=>r.profClean>0?Math.max(m,r.xpHrHb):m, 0);
   const bestMg = av.reduce((m,r)=>r.profClean>0?Math.max(m,r.xpHrMg):m, 0);
   const tiles = [
@@ -2819,17 +2893,19 @@ function renderRates(){
   el("dg-ratesTiles").innerHTML = tiles.map(t=>
     `<div class="tile ${t.loss?"hero loss":""}"><p class="k">${t.k}</p><div class="v">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
   const hpi = herbsPerInv();
+  const upi = unfPerInv();
   el("dg-ratesNote").textContent = opt.method==="degrime"
-    ? `Degrime: 1 cast (${TIMING.tCast}t) cleans ${hpi} herbs/inv + banking (${TIMING.tBank}t/trip) ≈ ${(cleanPerHerbTicks()+TIMING.tBank/hpi).toFixed(2)} t/herb clean, +${TIMING.tUnf}t/herb for unf. Rough — bank distance & clicks vary.`
-    : `Manual: ${TIMING.tClean}t/herb clean + banking (${hpi}/inv × ${TIMING.tBank}t) ≈ ${(cleanPerHerbTicks()+TIMING.tBank/hpi).toFixed(2)} t/herb, +${TIMING.tUnf}t/herb for unf. Needs the herb's clean level. Rough estimate.`;
+    ? `Degrime: 1 cast (${TIMING.tCast}t) cleans ${hpi} herbs/inv + banking (${TIMING.tBank}t/trip) ≈ ${ticksPerHerb("clean").toFixed(2)} t/herb clean. Unf adds a second pass of ${upi} herbs + ${upi} vials (${TIMING.tUnf}t/herb + banking) ≈ ${ticksPerHerb("unf").toFixed(2)} t/herb. Rough — bank distance & clicks vary.`
+    : `Manual: ${TIMING.tClean}t/herb clean + banking (${hpi}/inv × ${TIMING.tBank}t) ≈ ${ticksPerHerb("clean").toFixed(2)} t/herb. Unf: clean + mix ${upi} herbs + ${upi} vials per trip ≈ ${ticksPerHerb("unf").toFixed(2)} t/herb. Needs the herb's clean level (and the unf's Herblore level). Rough estimate.`;
 }
 
 /* ---- table ---- */
 const tb = root.querySelector("#dg-tbl tbody");
 function renderTable(){
   tb.innerHTML="";
-  ROWS.filter(r=>r.allowed).slice().sort((a,b)=>Math.max(b.hrClean,b.hrUnf)-Math.max(a.hrClean,a.hrUnf)).forEach(r=>{
-    const best = r.profUnf>=r.profClean ? "unf":"clean";
+  const rowBest = r => r.unfOK ? Math.max(r.hrClean, r.hrUnf) : r.hrClean;
+  ROWS.filter(r=>r.allowed).slice().sort((a,b)=>rowBest(b)-rowBest(a)).forEach(r=>{
+    const best = r.unfOK && r.profUnf>=r.profClean ? "unf":"clean";
     const roi = best==="unf"?r.roiUnf:r.roiClean, hr = best==="unf"?r.hrUnf:r.hrClean;
     const tr=document.createElement("tr");
     tr.innerHTML =
@@ -2837,7 +2913,7 @@ function renderTable(){
       `<td class="mono">${fmt(r.grimyBuy)}</td>`+
       `<td class="mono">${fmt(r.unfSell)}</td>`+
       `<td class="mono ${r.profClean<0?'negv':'pos'}">${r.profClean<0?'':'+'}${fmt(r.profClean)}</td>`+
-      `<td class="mono ${r.profUnf<0?'negv':'pos'}">${r.profUnf<0?'':'+'}${fmt(r.profUnf)}</td>`+
+      (r.unfOK ? `<td class="mono ${r.profUnf<0?'negv':'pos'}">${r.profUnf<0?'':'+'}${fmt(r.profUnf)}</td>` : `<td class="mono na">Herb ${r.unfLvl}</td>`)+
       `<td class="mono ${roi<0?'negv':'pos'}">${roi.toFixed(1)}%</td>`+
       `<td class="mono ${hr<0?'negv':'pos'}">${fmtK(hr)}</td>`+
       `<td class="mono">${r.limit?fmt(r.limit):"—"}</td>`+
@@ -2866,22 +2942,32 @@ function renderBatch(){
   }
   const h = HERBS[BATCH.idx], r = ROWS[BATCH.idx];
   if(!h || !r){ return; }
-  const route = BATCH.route;
+  const unfBlocked = BATCH.route==="unf" && !r.unfOK;
+  const route = unfBlocked ? "clean" : BATCH.route;
   const prof = route==="unf" ? r.profUnf : r.profClean;
   const sell = route==="unf" ? r.unfSell : r.cleanSell;
   const eff  = route==="unf" ? r.effUnf  : r.effClean;
   const rc = runePerHerb();
   const perHerb = r.grimyBuy + (route==="unf" ? vialPrice() : 0) + rc;   // gp spent per herb
   const budget = BATCH.driver==="gp";
-  const qty = budget ? (perHerb>0 ? Math.floor(BATCH.gp/perHerb) : 0) : BATCH.qty;
-  const hpi = herbsPerInv(), casts = Math.ceil(qty/hpi)||0;
-  const rows = [{ name:"Grimy "+h.herb, id:h.grimy, q:qty, unit:r.grimyBuy }];
-  if(route==="unf"){ rows.push({ name:"Vial of water", id:VIAL_ID, q:qty, unit:vialPrice() }); }
-  if(opt.method==="degrime"){
-    rows.push({ name:"Nature rune", id:NATURE_ID, q:2*casts, unit:buyPrice(NATURE_ID) });
-    if(opt.earth==="buy"){ rows.push({ name:"Earth rune", id:EARTH_ID, q:4*casts, unit:buyPrice(EARTH_ID) }); }
+  const hpi = herbsPerInv();
+  function shop(qty){
+    const casts = Math.ceil(qty/hpi)||0;
+    const rows = [{ name:"Grimy "+h.herb, id:h.grimy, q:qty, unit:r.grimyBuy }];
+    if(route==="unf"){ rows.push({ name:"Vial of water", id:VIAL_ID, q:qty, unit:vialPrice() }); }
+    if(opt.method==="degrime"){
+      rows.push({ name:"Nature rune", id:NATURE_ID, q:2*casts, unit:buyPrice(NATURE_ID) });
+      if(opt.earth==="buy"){ rows.push({ name:"Earth rune", id:EARTH_ID, q:4*casts, unit:buyPrice(EARTH_ID) }); }
+    }
+    return { rows, total:rows.reduce((s,x)=>s+x.q*x.unit, 0) };
   }
-  const buyTotal = rows.reduce((s,x)=>s+x.q*x.unit, 0);
+  let qty = budget ? (perHerb>0 ? Math.floor(BATCH.gp/perHerb) : 0) : BATCH.qty;
+  let list = shop(qty);
+  while(budget && qty>0 && list.total>BATCH.gp){   // rune casts round up — trim until it fits
+    qty--;
+    list = shop(qty);
+  }
+  const rows = list.rows, buyTotal = list.total;
   const totalProfit = qty*prof, totalRev = qty*net(sell), hrs = eff>0 ? qty/eff : 0;
   el("dg-shopList").innerHTML = rows.map(x=>
     `<li><span>${x.name} <span class="q">×${fmt(x.q)}${x.unit>0?` @ ${fmt(x.unit)} ea`:""}</span></span><span class="cost">${fmt(x.q*x.unit)} gp</span></li>`).join("")
@@ -2889,7 +2975,9 @@ function renderBatch(){
     + (budget ? `<li><span>Gp left over</span><span class="q">${fmt(BATCH.gp-buyTotal)} gp</span></li>` : "");
   const bp = el("dg-batchProfit");
   bp.textContent = (totalProfit>=0?"+":"")+fmt(totalProfit)+" gp"; bp.classList.toggle("loss", totalProfit<0);
-  el("dg-batchProfitU").textContent = qty>0 ? `from ${fmt(qty)} × ${h.herb} (${route==="unf"?"unf potion":"clean"})` : "budget too small for one herb";
+  el("dg-batchProfitU").textContent = qty>0
+    ? `from ${fmt(qty)} × ${h.herb} (${route==="unf"?"unf potion":"clean"})${unfBlocked?` — ${h.herb} (unf) needs Herblore ${h.ul}, showing clean`:""}`
+    : "budget too small for one herb";
   el("dg-batchYield").innerHTML = [
     ["Herbs", fmt(qty), ""],
     ["Revenue after tax", fmt(totalRev)+" gp", "pos"],
@@ -3111,6 +3199,14 @@ window.Player.subscribe(function(p){
           <p class="opt-note" id="gm-note-ench"></p>
         </div>
         <div>
+          <p class="opt-label">Elemental runes</p>
+          <div class="toggle" id="gm-tg-staff" role="group" aria-label="Elemental runes">
+            <button data-v="buy" class="on">Buy runes</button>
+            <button data-v="staff">Matching staff</button>
+          </div>
+          <p class="opt-note" id="gm-note-staff"></p>
+        </div>
+        <div>
           <p class="opt-label">Buy inputs at</p>
           <div class="toggle" id="gm-tg-buyspeed" role="group" aria-label="Buy speed">
             <button data-v="instant" class="on">Instant</button>
@@ -3296,7 +3392,7 @@ function niceStep(range, target){ if(!(range>0)){ return 1; } const raw=range/ta
 
 // state
 let LAT = {}, ROWS = [];
-const opt = { mat:"uncut", jtype:"amulet", chisel:"standard", ench:"passive", buySpeed:"instant", sellSpeed:"instant" };
+const opt = { mat:"uncut", jtype:"amulet", chisel:"standard", ench:"passive", staff:"buy", buySpeed:"instant", sellSpeed:"instant" };
 let LEVEL = 99, MODE = "gp";
 let PLAYER = null, PNAME = null;   // {crafting,herblore,magic,...} + display name when looked up, else null
 const OVER = {};   // id -> user price override; sticky across live refreshes until Reset
@@ -3316,7 +3412,10 @@ function cutSuccess(g){
   const s = base + (opt.chisel==="jeweller" ? 0.20 : 0);
   return Math.max(0.01, Math.min(1, s));   // level maxes at 99, but the Jeweller's chisel can reach 100% (never fail)
 }
-function runeCost(g){ return g.runes.reduce((s,[id,q])=>s+q*buyPrice(id), 0); }
+/* runes bought per enchant: the matching staff (mud staff for Lvl-5) covers every elemental rune */
+const ELEM = new Set([554, 555, 556, 557]);
+function castRunes(g){ return g.runes.filter(([id])=>!(opt.staff==="staff" && ELEM.has(id))); }
+function runeCost(g){ return castRunes(g).reduce((s,[id,q])=>s+q*buyPrice(id), 0); }
 function enchTierName(g){ const m={17.5:"Lvl-1",37:"Lvl-2",59:"Lvl-3",67:"Lvl-4",78:"Lvl-5"}; return m[g.enchXp]||"Enchant"; }
 
 // tick-model items/hr for one gem at the current setup
@@ -3430,7 +3529,7 @@ const MODES = {
          note:"Instant prices: gems &amp; bars at insta-buy, products at insta-sell. Semi-precious inputs divided by cut success. Bars left of the line lose money.",
          vals:r=>[r.profPlain, r.profEnch], fmt:v=>(v<0?"":"+")+fmtK(v), tick:v=>(v>0?"+":"")+fmtK(v) },
   roi: { title:"Return on gp invested",
-         note:"Net profit ÷ gp tied up per item (gem + gold bar + wool, plus runes for the enchanted route).",
+         note:"Net profit ÷ gp tied up per item (gem + gold or silver bar + wool, plus runes for the enchanted route).",
          vals:r=>[r.roiPlain, r.roiEnch], fmt:v=>(v<0?"":"+")+v.toFixed(1)+"%", tick:v=>(v>0?"+":"")+Math.round(v)+"%" },
   hr:  { title:"Profit per hour", note:"",
          vals:r=>[r.hrPlain, r.hrEnch], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
@@ -3444,7 +3543,7 @@ const MODES = {
 };
 let tipW=0, tipH=0, tipRaf=0, tipEv=null;
 function showTip(e,r){
-  const rl = r.runes.map(([id,q])=>`${q} ${RUNE_NAME[id]}`).join(" + ");
+  const rl = castRunes(GEMS.find(g=>g.name===r.gem)).map(([id,q])=>`${q} ${RUNE_NAME[id]}`).join(" + ");
   const succ = r.s<1 ? `Cut success: <b>${(r.s*100).toFixed(1)}%</b> → gem cost ${fmt(r.gemCost)}<br>` : "";
   const cut = r.cutFlip!=null ? `Cut-gem flip: <span class="${r.cutFlip<0?'t-neg':'t-pos'}">${r.cutFlip<0?'':'+'}${fmt(r.cutFlip)} gp</span><br>` : "";
   const ench = r.profEnch==null
@@ -3454,7 +3553,7 @@ function showTip(e,r){
     + `Inputs: gem ${fmt(r.gemCost)} + ${r.barName.toLowerCase()} ${fmt(r.barBuy)}${r.woolBuy?` + wool ${fmt(r.woolBuy)}`:``} = <b>${fmt(r.inputCost)}</b> gp<br>`
     + succ + cut
     + `Plain: sell ${fmt(r.plainSell)} · <span class="${r.profPlain<0?'t-neg':'t-pos'}">${r.profPlain<0?'':'+'}${fmt(r.profPlain)} gp</span> · ${r.roiPlain.toFixed(1)}%<br>`
-    + `Enchant runes: ${rl} = ${fmt(r.runeCost)} gp<br>`
+    + `Enchant runes: ${rl||"cosmic only"} = ${fmt(r.runeCost)} gp<br>`
     + ench;
   tip.style.opacity=1; tipW=tip.offsetWidth; tipH=tip.offsetHeight; placeTip(e);
 }
@@ -3593,13 +3692,21 @@ function renderBatch(){
   // driver: fixed pieces, or the most pieces a budget can buy
   const perPiece = r.inputCost + (enchOn ? r.runeCost : 0);
   const budget = BATCH.driver==="gp";
-  const qty = budget ? (perPiece>0 ? Math.floor(BATCH.gp/perPiece) : 0) : BATCH.qty;
-  const gemQty = opt.mat==="uncut" ? Math.ceil(qty/s) : qty;   // extra uncut to cover crushed gems
-  const rows = [{ name:(opt.mat==="uncut"?"Uncut ":"Cut ")+g.name, id:gemId, q:gemQty, unit:r.gemBuyRaw }];
-  rows.push({ name:r.barName, id:r.barId, q:qty, unit:r.barBuy });
-  if(opt.jtype==="amulet"){ rows.push({ name:"Ball of wool", id:WOOL_ID, q:qty, unit:r.woolBuy }); }
-  if(enchOn){ g.runes.forEach(([id,q])=>rows.push({ name:RUNE_NAME[id]+" rune", id, q:q*qty, unit:buyPrice(id) })); }
-  const buyTotal = rows.reduce((a,x)=>a+x.q*x.unit, 0);
+  function shop(qty){
+    const gemQty = opt.mat==="uncut" ? Math.ceil(qty/s) : qty;   // extra uncut to cover crushed gems
+    const rows = [{ name:(opt.mat==="uncut"?"Uncut ":"Cut ")+g.name, id:gemId, q:gemQty, unit:r.gemBuyRaw }];
+    rows.push({ name:r.barName, id:r.barId, q:qty, unit:r.barBuy });
+    if(opt.jtype==="amulet"){ rows.push({ name:"Ball of wool", id:WOOL_ID, q:qty, unit:r.woolBuy }); }
+    if(enchOn){ castRunes(g).forEach(([id,q])=>rows.push({ name:RUNE_NAME[id]+" rune", id, q:q*qty, unit:buyPrice(id) })); }
+    return { rows, gemQty, total:rows.reduce((a,x)=>a+x.q*x.unit, 0) };
+  }
+  let qty = budget ? (perPiece>0 ? Math.floor(BATCH.gp/perPiece) : 0) : BATCH.qty;
+  let list = shop(qty);
+  while(budget && qty>0 && list.total>BATCH.gp){   // uncut gems round up — trim until it fits
+    qty--;
+    list = shop(qty);
+  }
+  const { rows, gemQty } = list, buyTotal = list.total;
   const totalProfit = qty*prof, totalRev = qty*net(sellV), hrs = r.effRate>0 ? qty/r.effRate : 0;
   el("gm-shopList").innerHTML = rows.map(x=>
     `<li><span>${x.name} <span class="q">×${fmt(x.q)}${x.unit>0?` @ ${fmt(x.unit)} ea`:""}</span></span><span class="cost">${fmt(x.q*x.unit)} gp</span></li>`).join("")
@@ -3619,7 +3726,7 @@ function renderBatch(){
   ].map(([k,v,cls])=>`<dt>${k}</dt><dd class="${cls}">${v}</dd>`).join("");
   const ids = [gemId, r.barId, productId];
   if(opt.jtype==="amulet"){ ids.push(WOOL_ID); }
-  if(enchOn){ g.runes.forEach(([id])=>ids.push(id)); }
+  if(enchOn){ castRunes(g).forEach(([id])=>ids.push(id)); }
   el("gm-copyStkpl").dataset.ids = JSON.stringify(ids);
 }
 (function buildBatch(){
@@ -3683,7 +3790,7 @@ function syncPriceInputs(){ priceEditorItems().forEach(it=>{ const i=el("gm-p-"+
 /* ---- toggles ---- */
 const TOGGLES = {
   "gm-tg-mat":{key:"mat"}, "gm-tg-jtype":{key:"jtype"}, "gm-tg-chisel":{key:"chisel"},
-  "gm-tg-ench":{key:"ench"}, "gm-tg-buyspeed":{key:"buySpeed"}, "gm-tg-sellspeed":{key:"sellSpeed"},
+  "gm-tg-ench":{key:"ench"}, "gm-tg-staff":{key:"staff"}, "gm-tg-buyspeed":{key:"buySpeed"}, "gm-tg-sellspeed":{key:"sellSpeed"},
 };
 function syncToggle(id){ const def=TOGGLES[id]; [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[def.key])); }
 Object.keys(TOGGLES).forEach(id=>{
@@ -3704,6 +3811,7 @@ function syncNotes(){
   el("gm-note-ench").textContent = opt.ench==="plain" ? `Sell plain jewellery; no runes, no cast time.`
     : opt.ench==="passive" ? `AFK auto-recast — 7 ticks/item (~800/hr). Slower than active, but hands-off.`
     : `Manual spam-cast — 3 ticks/item (~1,900/hr). Fastest, but full attention.`;
+  el("gm-note-staff").textContent = opt.staff==="staff" ? `Wield the staff for each spell's elementals (a mud staff for Lvl-5 dragonstone) — only cosmic runes are bought.` : `Buy every enchant rune, elementals included.`;
   el("gm-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Post buy offers at the bid — cheaper, waits to fill.` : `Pay the insta-buy ask — fills now.`;
   el("gm-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Post sell offers at the ask — more gp, waits to fill.` : `Dump at the insta-sell bid — sells now.`;
 }
@@ -3946,7 +4054,7 @@ window.Player.subscribe(function(p){
         <table id="pt-tbl">
           <thead><tr>
             <th>Potion</th><th>Lvl</th><th>Unf/herb</th><th>Secondary</th>
-            <th>Profit · (3)</th><th>Profit · (4)</th><th>ROI · best</th><th>gp/hr · best</th><th>Sell limit /4h</th>
+            <th>Profit · (3)</th><th>Profit · (4)</th><th>ROI · best</th><th>gp/hr · best</th><th>Input cap (makes /4h)</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -3968,22 +4076,29 @@ const root = el("view-potions");
 
 const VIAL_ID = 227, CHEM_AMY_ID = 21163;
 // mix potions: unf(herb) + secondary -> (3) potion. cl = herb clean level (for the grimy source).
+// unfLim / herbLim / secLim = GE 4h buy limits of the unf, the herb (grimy & clean share it) and the secondary.
 const POTS = [
- { name:"Prayer potion",  lvl:38, xp:87.5,  grimy:207, clean:257, unf:99,   cl:25, sec:["Snape grass",231],        p3:139,  p4:2434, lim:2000 },
- { name:"Super attack",   lvl:45, xp:100,   grimy:209, clean:259, unf:101,  cl:40, sec:["Eye of newt",221],        p3:145,  p4:2436, lim:2000 },
- { name:"Super energy",   lvl:52, xp:117.5, grimy:211, clean:261, unf:103,  cl:48, sec:["Mort myre fungus",2970],  p3:3018, p4:3016, lim:2000 },
- { name:"Super strength", lvl:55, xp:125,   grimy:213, clean:263, unf:105,  cl:54, sec:["Limpwurt root",225],      p3:157,  p4:2440, lim:2000 },
- { name:"Super restore",  lvl:63, xp:142.5, grimy:3051,clean:3000,unf:3004, cl:59, sec:["Red spiders' eggs",223],  p3:3026, p4:3024, lim:2000 },
- { name:"Super defence",  lvl:66, xp:150,   grimy:215, clean:265, unf:107,  cl:65, sec:["White berries",239],      p3:163,  p4:2442, lim:2000 },
- { name:"Antifire potion",lvl:69, xp:157.5, grimy:2485,clean:2481,unf:2483, cl:67, sec:["Dragon scale dust",241],  p3:2454, p4:2452, lim:2000 },
- { name:"Ranging potion", lvl:72, xp:162.5, grimy:217, clean:267, unf:109,  cl:70, sec:["Wine of Zamorak",245],    p3:169,  p4:2444, lim:2000 },
- { name:"Magic potion",   lvl:76, xp:172.5, grimy:2485,clean:2481,unf:2483, cl:67, sec:["Potato cactus",3138],     p3:3042, p4:3040, lim:2000 },
- { name:"Saradomin brew", lvl:81, xp:180,   grimy:3049,clean:2998,unf:3002, cl:30, sec:["Crushed nest",6693],      p3:6687, p4:6685, lim:2000 },
+ { name:"Prayer potion",  lvl:38, xp:87.5,  herb:"ranarr weed", grimy:207, clean:257, unf:99,   cl:25, sec:["Snape grass",231],        p3:139,  p4:2434, unfLim:10000, herbLim:11000, secLim:13000 },
+ { name:"Super attack",   lvl:45, xp:100,   herb:"irit leaf",   grimy:209, clean:259, unf:101,  cl:40, sec:["Eye of newt",221],        p3:145,  p4:2436, unfLim:10000, herbLim:13000, secLim:13000 },
+ { name:"Super energy",   lvl:52, xp:117.5, herb:"avantoe",     grimy:211, clean:261, unf:103,  cl:48, sec:["Mort myre fungus",2970],  p3:3018, p4:3016, unfLim:10000, herbLim:13000, secLim:13000 },
+ { name:"Super strength", lvl:55, xp:125,   herb:"kwuarm",      grimy:213, clean:263, unf:105,  cl:54, sec:["Limpwurt root",225],      p3:157,  p4:2440, unfLim:10000, herbLim:13000, secLim:13000 },
+ { name:"Super restore",  lvl:63, xp:142.5, herb:"snapdragon",  grimy:3051,clean:3000,unf:3004, cl:59, sec:["Red spiders' eggs",223],  p3:3026, p4:3024, unfLim:10000, herbLim:11000, secLim:13000 },
+ { name:"Super defence",  lvl:66, xp:150,   herb:"cadantine",   grimy:215, clean:265, unf:107,  cl:65, sec:["White berries",239],      p3:163,  p4:2442, unfLim:10000, herbLim:11000, secLim:13000 },
+ { name:"Antifire potion",lvl:69, xp:157.5, herb:"lantadyme",   grimy:2485,clean:2481,unf:2483, cl:67, sec:["Dragon scale dust",241],  p3:2454, p4:2452, unfLim:10000, herbLim:11000, secLim:13000 },
+ { name:"Ranging potion", lvl:72, xp:162.5, herb:"dwarf weed",  grimy:217, clean:267, unf:109,  cl:70, sec:["Wine of Zamorak",245],    p3:169,  p4:2444, unfLim:10000, herbLim:11000, secLim:11000 },
+ { name:"Magic potion",   lvl:76, xp:172.5, herb:"lantadyme",   grimy:2485,clean:2481,unf:2483, cl:67, sec:["Potato cactus",3138],     p3:3042, p4:3040, unfLim:10000, herbLim:11000, secLim:11000 },
+ { name:"Zamorak brew",   lvl:78, xp:175,   herb:"torstol",     grimy:219, clean:269, unf:111,  cl:75, sec:["Jangerberries",247],      p3:189,  p4:2450, unfLim:10000, herbLim:11000, secLim:13000 },
+ { name:"Saradomin brew", lvl:81, xp:180,   herb:"toadflax",    grimy:3049,clean:2998,unf:3002, cl:30, sec:["Crushed nest",6693],      p3:6687, p4:6685, unfLim:10000, herbLim:13000, secLim:11000 },
 ];
-// combine potions: fixed (4)-dose inputs -> (4) potion. slots = distinct non-stackable inv slots per make.
+const VIAL_LIM = 13000;
+// combine potions: fixed inputs -> (4) potion. inputs = [name, id, qty per make, 4h buy limit].
+// slots = distinct non-stackable inv slots per make.
 const COMBOS = [
- { name:"Super combat", lvl:90, xp:150, inputs:[["Super attack(4)",2436,1],["Super strength(4)",2440,1],["Super defence(4)",2442,1],["Torstol",269,1]], p4:12695, lim:2000, slots:4 },
- { name:"Stamina potion", lvl:77, xp:102, inputs:[["Super energy(4)",3016,1],["Amylase crystal",12640,4]], p4:12625, lim:2000, slots:2 },
+ { name:"Super combat", lvl:90, xp:150, inputs:[["Super attack(4)",2436,1,2000],["Super strength(4)",2440,1,2000],["Super defence(4)",2442,1,2000],["Torstol",269,1,11000]], p4:12695, slots:4 },
+ { name:"Stamina potion", lvl:77, xp:102, inputs:[["Super energy(4)",3016,1,2000],["Amylase crystal",12640,4,11000]], p4:12625, slots:2 },
+ { name:"Anti-venom", lvl:87, xp:120, inputs:[["Antidote++(4)",5952,1,4000],["Zulrah's scales",12934,20,30000]], p4:12905, slots:1 },
+ { name:"Anti-venom+", lvl:94, xp:125, inputs:[["Anti-venom(4)",12905,1,2000],["Torstol",269,1,11000]], p4:12913, slots:2 },
+ { name:"Super antifire", lvl:92, xp:130, inputs:[["Antifire potion(4)",2452,1,2000],["Crushed superior dragon bones",21975,1,11000]], p4:21978, slots:2 },
 ];
 
 const fmt = n => (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
@@ -4017,6 +4132,15 @@ function unfCost(p){
 }
 function neckChargeEach(){ return opt.neck==="none" ? 0 : buyPrice(CHEM_AMY_ID)/NECK_CH[opt.neck]; }
 
+/* makes per 4h the scarcest bought input allows (the GE only limits buying, never selling) */
+function mixInputLim(p){
+  const g = opt.goggles ? 0.9 : 1;                 // goggles: fewer secondaries bought per make
+  const secMakes = p.secLim / g;
+  if(opt.unfSrc==="buy"){ return Math.min(p.unfLim, secMakes); }
+  return Math.min(p.herbLim, VIAL_LIM, secMakes);
+}
+function comboInputLim(c){ return c.inputs.reduce((m,[,,q,lim])=>Math.min(m, lim/q), Infinity); }
+
 // per-3-dose-make economics for a mix potion
 function calcMix(p){
   const g = opt.goggles ? 0.9 : 1;
@@ -4036,11 +4160,11 @@ function calcMix(p){
     roi3: costPerDose>0 ? prof3/(3*costPerDose)*100 : 0,
     roi4: costPerDose>0 ? prof4/(4*costPerDose)*100 : 0,
     unfLabel: opt.unfSrc==="buy" ? "buy unf" : opt.unfSrc==="grimy" ? "grimy" : "clean",
-    lim:p.lim,
+    lim:mixInputLim(p),
   };
 }
 // herb clean xp for the grimy source, by clean level (approx table shared with Degrime)
-const CLEAN_XP = {25:7.5,40:8.8,48:10,54:11.3,59:11.8,65:12.5,67:13.1,70:13.8,30:8};
+const CLEAN_XP = {25:7.5,40:8.8,48:10,54:11.3,59:11.8,65:12.5,67:13.1,70:13.8,75:15,30:8};
 function cleanXpFor(p){ return CLEAN_XP[p.cl] || 0; }
 
 function calcCombine(c){
@@ -4048,7 +4172,7 @@ function calcCombine(c){
   const prof4 = net(sellPrice(c.p4)) - cost;
   return {
     type:"combine", name:c.name, lvl:c.lvl, c, cost, prof3:null, prof4, xpMake:c.xp, avgDoses:4,
-    roi3:null, roi4: cost>0 ? prof4/cost*100 : 0, unfLabel:"combine", lim:c.lim,
+    roi3:null, roi4: cost>0 ? prof4/cost*100 : 0, unfLabel:"combine", lim:comboInputLim(c),
   };
 }
 
@@ -4067,15 +4191,22 @@ function makeRate(r){
   const tps = adds*TIMING.tAdd + cleanTicks + TIMING.tBank/perInv;
   return tps>0 ? TICKS_PER_HOUR/tps : 0;
 }
-// potions of dose D sold per hour, and gp/hr, for a row
+// makes per hour: the tick-model rate, capped by the scarcest input's 4h buy limit ÷ 4
+function makesHr(r){ return Math.min(makeRate(r), r.lim/4); }
+// potions of dose D sold per hour (a mix make yields avgDoses doses; a combine yields one (4))
 function potsPerHr(r, D){
-  if(r.type==="combine"){ return D===4 ? makeRate(r) : 0; }   // combine only makes (4)
-  return makeRate(r)*3/D;   // a 3-dose make = 3 doses; D-dose potions = doseRate/D
+  if(r.type==="combine"){ return D===4 ? makesHr(r) : 0; }
+  return makesHr(r)*r.avgDoses/D;
+}
+function uncappedPotsPerHr(r, D){
+  if(r.type==="combine"){ return D===4 ? makeRate(r) : 0; }
+  return makeRate(r)*r.avgDoses/D;
 }
 function profOf(r, D){ return D===3 ? r.prof3 : r.prof4; }
 function hrOf(r, D){ const p=profOf(r,D); return p==null ? null : potsPerHr(r,D)*p; }
-function capOf(r, D){ const pph = potsPerHr(r, D); const cap = r.lim/4; return Math.min(pph, cap); }
-function hrCapped(r, D){ const p=profOf(r,D); if(p==null){ return null; } return capOf(r,D)*p; }
+function capOf(r, D){ return potsPerHr(r, D); }
+function hrCapped(r, D){ const p=profOf(r,D); if(p==null){ return null; } return potsPerHr(r,D)*p; }
+function xpHrOf(r){ return makesHr(r)*r.xpMake; }
 function allowed(r){
   if(!PLAYER){ return true; }
   if(PLAYER.herblore < r.lvl){ return false; }
@@ -4125,7 +4256,7 @@ function renderXp(){
   const green = ROWS.filter(allowed).map(r=>{
     const D = r.type==="combine" ? 4 : opt.dose;
     const prof = profOf(r,D);
-    return { name:r.name, xpHr: capOf(r,D)*r.xpMake, xpMake:r.xpMake, prof, hr:hrCapped(r,D) };
+    return { name:r.name, xpHr: xpHrOf(r), xpMake:r.xpMake, prof, hr:hrCapped(r,D) };
   }).filter(x=>x.prof!=null && x.prof>0).sort((a,b)=>b.xpHr-a.xpHr);
   if(!green.length){ el("pt-xpHeadline").innerHTML = `No profitable potion to train on right now.`; el("pt-xpHero").innerHTML=""; el("pt-xpRank").innerHTML=""; return; }
   const w = green[0];
@@ -4152,8 +4283,8 @@ const MODES = {
   hr:  { title:"Profit per hour", note:"",
          step:100000, vals:r=>[hrCapped(r,3), hrCapped(r,4)], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xphr:{ title:"XP per hour",
-         note:"Herblore XP/hr for making the potion, at each route's rate capped by the 2,000/4h sell limit. Decanting up to (4) is a touch slower, so its XP/hr is a little lower.",
-         step:20000, vals:r=>{ const x=r.xpMake; return x>0?[r.prof3==null?null:capOf(r,3)*x, capOf(r,4)*x]:[null,null]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+         note:"Herblore XP/hr for making the potion: makes/hr (tick model, capped by the scarcest input's 4h buy limit) × XP per make. The dose you sell doesn't change it — decanting is free and gives no XP.",
+         step:20000, vals:r=>{ const x=xpHrOf(r); return r.xpMake>0?[r.prof3==null?null:x, x]:[null,null]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xp:  { title:"Profit per XP",
          note:"Net profit ÷ Herblore XP for making the potion — the same XP whether you finish at (3) or decant up to (4).",
          step:1, vals:r=>{ const x=r.xpMake; return x>0?[r.prof3==null?null:r.prof3/x, r.prof4/x]:[null,null]; },
@@ -4169,8 +4300,8 @@ function showTip(e,r){
 function moveTip(e){ const pad=14; let x=e.clientX+pad,y=e.clientY+pad; const w=tip.offsetWidth,h=tip.offsetHeight; if(x+w>innerWidth){ x=e.clientX-w-pad; } if(y+h>innerHeight){ y=e.clientY-h-pad; } tip.style.left=x+"px"; tip.style.top=y+"px"; }
 function hideTip(){ tip.style.opacity=0; }
 function hrNote(){
-  const anyCap = ROWS.some(r=>allowed(r) && potsPerHr(r,opt.dose) > r.lim/4);
-  return `Tick model × your setup, capped by each potion's 2,000/4h GE sell limit${anyCap?" (which binds for some here)":""}. Tune ticks in the Rates card.`;
+  const anyCap = ROWS.some(r=>allowed(r) && makeRate(r) > r.lim/4);
+  return `Tick model × your setup, capped by the scarcest input's 4h GE buy limit (the GE never limits selling)${anyCap?" — the limit binds for some here":""}. Tune ticks in the Rates card.`;
 }
 function renderChart(){
   if(!ROWS.length){ return; }
@@ -4218,16 +4349,16 @@ function renderRates(){
   const scored = av.map(r=>{ const D=r.type==="combine"?4:opt.dose; return { r, D, hr:hrCapped(r,D) }; }).filter(x=>x.hr!=null).sort((a,b)=>b.hr-a.hr);
   const top = scored.length ? scored[0] : { r:av[0], D:opt.dose, hr:0 };
   const r = top.r, D = top.D;
-  const rate = potsPerHr(r, D), capd = capOf(r, D);
+  const rate = uncappedPotsPerHr(r, D), capd = potsPerHr(r, D);
   const tiles = [
     { k:"Best gp/hr", v:(top.hr>=0?"+":"")+fmtK(top.hr), u:`${r.name} (${D})`, loss:top.hr<0 },
-    { k:"Potions/hr", v:fmt(Math.round(capd)), u:`cap ${fmt(Math.round(r.lim/4))}/hr` },
-    { k:"Herblore XP/hr", v:fmtK(capd*r.xpMake), u:`${r.xpMake} xp/potion` },
+    { k:"Potions/hr", v:fmt(Math.round(capd)), u:`input cap ${fmt(Math.round(r.lim/4))} makes/hr` },
+    { k:"Herblore XP/hr", v:fmtK(xpHrOf(r)), u:`${r.xpMake} xp/make` },
     { k:"Uncapped/hr", v:fmt(Math.round(rate)), u:"before buy limit" },
   ];
   el("pt-ratesTiles").innerHTML = tiles.map(t=>`<div class="tile ${t.loss?"hero loss":""}"><p class="k">${t.k}</p><div class="v">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
   const prep = r.type==="mix" && opt.unfSrc!=="buy" ? (opt.unfSrc==="grimy" ? "make unf + clean grimy, " : "make unf, ") : "";
-  el("pt-ratesNote").textContent = `${r.name}: ${prep}${r.type==="combine"?"combine":"add secondary"} ≈ ${fmt(Math.round(rate))}/hr uncapped, then capped by the 2,000/4h sell limit. Prep ${TIMING.countPrep?"counted":"off"}. Rough — bank distance & clicks vary.`;
+  el("pt-ratesNote").textContent = `${r.name}: ${prep}${r.type==="combine"?"combine":"add secondary"} ≈ ${fmt(Math.round(rate))}/hr uncapped, then capped by the scarcest input's 4h buy limit. Prep ${TIMING.countPrep?"counted":"off"}. Rough — bank distance & clicks vary.`;
 }
 
 /* ---- table ---- */
@@ -4253,7 +4384,7 @@ function renderTable(){
       `<td class="mono ${r.prof4<0?'negv':'pos'}">${r.prof4<0?'':'+'}${fmt(r.prof4)}</td>`+
       `<td class="mono ${roi<0?'negv':'pos'}">${roi.toFixed(0)}%</td>`+
       `<td class="mono ${hr<0?'negv':'pos'}">${fmtK(hr)}</td>`+
-      `<td class="mono">${fmt(r.lim)}</td>`;
+      `<td class="mono">${fmt(Math.round(r.lim))}</td>`;
     tb.appendChild(t);
   }
 }
@@ -4275,31 +4406,50 @@ function renderBatch(){
   const r = ROWS[BATCH.idx];
   const D = r.type==="combine" ? 4 : opt.dose;
   const prof = profOf(r, D);
-  const rows = [], ids = [];
   const g = opt.goggles ? 0.9 : 1;
-  const perUnit = r.type==="combine" ? r.cost : 3*r.costPerDose;   // gp per (3)-make or per combine
   const budget = BATCH.driver==="gp";
-  // for mix, "qty" = potions of dose D; for combine qty = potions (4)
-  let qty = budget ? (function(){ const per = r.type==="combine" ? r.cost : D*r.costPerDose; return per>0?Math.floor(BATCH.gp/per):0; })() : BATCH.qty;
-  if(r.type==="mix"){
-    const makes = Math.ceil(qty * D / 3);   // 3-dose makes needed for qty D-dose potions
-    if(opt.unfSrc==="buy"){ rows.push({ name:r.p.name+" (unf)", id:r.p.unf, q:makes, unit:buyPrice(r.p.unf) }); }
-    else {
-      rows.push({ name:(opt.unfSrc==="grimy"?"Grimy ":"")+r.name.replace(/ potion| brew/,"")+" herb", id:opt.unfSrc==="grimy"?r.p.grimy:r.p.clean, q:makes, unit:buyPrice(opt.unfSrc==="grimy"?r.p.grimy:r.p.clean) });
-      rows.push({ name:"Vial of water", id:VIAL_ID, q:makes, unit:buyPrice(VIAL_ID) });
+  /* shopping list for qty potions of dose D. A mix make yields avgDoses doses on average
+     (the neck amulet turns some (3)s into (4)s), so fewer makes are needed than qty*D/3. */
+  function shop(qty){
+    const rows = [], ids = [];
+    let makes = qty;
+    if(r.type==="mix"){
+      makes = Math.ceil(qty * D / r.avgDoses);
+      const herbId = opt.unfSrc==="grimy" ? r.p.grimy : r.p.clean;
+      if(opt.unfSrc==="buy"){ rows.push({ name:r.p.name+" (unf)", id:r.p.unf, q:makes, unit:buyPrice(r.p.unf) }); }
+      else {
+        const herbName = (opt.unfSrc==="grimy" ? "Grimy " : "Clean ") + r.p.herb;
+        rows.push({ name:herbName, id:herbId, q:makes, unit:buyPrice(herbId) });
+        rows.push({ name:"Vial of water", id:VIAL_ID, q:makes, unit:buyPrice(VIAL_ID) });
+      }
+      rows.push({ name:r.secName, id:r.p.sec[1], q:Math.round(makes*g), unit:buyPrice(r.p.sec[1]) });
+      if(opt.neck!=="none"){
+        const procs = makes*NECK_P[opt.neck];
+        rows.push({ name:"Amulet of chemistry (charges)", id:CHEM_AMY_ID, q:Math.ceil(procs/NECK_CH[opt.neck]), unit:buyPrice(CHEM_AMY_ID) });
+        ids.push(CHEM_AMY_ID);
+      }
+      ids.push(opt.unfSrc==="buy" ? r.p.unf : herbId, r.p.sec[1], D===3 ? r.p.p3 : r.p.p4);
+      if(opt.unfSrc!=="buy"){ ids.push(VIAL_ID); }
     }
-    const secQty = Math.round(makes*g);
-    rows.push({ name:r.secName, id:r.p.sec[1], q:secQty, unit:buyPrice(r.p.sec[1]) });
-    if(opt.neck!=="none"){ rows.push({ name:"Amulet of chemistry (charges)", id:CHEM_AMY_ID, q:Math.ceil(makes*NECK_P[opt.neck]/NECK_CH[opt.neck]), unit:buyPrice(CHEM_AMY_ID) }); }
-    ids.push(opt.unfSrc==="buy"?r.p.unf:(opt.unfSrc==="grimy"?r.p.grimy:r.p.clean), r.p.sec[1], D===3?r.p.p3:r.p.p4);
-    if(opt.unfSrc!=="buy"){ ids.push(VIAL_ID); }
-  } else {
-    r.c.inputs.forEach(([nm,id,q])=>{ rows.push({ name:nm, id, q:qty*q, unit:buyPrice(id) }); ids.push(id); });
-    ids.push(r.c.p4);
+    else {
+      r.c.inputs.forEach(([nm,id,q])=>{ rows.push({ name:nm, id, q:qty*q, unit:buyPrice(id) }); ids.push(id); });
+      ids.push(r.c.p4);
+    }
+    return { rows, ids, makes, total:rows.reduce((s,x)=>s+x.q*x.unit,0) };
   }
-  const buyTotal = rows.reduce((s,x)=>s+x.q*x.unit,0);
+  // for mix, "qty" = potions of dose D; for combine qty = potions (4)
+  let qty = BATCH.qty;
+  if(budget){
+    const per = r.type==="combine" ? r.cost : D*r.costPerDose;
+    qty = per>0 ? Math.floor(BATCH.gp/per) : 0;
+  }
+  let list = shop(qty);
+  while(budget && qty>0 && list.total>BATCH.gp){
+    qty--;
+    list = shop(qty);
+  }
+  const { rows, ids, makes } = list, buyTotal = list.total;
   const totalProfit = qty*prof, rate = capOf(r,D), hrs = rate>0 ? qty/rate : 0;
-  const makes = r.type==="mix" ? Math.ceil(qty*D/3) : qty;
   el("pt-shopList").innerHTML = rows.map(x=>
     `<li><span>${x.name} <span class="q">×${fmt(x.q)}${x.unit>0?` @ ${fmt(x.unit)} ea`:""}</span></span><span class="cost">${fmt(x.q*x.unit)} gp</span></li>`).join("")
     + `<li class="total"><span>Total to buy</span><span class="q">${fmt(buyTotal)} gp</span></li>`
@@ -4335,8 +4485,8 @@ function updateFooter(){
     `Profit = potion sell − 2% GE tax − inputs. Each make yields a <b>(3)-dose</b> potion (unf + 1 secondary); selling as (4) decants 4×(3)→3×(4) — dose-conserving and free. `+
     `<b>Unfinished potion</b>: buy it ready-made, or make it from a clean herb + vial of water, or buy grimy and clean it yourself (+cleaning XP, needs the herb's clean level). `+
     `<b>Amulet of chemistry</b> (5%) / <b>alchemist's amulet</b> (15%) upgrade some (3)s to (4)s for a free dose (one charge per proc); <b>prescription goggles</b> save ~10% of secondaries. `+
-    `<b>Super combat</b> combines super attack/strength/defence (4) + clean torstol; <b>Stamina</b> is super energy(4) + 4 amylase crystals — both made directly as (4)s. Divine potions need untradeable crystal dust, so they're excluded. `+
-    `<b>gp/hr</b> is a sanfew-style tick estimate capped by the 2,000/4h potion buy limit; treat it as a ballpark. <b>Player lookup</b> hides potions above your Herblore level. Every price is editable (overrides stick through refreshes until Reset). Re-check before committing gp.`;
+    `<b>Combined potions</b> are made directly as (4)s, so the neck amulet never procs on them: <b>super combat</b> (super attack/strength/defence (4) + torstol), <b>stamina</b> (super energy(4) + 4 amylase crystals), <b>anti-venom</b> (antidote++(4) + 20 zulrah's scales), <b>anti-venom+</b> (anti-venom(4) + torstol) and <b>super antifire</b> (antifire(4) + crushed superior dragon bones). <b>Zamorak brew</b> is a normal mix: torstol (unf) + jangerberries. Divine potions need untradeable crystal dust, so they're excluded. `+
+    `<b>gp/hr</b> is a sanfew-style tick estimate capped by the scarcest input's 4h GE buy limit (the GE only limits buying, never selling); treat it as a ballpark. <b>Player lookup</b> hides potions above your Herblore level. Every price is editable (overrides stick through refreshes until Reset). Re-check before committing gp.`;
 }
 
 function renderAll(){ computeRows(); updateChips(); renderBest(); renderXp(); renderChart(); renderRates(); renderTable(); renderBatch(); updateFooter(); saveState(); }
@@ -4835,6 +4985,21 @@ loadMapping();
           </div>
           <p class="opt-note" id="dc-note-minpd"></p>
         </div>
+        <div>
+          <p class="opt-label">Price filter</p>
+          <div class="toggle" id="dc-tg-filter" role="group" aria-label="Price filter">
+            <button data-v="on" class="on">Strict</button>
+            <button data-v="off">Off</button>
+          </div>
+          <p class="opt-note" id="dc-note-filter"></p>
+        </div>
+        <div id="dc-row-minvol">
+          <p class="opt-label">Min 24h volume</p>
+          <div class="timing-in" style="margin:0">
+            <label for="dc-minvol">at least <input id="dc-minvol" type="number" min="0" step="10" value="25" inputmode="numeric"></label>
+          </div>
+          <p class="opt-note" id="dc-note-minvol"></p>
+        </div>
       </div>
     </section>
 
@@ -4921,33 +5086,60 @@ const DECANT = [
  ["Divine super combat",[23694,23691,23688,23685],2000],
 ];
 
-let LAT = {}, ROWS = [], SEARCH = "";
-const opt = { sort:"hr", buySpeed:"instant", sellSpeed:"instant" };
-let MINPD = 1;
+let LAT = {}, H24 = {}, ROWS = [], SEARCH = "";
+const opt = { sort:"hr", buySpeed:"instant", sellSpeed:"instant", filter:"on" };
+let MINPD = 1, MINVOL = 25;
+const EMPTY_VIAL = 229;
+const DEV = 0.5;   // reject a price more than this fraction away from its 24h average
 const LS_KEY = "decant-unified-v1";
 const hi = id => (LAT[id]||{}).high || 0;
 const lo = id => (LAT[id]||{}).low  || 0;
 const buyPrice  = id => opt.buySpeed==="patient"  ? (lo(id)||hi(id)) : (hi(id)||lo(id));
 const sellPrice = id => opt.sellSpeed==="patient" ? (hi(id)||lo(id)) : (lo(id)||hi(id));
+const vol24 = id => { const h = H24[id]; return h ? (h.highPriceVolume||0)+(h.lowPriceVolume||0) : 0; };
+
+/* drop thin / one-off prices: needs real 24h volume and a price near the 24h average */
+function reliable(id, price){
+  if(opt.filter!=="on"){ return true; }
+  const h = H24[id];
+  if(!h || vol24(id) < MINVOL){ return false; }
+  const a = h.avgHighPrice, b = h.avgLowPrice;
+  const ref = a && b ? (a+b)/2 : (a || b);
+  return !ref || (price >= ref*(1-DEV) && price <= ref*(1+DEV));
+}
 
 function compute(){
   const out = [];
+  const vial = buyPrice(EMPTY_VIAL);
   for(const [name, ids, lim] of DECANT){
     const buyOpts=[], sellOpts=[];
     for(let d=1; d<=4; d++){
       const id = ids[d-1]; if(!id){ continue; }
       const b = buyPrice(id), s = sellPrice(id);
-      if(b>0){ buyOpts.push({ d, pd:b/d, price:b }); }
-      if(s>0){ sellOpts.push({ d, pd:net(s)/d, price:s }); }
+      if(b>0 && reliable(id, b)){ buyOpts.push({ d, id, pd:b/d, price:b }); }
+      if(s>0 && reliable(id, s)){ sellOpts.push({ d, id, pd:net(s)/d, price:s }); }
     }
-    if(!buyOpts.length || !sellOpts.length){ continue; }
-    const bestBuy = buyOpts.reduce((a,b)=>b.pd<a.pd?b:a);
-    const bestSell = sellOpts.reduce((a,b)=>b.pd>a.pd?b:a);
-    const profitPerDose = bestSell.pd - bestBuy.pd;
-    if(profitPerDose < MINPD){ continue; }
-    const dosesHr = (lim/4)*bestBuy.d;              // you can only BUY lim of the cheap form per 4h
-    out.push({ name, buyD:bestBuy.d, buyPrice:bestBuy.price, sellD:bestSell.d, sellPrice:bestSell.price,
-      profitPerDose, prof4:4*profitPerDose, roi: bestBuy.pd>0?profitPerDose/bestBuy.pd*100:0, gpHr: profitPerDose*dosesHr, lim });
+    /* every buy-dose → sell-dose pair. Decanting DOWN turns 1 (b) into b/s potions, so it needs
+       (b/s − 1) extra empty vials per potion bought = (1/s − 1/b) vials per dose. */
+    let best = null;
+    for(const bo of buyOpts){
+      for(const so of sellOpts){
+        if(so.d===bo.d){ continue; }
+        const vialsPerDose = so.d < bo.d ? (1/so.d - 1/bo.d) : 0;
+        const ppd = so.pd - bo.pd - vialsPerDose*vial;
+        if(!best || ppd > best.ppd){ best = { bo, so, ppd, vialsPerDose }; }
+      }
+    }
+    if(!best || best.ppd < MINPD){ continue; }
+    const { bo, so, ppd, vialsPerDose } = best;
+    const buyDosesHr = (lim/4)*bo.d;                  // you can only BUY lim of the cheap form per 4h
+    const sv = vol24(so.id);
+    const sellDosesHr = sv>0 ? sv/24*so.d : Infinity; // don't assume you can sell faster than the market trades
+    const dosesHr = Math.min(buyDosesHr, sellDosesHr);
+    const costPd = bo.pd + vialsPerDose*vial;
+    out.push({ name, buyD:bo.d, buyPrice:bo.price, sellD:so.d, sellPrice:so.price,
+      vialsPerBuy: vialsPerDose*bo.d, profitPerDose:ppd, prof4:4*ppd, roi: costPd>0?ppd/costPd*100:0,
+      gpHr: ppd*dosesHr, lim, sellCapped: sellDosesHr < buyDosesHr });
   }
   const key = opt.sort==="dose" ? (r=>r.profitPerDose) : opt.sort==="roi" ? (r=>r.roi) : (r=>r.gpHr);
   out.sort((a,b)=>key(b)-key(a));
@@ -4959,13 +5151,15 @@ function updateChips(){
     `<span class="chip"><b>2%</b> GE sell tax</span>`,
     `<span class="chip">Bob Barter decant · <b>free</b></span>`,
     `<span class="chip">Doses conserved · 4×(1) = 1×(4)</span>`,
+    `<span class="chip">Empty vial <b>${fmt(buyPrice(EMPTY_VIAL))} gp</b></span>`,
+    opt.filter==="on" ? `<span class="chip">Strict prices · ≥${fmt(MINVOL)}/24h</span>` : "",
   ].join("");
 }
 function renderBest(){
   const byHr = ROWS[0] && ROWS.slice().sort((a,b)=>b.gpHr-a.gpHr)[0];
   const byPd = ROWS.slice().sort((a,b)=>b.profitPerDose-a.profitPerDose)[0];
   if(!byHr){ el("dc-bestHeadline").innerHTML=`No decant spread beats the tax right now — every potion's doses line up. Loosen the min or wait.`; el("dc-bestHero").innerHTML=""; el("dc-xpHeadline").innerHTML=""; el("dc-xpHero").innerHTML=""; return; }
-  el("dc-bestHeadline").innerHTML = `Buy <b>${byHr.name} (${byHr.buyD})</b> at ${fmt(byHr.buyPrice)}, decant to <b>(${byHr.sellD})</b>, sell at ${fmt(byHr.sellPrice)}.`;
+  el("dc-bestHeadline").innerHTML = `Buy <b>${byHr.name} (${byHr.buyD})</b> at ${fmt(byHr.buyPrice)}, decant to <b>(${byHr.sellD})</b>${byHr.vialsPerBuy>0?` (+${+byHr.vialsPerBuy.toFixed(2)} empty vial${byHr.vialsPerBuy===1?"":"s"} each)`:""}, sell at ${fmt(byHr.sellPrice)}.`;
   el("dc-bestHero").innerHTML = [
     [`+${fmtK(byHr.gpHr)}`, "gp / hr", false],
     [`+${fmt(byHr.profitPerDose)}`, "gp / dose", false],
@@ -4992,11 +5186,11 @@ function renderTable(){
     `<td class="mono pos">${fmtK(r.gpHr)}</td>`+
     `<td class="mono">${fmt(r.lim)}</td></tr>`).join("");
   el("dc-count").textContent = `${fmt(list.length)} profitable spread${list.length===1?"":"s"}`;
-  el("dc-tblNote").innerHTML = `* <b>gp/hr</b> = profit/dose × the doses you can buy per hour of the cheap form (its 4h limit ÷ 4 × its dose size). Decanting itself is instant &amp; free at Bob Barter; the GE buy limit is the real ceiling. Selling isn't buy-limited.`;
+  el("dc-tblNote").innerHTML = `* <b>gp/hr</b> = profit/dose × the doses you can buy per hour of the cheap form (its 4h limit ÷ 4 × its dose size), but never faster than the sell form's own 24h trade volume ÷ 24. Profit/dose already pays for any empty vials that decanting down needs.`;
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderTable(); saveState(); }
 
-const TOGGLES = { "dc-tg-sort":{key:"sort"}, "dc-tg-buyspeed":{key:"buySpeed"}, "dc-tg-sellspeed":{key:"sellSpeed"} };
+const TOGGLES = { "dc-tg-sort":{key:"sort"}, "dc-tg-buyspeed":{key:"buySpeed"}, "dc-tg-sellspeed":{key:"sellSpeed"}, "dc-tg-filter":{key:"filter"} };
 function syncToggle(id){ const def=TOGGLES[id]; [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[def.key])); }
 Object.keys(TOGGLES).forEach(id=>{ el(id).addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } opt[TOGGLES[id].key]=b.dataset.v; syncToggle(id); syncNotes(); renderAll(); }); });
 function syncNotes(){
@@ -5004,13 +5198,17 @@ function syncNotes(){
   el("dc-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy the cheap form at the bid — cheaper, waits.` : `Insta-buy the cheap form.`;
   el("dc-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell the rich form at the ask — more gp, waits.` : `Insta-sell the rich form.`;
   el("dc-note-minpd").textContent = `Hide razor-thin spreads (below this gp/dose).`;
+  el("dc-note-filter").textContent = opt.filter==="on" ? `Drops thin or one-off prices: each dose form needs 24h volume and a price within ${Math.round(DEV*100)}% of its 24h average.` : `No filter — raw prices, including one-off trades on thin (1)/(2) doses.`;
+  el("dc-note-minvol").textContent = `Skip dose forms trading under this in 24h.`;
+  el("dc-row-minvol").hidden = opt.filter!=="on";
 }
 el("dc-minpd").addEventListener("input", e=>{ MINPD=Math.max(0,Math.round(+e.target.value)||0); renderAll(); });
+el("dc-minvol").addEventListener("input", e=>{ MINVOL=Math.max(0,Math.round(+e.target.value)||0); renderAll(); });
 el("dc-search").addEventListener("input", e=>{ SEARCH=e.target.value; renderTable(); });
 el("dc-footer").innerHTML =
-  `Prices are live via the shared header bar. Profit/dose = (best insta-sell per dose, after 2% tax) − (best insta-buy per dose). `+
+  `Prices are live via the shared header bar. Profit/dose = (insta-sell per dose, after 2% tax) − (insta-buy per dose) − any empty vials, for the best buy-dose → sell-dose pair. `+
   `<b>Bob Barter</b> at the Grand Exchange decants potions between dose sizes for free, conserving total doses (four (1)-doses = one (4)-dose). `+
-  `Only the <b>bought</b> form counts against a GE buy limit, so gp/hr uses that. Spreads are usually a few gp/dose and move fast — re-check before committing gp. Requires no Herblore level.`;
+  `Decanting <b>down</b> (e.g. a (4) into (1)s) needs an empty vial for each extra potion; that cost is priced in at the GE empty-vial price. Only the <b>bought</b> form counts against a GE buy limit, and gp/hr is also held to the sell form's 24h trade volume so thin doses don't look infinitely liquid. The <b>Strict</b> price filter drops one-off trades. Spreads are usually a few gp/dose and move fast — re-check before committing gp. Requires no Herblore level.`;
 
 function pickLAT(raw, source){
   if(source!=="m5"){ return raw.latest||{}; }
@@ -5019,10 +5217,10 @@ function pickLAT(raw, source){
   ids.forEach(id=>{ const a=m5[id]||{}, l=lat[id]||{}; out[id]={ high:(a.avgHighPrice ?? l.high ?? l.low), low:(a.avgLowPrice ?? l.low ?? l.high) }; });
   return out;
 }
-function applyPrices(raw, source){ LAT = pickLAT(raw, source); renderAll(); }
-function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,MINPD})); }catch(e){} }
-function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.MINPD)){ MINPD=Math.max(0,s.MINPD); } }
-function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("dc-minpd").value=MINPD; syncNotes(); }
+function applyPrices(raw, source){ LAT = pickLAT(raw, source); H24 = raw.h24 || {}; renderAll(); }
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,MINPD,MINVOL})); }catch(e){} }
+function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.MINPD)){ MINPD=Math.max(0,s.MINPD); } if(Number.isFinite(s.MINVOL)){ MINVOL=Math.max(0,s.MINVOL); } }
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("dc-minpd").value=MINPD; el("dc-minvol").value=MINVOL; syncNotes(); }
 
 loadState(); syncControls(); renderAll();
 window.PriceHub.subscribe(applyPrices);
@@ -5060,6 +5258,14 @@ window.PriceHub.subscribe(applyPrices);
             <button data-v="bars">From bars</button>
           </div>
           <p class="opt-note" id="bo-note-tips"></p>
+        </div>
+        <div>
+          <p class="opt-label">Elemental runes</p>
+          <div class="toggle" id="bo-tg-staff" role="group" aria-label="Elemental runes">
+            <button data-v="buy" class="on">Buy runes</button>
+            <button data-v="staff">Matching staff</button>
+          </div>
+          <p class="opt-note" id="bo-note-staff"></p>
         </div>
         <div>
           <p class="opt-label">Enchanting</p>
@@ -5125,10 +5331,14 @@ window.PriceHub.subscribe(applyPrices);
 
     <section class="card">
       <h2 class="card-title">Rates — gp/hour &amp; XP/hour</h2>
-      <p class="card-sub">Enchant Crossbow Bolt does 10 bolts per cast — so throughput is huge and the 4h GE <b>buy limit</b> is the real ceiling. Shown for the most profitable bolt.</p>
+      <p class="card-sub">Enchant Crossbow Bolt does 10 bolts per cast, so enchanting is fast; fletching tips or smithing bases adds time. Each route is capped by the 4h GE <b>buy limit</b> of what it buys. Shown for the most profitable bolt.</p>
       <div class="timing-in" id="bo-timingIn">
         <label for="bo-tEnchA">Active t/cast <input id="bo-tEnchA" type="number" min="1" step="1" value="3" inputmode="numeric"></label>
         <label for="bo-tEnchP">Passive t/cast <input id="bo-tEnchP" type="number" min="1" step="1" value="7" inputmode="numeric"></label>
+        <label for="bo-tCut">Cut gem → tips t <input id="bo-tCut" type="number" min="0" step="1" value="2" inputmode="numeric"></label>
+        <label for="bo-tTip">Tip 10 bolts t <input id="bo-tTip" type="number" min="0" step="1" value="2" inputmode="numeric"></label>
+        <label for="bo-tSmith">Smith bar → 10 t <input id="bo-tSmith" type="number" min="0" step="1" value="5" inputmode="numeric"></label>
+        <label for="bo-tFeather">Feather 10 bolts t <input id="bo-tFeather" type="number" min="0" step="1" value="2" inputmode="numeric"></label>
       </div>
       <div class="tiles" id="bo-ratesTiles"></div>
       <p class="opt-note" id="bo-ratesNote"></p>
@@ -5169,7 +5379,7 @@ window.PriceHub.subscribe(applyPrices);
       <div class="tbl-wrap">
         <table id="bo-tbl">
           <thead><tr>
-            <th>Bolt</th><th>Magic</th><th>Buy-tips cost</th><th>Fletch cost</th><th>Runes/bolt</th><th>(e) sell</th><th>Profit · buy</th><th>Profit · fletch</th><th>gp/hr *</th>
+            <th>Bolt</th><th>Magic</th><th>Buy-tips cost</th><th id="bo-thSideCost">Fletch cost</th><th>Runes/bolt</th><th>(e) sell</th><th>Profit · buy</th><th id="bo-thSideProf">Profit · fletch</th><th>gp/hr *</th>
           </tr></thead>
           <tbody></tbody>
         </table>
@@ -5237,12 +5447,18 @@ const FEATHER = 314, BOLTS_PER_BAR = 10;
 const BAR_NAME = { 2349:"Bronze bar", 2351:"Iron bar", 2353:"Steel bar", 2359:"Mithril bar", 2361:"Adamant bar", 2363:"Runite bar" };
 // regular base bolt id -> { bar id, Smithing level to smith the bolts }
 const BAR_OF = { 877:{id:2349,smith:3}, 9140:{id:2351,smith:18}, 9141:{id:2353,smith:33}, 9142:{id:2359,smith:53}, 9143:{id:2361,smith:73}, 9144:{id:2363,smith:88} };
+// GE 4h buy limits of everything a route can buy (wiki mapping). Tipped bolts are all 11,000.
+const LIM = { 1609:13000, 1607:13000, 1611:13000, 413:11000, 1605:13000, 1613:11000, 1603:13000, 1601:11000, 1615:11000, 6573:11000,
+  877:7000, 9140:7000, 9141:7000, 9142:7000, 9143:11000, 9144:11000, 21905:11000,
+  2349:10000, 2351:10000, 2353:10000, 2359:10000, 2361:10000, 2363:10000, 314:30000 };
+const TIPPED_LIM = 11000;
+const ELEM = new Set([554, 555, 556, 557]);
 
 let LAT = {}, ROWS = [], MODE = "gp";
 let PLAYER = null, PNAME = null;
 const OVER = {};
-const opt = { base:"reg", tips:"buy", ench:"active", buySpeed:"instant", sellSpeed:"instant" };
-let TIMING = { tEnchA:3, tEnchP:7 };
+const opt = { base:"reg", tips:"buy", staff:"buy", ench:"active", buySpeed:"instant", sellSpeed:"instant" };
+let TIMING = { tEnchA:3, tEnchP:7, tCut:2, tTip:2, tSmith:5, tFeather:2 };
 let BATCH = { idx:0, qty:10000, driver:"qty", gp:5000000 };
 const LS_KEY = "bolts-unified-v1";
 
@@ -5252,7 +5468,24 @@ const buyPrice  = id => OVER[id]!=null ? OVER[id] : (opt.buySpeed==="patient"  ?
 const sellPrice = id => OVER[id]!=null ? OVER[id] : (opt.sellSpeed==="patient" ? (hi(id)||lo(id)) : (lo(id)||hi(id)));
 const enchTicks = () => opt.ench==="passive" ? TIMING.tEnchP : TIMING.tEnchA;
 
-function runePerBolt(b){ return b.runes.reduce((s,[id,q])=>s+q*buyPrice(id),0)/10; }
+/* runes actually bought per cast: a matching elemental staff covers the spell's one elemental rune */
+function castRunes(b){ return b.runes.filter(([id])=>!(opt.staff==="staff" && ELEM.has(id))); }
+function runePerBolt(b){ return castRunes(b).reduce((s,[id,q])=>s+q*buyPrice(id),0)/10; }
+/* ticks per bolt for a route: enchanting, plus cutting/tipping (fletch) and smithing/feathering (bars) */
+function ticksPerBolt(b, route){
+  let t = enchTicks()/10;
+  if(route!=="buy"){ t += TIMING.tCut/b.tipsPer + TIMING.tTip/10; }
+  if(route==="bars"){ t += TIMING.tSmith/BOLTS_PER_BAR + TIMING.tFeather/10; }
+  return t;
+}
+/* bolts/hr the route's scarcest bought input allows (limit ÷ 4) */
+function routeCap(b, v, route, barInfo){
+  if(route==="buy"){ return TIPPED_LIM/4; }
+  const tips = (LIM[b.gem]||Infinity)*b.tipsPer;
+  if(route==="fletch"){ return Math.min(tips, LIM[v.base]||Infinity)/4; }
+  return Math.min(tips, (LIM[barInfo.id]||Infinity)*BOLTS_PER_BAR, LIM[FEATHER]||Infinity)/4;
+}
+function routeRate(b, v, route, barInfo){ return Math.min(6000/ticksPerBolt(b, route), routeCap(b, v, route, barInfo)); }
 function calc(b){
   const v = variant(b);
   if(!v){ return { b, name:b.name, magicLvl:b.magicLvl, allowed:false, novar:true, profBuy:null, profFletch:null, profBars:null }; }
@@ -5270,29 +5503,31 @@ function calc(b){
   const profBuy = sell - cBuy - rune;
   const profFletch = fletchOK ? (sell - cFletch - rune) : null;
   const profBars = barsOK ? (sell - cBars - rune) : null;
-  const enchRate = 10 * 6000 / enchTicks();
-  const cap = b.lim/4;
-  const effRate = Math.min(enchRate, cap);
-  return {
+  const eff = { buy:routeRate(b, v, "buy"), fletch:routeRate(b, v, "fletch"), bars:barInfo ? routeRate(b, v, "bars", barInfo) : 0 };
+  const caps = { buy:routeCap(b, v, "buy"), fletch:routeCap(b, v, "fletch"), bars:barInfo ? routeCap(b, v, "bars", barInfo) : 0 };
+  const r = {
     b, v, name:b.name, magicLvl:b.magicLvl, fletchLvl:v.fletchLvl, barInfo, magicOK, fletchOK, barsOK,
     cBuy, cFletch, cBars, rune, sellE:sellPrice(v.ench), profBuy, profFletch, profBars,
     roiBuy: (cBuy+rune)>0 ? profBuy/(cBuy+rune)*100 : 0,
     roiFletch: profFletch!=null && (cFletch+rune)>0 ? profFletch/(cFletch+rune)*100 : null,
     roiBars: profBars!=null && (cBars+rune)>0 ? profBars/(cBars+rune)*100 : null,
-    hrBuy: profBuy*effRate, hrFletch: profFletch!=null ? profFletch*effRate : null, hrBars: profBars!=null ? profBars*effRate : null,
-    effRate, cap, enchXp:b.enchXp, lim:b.lim, allowed:magicOK,
+    eff, caps,
+    hrBuy: profBuy*eff.buy, hrFletch: profFletch!=null ? profFletch*eff.fletch : null, hrBars: profBars!=null ? profBars*eff.bars : null,
+    enchXp:b.enchXp, lim:b.lim, allowed:magicOK,
   };
+  r.effRate = eff[primSrc(r)];     // rate of the route you've picked (falls back to buy)
+  r.cap = caps[primSrc(r)];
+  return r;
 }
 /* source resolution: opt.tips is buy | fletch | bars; fall back to buy if the chosen route isn't available */
 function primSrc(r){
   if(opt.tips==="bars" && r.profBars!=null){ return "bars"; }
   if(opt.tips==="fletch" && r.profFletch!=null){ return "fletch"; }
-  if(opt.tips!=="buy" && (opt.tips==="bars"?r.profBars==null:r.profFletch==null)){ return "buy"; }
   return "buy";
 }
 function srcProf(r, s){ return s==="bars"?r.profBars : s==="fletch"?r.profFletch : r.profBuy; }
 function srcCost(r, s){ return s==="bars"?r.cBars : s==="fletch"?r.cFletch : r.cBuy; }
-function srcHr(r, s){ const p=srcProf(r,s); return p==null?null:p*r.effRate; }
+function srcHr(r, s){ const p=srcProf(r,s); return p==null?null:p*r.eff[s]; }
 function fletchSideSrc(){ return opt.tips==="bars" ? "bars" : "fletch"; }  // 2nd chart series
 function computeRows(){ ROWS = BOLTS.map(calc); }
 function primaryHr(r){ return srcHr(r, primSrc(r)); }
@@ -5316,20 +5551,20 @@ const MODES = {
          vals:r=>[r.roiBuy, fletchSideSrc()==="bars"?r.roiBars:r.roiFletch], fmt:v=>(v<0?"":"+")+v.toFixed(0)+"%", tick:v=>(v>0?"+":"")+v+"%" },
   hr:  { title:"Profit per hour", note:"", vals:r=>[r.hrBuy, srcHr(r, fletchSideSrc())], fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xphr:{ title:"Magic XP per hour",
-         note:"Magic XP/hr from enchanting, at your bolts/hr capped by the 11k/4h buy limit. Same either way — the tip source doesn't change the enchant XP; Fletching/Smithing XP from making the bolts isn't counted.",
-         vals:r=>{ const x=r.effRate*r.enchXp/10; return [x, x]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+         note:"Magic XP/hr from enchanting, at each route's bolts/hr (its own tick time, capped by the buy limit of what it buys). Fletching/Smithing XP from making the bolts isn't counted.",
+         vals:r=>{ const s=fletchSideSrc(), fp=srcProf(r,s); return [r.eff.buy*r.enchXp/10, fp==null?null:r.eff[s]*r.enchXp/10]; }, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
   xp:  { title:"Profit per XP",
          note:"Net profit ÷ Magic XP from enchanting (per bolt — one cast enchants 10). Fletching XP from tipping the bolts isn't counted.",
          vals:r=>{ const x=r.enchXp/10, fp=srcProf(r,fletchSideSrc()); return x>0?[r.profBuy/x, fp==null?null:fp/x]:[null,null]; },
          fmt:v=>(v<0?"":"+")+(Math.abs(v)>=100?fmt(Math.round(v)):v.toFixed(1)), tick:v=>(v>0?"+":"")+(Number.isInteger(v)?v:v.toFixed(1)) },
 };
 function showTip(e,r){
-  const rl = r.b.runes.map(([id,q])=>`${q} ${RUNE_NAME[id]}`).join(" + ");
+  const rl = castRunes(r.b).map(([id,q])=>`${q} ${RUNE_NAME[id]}`).join(" + ") || "no runes";
   const fs = fletchSideSrc(), fp = srcProf(r, fs), flabel = fs==="bars" ? "From bars" : "Fletch tips";
   const fl = fp==null ? `${flabel}: <span class="t-sub">need ${fs==="bars"?"Smithing/Fletching":"Fletching "+r.fletchLvl}</span>` : `${flabel}: <span class="${fp<0?'t-neg':'t-pos'}">${fp<0?'':'+'}${fmt(fp)}</span>`;
   tip.innerHTML = `<span class="t-h">${r.name} bolts (e)</span>Magic ${r.magicLvl} · enchant ${rl} /10<br>`+
     `Buy tips: <span class="${r.profBuy<0?'t-neg':'t-pos'}">${r.profBuy<0?'':'+'}${fmt(r.profBuy)}</span> (cost ${fmt(r.cBuy)})<br>`+
-    `${fl} (cost ${fmt(Math.round(r.cFletch))})<br>Runes ${fmt(r.rune)}/bolt · (e) sells ${fmt(r.sellE)}`;
+    `${fl} (cost ${fp==null?"—":fmt(Math.round(srcCost(r, fs)))})<br>Runes ${fmt(r.rune)}/bolt · (e) sells ${fmt(r.sellE)}`;
   tip.style.opacity=1; moveTip(e);
 }
 function moveTip(e){ const pad=14; let x=e.clientX+pad,y=e.clientY+pad; const w=tip.offsetWidth,h=tip.offsetHeight; if(x+w>innerWidth){ x=e.clientX-w-pad; } if(y+h>innerHeight){ y=e.clientY-h-pad; } tip.style.left=x+"px"; tip.style.top=y+"px"; }
@@ -5338,7 +5573,7 @@ function renderChart(){
   const M = MODES[MODE];
   el("bo-cardTitle").textContent = M.title;
   { const lf = el("bo-legF"); if(lf){ lf.textContent = opt.tips==="bars" ? "From bars" : "Fletch tips"; } }
-  el("bo-cardNote").innerHTML = MODE==="hr" ? `Capped by the 11k/4h buy limit on tips/inputs — ~2,750/hr per bolt type. Tune enchant ticks in the Rates card.` : M.note;
+  el("bo-cardNote").innerHTML = MODE==="hr" ? `Each route at its own speed (enchant, plus cutting/tipping or smithing), capped by the 4h buy limit of what it buys — tipped bolts 11k, or the gems (×12 tips), base bolts, bars (×10) and feathers. Tune ticks in the Rates card.` : M.note;
   const data = ROWS.filter(r=>r.allowed).slice().sort((a,b)=>{ const bv=M.vals(b).filter(v=>v!=null), av=M.vals(a).filter(v=>v!=null); return Math.max(...bv)-Math.max(...av); });
   if(!data.length){ chart.innerHTML=`<p class="opt-note" style="padding:8px 2px">No bolt matches your Magic level${PNAME?` (${PNAME})`:""}. Level up or clear the player.</p>`; axisEl.innerHTML=""; return; }
   const allv = data.flatMap(M.vals).filter(v=>v!=null);
@@ -5387,23 +5622,30 @@ function renderRates(){
   ];
   el("bo-ratesTiles").innerHTML = tiles.map(t=>`<div class="tile ${t.loss?"hero loss":""}"><p class="k">${t.k}</p><div class="v">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
   const srcWord = primSrc(top)==="bars" ? "cut gem + bars smithed into bolts" : primSrc(top)==="fletch" ? "cut gem + bought base bolts" : "bought tipped bolts";
-  el("bo-ratesNote").textContent = `${top.name}${opt.base==="drg"?" dragon":""}: enchant 10 bolts/${enchTicks()}t ≈ ${fmt(Math.round(10*6000/enchTicks()))}/hr, but the 11k/4h buy limit caps it at ${fmt(Math.round(top.cap))}/hr. Source: ${srcWord}. Rough — the buy limit is the true ceiling; rotate bolt types to scale.`;
+  const src = primSrc(top), speed = 6000/ticksPerBolt(top.b, src);
+  el("bo-ratesNote").textContent = `${top.name}${opt.base==="drg"?" dragon":""}: ${ticksPerBolt(top.b, src).toFixed(2)} ticks/bolt ≈ ${fmt(Math.round(speed))}/hr (enchant 10/${enchTicks()}t${src!=="buy"?", plus cutting & tipping":""}${src==="bars"?", smithing & feathering":""}), capped at ${fmt(Math.round(top.cap))}/hr by the buy limit of what you buy. Source: ${srcWord}. Rough — rotate bolt types to scale past the limit.`;
 }
 function primaryProf(r){ return srcProf(r, primSrc(r)); }
 
 /* table */
 const tb = root.querySelector("#bo-tbl tbody");
 function renderTable(){
-  tb.innerHTML = ROWS.filter(r=>r.allowed).map(r=>
+  const side = fletchSideSrc(), sideWord = side==="bars" ? "bars" : "fletch";
+  el("bo-thSideCost").textContent = side==="bars" ? "From-bars cost" : "Fletch cost";
+  el("bo-thSideProf").textContent = "Profit · " + sideWord;
+  tb.innerHTML = ROWS.filter(r=>r.allowed).map(r=>{
+    const sp = srcProf(r, side), sc = srcCost(r, side);
+    return 
     `<tr><td>${r.name}</td>`+
     `<td class="mono">${r.magicLvl}</td>`+
     `<td class="mono">${fmt(r.cBuy)}</td>`+
-    `<td class="mono ${r.profFletch==null?'na':''}">${r.profFletch==null?'—':fmt(Math.round(r.cFletch))}</td>`+
+    `<td class="mono ${sp==null?'na':''}">${sp==null?'—':fmt(Math.round(sc))}</td>`+
     `<td class="mono">${fmt(r.rune)}</td>`+
     `<td class="mono">${fmt(r.sellE)}</td>`+
     `<td class="mono ${r.profBuy<0?'negv':'pos'}">${r.profBuy<0?'':'+'}${fmt(r.profBuy)}</td>`+
-    `<td class="mono ${r.profFletch==null?'na':(r.profFletch<0?'negv':'pos')}">${r.profFletch==null?'—':(r.profFletch<0?'':'+')+fmt(r.profFletch)}</td>`+
-    `<td class="mono ${(primaryHr(r)||0)<0?'negv':'pos'}">${primaryHr(r)==null?'—':fmtK(primaryHr(r))}</td></tr>`).join("");
+    `<td class="mono ${sp==null?'na':(sp<0?'negv':'pos')}">${sp==null?'—':(sp<0?'':'+')+fmt(sp)}</td>`+
+    `<td class="mono ${(primaryHr(r)||0)<0?'negv':'pos'}">${primaryHr(r)==null?'—':fmtK(primaryHr(r))}</td></tr>`;
+  }).join("");
 }
 
 /* batch */
@@ -5425,27 +5667,37 @@ function renderBatch(){
   const prof = srcProf(r, src);
   const perBolt = srcCost(r, src) + r.rune;
   const budget = BATCH.driver==="gp";
-  let qty = budget ? (perBolt>0?Math.floor(BATCH.gp/perBolt):0) : BATCH.qty;
-  const casts = Math.ceil(qty/10);
-  const rows=[], ids=[];
   const tippedName = opt.base==="drg" ? b.name+" dragon bolts" : b.name+" bolts";
-  if(src==="buy"){
-    rows.push({ name:tippedName, id:v.tipped, q:qty, unit:buyPrice(v.tipped) });
-    ids.push(v.tipped);
-  } else {
-    rows.push({ name:(b.gemName||b.name+" (cut gem)"), id:b.gem, q:Math.ceil(qty/b.tipsPer), unit:buyPrice(b.gem) });
-    if(src==="bars" && r.barInfo){
-      rows.push({ name:BAR_NAME[r.barInfo.id], id:r.barInfo.id, q:Math.ceil(qty/BOLTS_PER_BAR), unit:buyPrice(r.barInfo.id) });
-      rows.push({ name:"Feather", id:FEATHER, q:qty, unit:buyPrice(FEATHER) });
-      ids.push(b.gem, r.barInfo.id, FEATHER);
-    } else {
-      rows.push({ name:v.baseName, id:v.base, q:qty, unit:buyPrice(v.base) });
-      ids.push(b.gem, v.base);
+  function shop(qty){
+    const casts = Math.ceil(qty/10);
+    const rows=[], ids=[];
+    if(src==="buy"){
+      rows.push({ name:tippedName, id:v.tipped, q:qty, unit:buyPrice(v.tipped) });
+      ids.push(v.tipped);
     }
+    else {
+      rows.push({ name:(b.gemName||b.name+" (cut gem)"), id:b.gem, q:Math.ceil(qty/b.tipsPer), unit:buyPrice(b.gem) });
+      if(src==="bars" && r.barInfo){
+        rows.push({ name:BAR_NAME[r.barInfo.id], id:r.barInfo.id, q:Math.ceil(qty/BOLTS_PER_BAR), unit:buyPrice(r.barInfo.id) });
+        rows.push({ name:"Feather", id:FEATHER, q:qty, unit:buyPrice(FEATHER) });
+        ids.push(b.gem, r.barInfo.id, FEATHER);
+      }
+      else {
+        rows.push({ name:v.baseName, id:v.base, q:qty, unit:buyPrice(v.base) });
+        ids.push(b.gem, v.base);
+      }
+    }
+    castRunes(b).forEach(([id,q])=>{ rows.push({ name:RUNE_NAME[id]+" rune", id, q:q*casts, unit:buyPrice(id) }); ids.push(id); });
+    ids.push(v.ench);
+    return { rows, ids, casts, total:rows.reduce((s,x)=>s+x.q*x.unit,0) };
   }
-  b.runes.forEach(([id,q])=>{ rows.push({ name:RUNE_NAME[id]+" rune", id, q:q*casts, unit:buyPrice(id) }); ids.push(id); });
-  ids.push(v.ench);
-  const buyTotal=rows.reduce((s,x)=>s+x.q*x.unit,0);
+  let qty = budget ? (perBolt>0?Math.floor(BATCH.gp/perBolt):0) : BATCH.qty;
+  let list = shop(qty);
+  while(budget && qty>0 && list.total>BATCH.gp){   // gems, bars and casts round up — trim until it fits
+    qty--;
+    list = shop(qty);
+  }
+  const { rows, ids, casts } = list, buyTotal = list.total;
   const totalProfit=qty*prof, hrs=r.effRate>0?qty/r.effRate:0;
   el("bo-shopList").innerHTML = rows.map(x=>
     `<li><span>${x.name} <span class="q">×${fmt(x.q)}${x.unit>0?` @ ${fmt(x.unit)} ea`:""}</span></span><span class="cost">${fmt(x.q*x.unit)} gp</span></li>`).join("")
@@ -5477,7 +5729,7 @@ function updateFooter(){
     `Prices are live via the shared header bar. Profit = (e) bolt sell − 2% GE tax − tips/inputs − enchant runes. `+
     `<b>Base bolt</b>: gem tips go on a standard metal bolt (Regular) or on <b>dragon bolts</b> (higher-strength "gem dragon bolts (e)"). <b>Tips source</b>: buy the tipped bolt ready; <b>fletch</b> — cut gem → 12 tips (24 for pearl), attach to a bought base bolt; or <b>from bars</b> — smith the metal base yourself (1 bar → 10 bolts + a feather each) then attach tips. Dragon bolts can't be smithed, so "from bars" applies to Regular bases only. `+
     `<b>Enchant Crossbow Bolt</b> does 10 bolts per cast — from Opal (M4) up to Onyx (M87): e.g. Ruby M49 (5 fire + 1 blood + 1 cosmic), Diamond M57 (10 earth + 2 law + 1 cosmic), Dragonstone M68 (15 earth + 1 soul + 1 cosmic), Onyx M87 (20 fire + 1 death + 1 cosmic). Jade's regular bolts aren't GE-tradeable, so Jade shows only in Dragon mode. `+
-    `Enchanting 10/cast is so fast the <b>11k/4h buy limit</b> on tips/inputs is the ceiling (~2,750/hr per bolt) — rotate types to scale. `+
+    `<b>gp/hr</b>: each route runs at its own tick speed (enchant 10/cast, plus cutting tips and tipping for Fletch, plus smithing and feathering for From bars) and is capped by the 4h buy limit of what it buys — 11k tipped bolts, or the cut gems (×12 tips), base bolts, bars (×10 bolts) and feathers. A matching elemental staff can supply each spell's elemental runes. Rotate types to scale. `+
     `<b>Player lookup</b> hides bolts above your Magic level, disables fletch below the Fletching level, and "from bars" below the Smithing level. Every price is editable (sticks through refreshes until Reset). Re-check before committing gp.`;
 }
 
@@ -5505,17 +5757,19 @@ function syncPriceInputs(){ priceItems().forEach(it=>{ const i=el("bo-p-"+it.id)
 })();
 
 /* toggles */
-const TOGGLES = { "bo-tg-base":{key:"base"}, "bo-tg-tips":{key:"tips"}, "bo-tg-ench":{key:"ench"}, "bo-tg-buyspeed":{key:"buySpeed"}, "bo-tg-sellspeed":{key:"sellSpeed"} };
+const TOGGLES = { "bo-tg-base":{key:"base"}, "bo-tg-tips":{key:"tips"}, "bo-tg-staff":{key:"staff"}, "bo-tg-ench":{key:"ench"}, "bo-tg-buyspeed":{key:"buySpeed"}, "bo-tg-sellspeed":{key:"sellSpeed"} };
 function syncToggle(id){ const def=TOGGLES[id]; [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[def.key])); }
 Object.keys(TOGGLES).forEach(id=>{ el(id).addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } opt[TOGGLES[id].key]=b.dataset.v; syncToggle(id); syncNotes(); renderAll(); }); });
 function syncNotes(){
   el("bo-note-base").textContent = opt.base==="drg" ? `Tips on dragon bolts → gem dragon bolts (e), higher strength. All 10 gems available.` : `Tips on the standard metal bolt for each gem (bronze…runite).`;
   el("bo-note-tips").textContent = opt.tips==="buy" ? `Buy the tipped bolt ready-made — no Fletching needed.` : opt.tips==="bars" ? `Buy metal bars, smith them into bolts, feather, then attach tips (needs Smithing + Fletching). Dragon bases fall back to buying.` : `Cut gems into tips (12; 24 for pearl) and attach to bought base bolts (needs Fletching).`;
+  el("bo-note-staff").textContent = opt.staff==="staff" ? `Wield the staff that matches each spell's elemental (air/water/earth/fire) — those runes are free.` : `Buy every rune, elementals included.`;
   el("bo-note-ench").textContent = opt.ench==="active" ? `Manual spam-cast, ${TIMING.tEnchA}t/cast — but the buy limit caps you long before speed matters.` : `AFK auto-recast, ${TIMING.tEnchP}t/cast.`;
   el("bo-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy inputs at the bid — cheaper, waits.` : `Pay the insta-buy ask.`;
   el("bo-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell (e) bolts at the ask — more gp, waits.` : `Dump (e) bolts at the insta-sell bid.`;
 }
-["tEnchA","tEnchP"].forEach(key=>{ el("bo-"+key).addEventListener("input", e=>{ TIMING[key]=Math.max(1,Math.round(+e.target.value)||1); el("bo-"+key).value=TIMING[key]; renderAll(); }); });
+const TIMING_KEYS = ["tEnchA","tEnchP","tCut","tTip","tSmith","tFeather"];
+TIMING_KEYS.forEach(key=>{ el("bo-"+key).addEventListener("input", e=>{ const min = key.startsWith("tEnch") ? 1 : 0; const v = Math.round(+e.target.value); TIMING[key]=Math.max(min, Number.isFinite(v) ? v : min); el("bo-"+key).value=TIMING[key]; renderAll(); }); });
 el("bo-toggle").addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } MODE=b.dataset.mode; [...el("bo-toggle").children].forEach(x=>{ const on=x===b; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); renderChart(); });
 
 /* shared feeds */
@@ -5523,7 +5777,7 @@ function pickLAT(raw, source){ if(source!=="m5"){ return raw.latest||{}; } const
 function applyPrices(raw, source){ LAT=pickLAT(raw, source); syncPriceInputs(); renderAll(); }
 function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,TIMING,MODE,BATCH,OVER})); }catch(e){} }
 function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(s.TIMING){ Object.assign(TIMING,s.TIMING); } if(s.MODE){ MODE=s.MODE; } if(s.BATCH){ Object.assign(BATCH,s.BATCH); } if(s.OVER){ Object.assign(OVER,s.OVER); } }
-function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("bo-tEnchA").value=TIMING.tEnchA; el("bo-tEnchP").value=TIMING.tEnchP; [...el("bo-toggle").children].forEach(x=>{ const on=x.dataset.mode===MODE; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); el("bo-batchQty").value=BATCH.qty; el("bo-batchGp").value=BATCH.gp; syncBatchDriver(); buildPriceEditor(); syncNotes(); }
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); TIMING_KEYS.forEach(k=>{ el("bo-"+k).value=TIMING[k]; }); [...el("bo-toggle").children].forEach(x=>{ const on=x.dataset.mode===MODE; x.classList.toggle("on",on); x.setAttribute("aria-selected",on); }); el("bo-batchQty").value=BATCH.qty; el("bo-batchGp").value=BATCH.gp; syncBatchDriver(); buildPriceEditor(); syncNotes(); }
 
 loadState(); syncControls(); renderAll();
 window.PriceHub.subscribe(applyPrices);
@@ -6164,6 +6418,10 @@ const LOGS = [
  ["Oak → oak plank", 1521, 8778, 250, 175, 15000],
  ["Teak → teak plank", 6333, 8780, 500, 350, 13000],
  ["Mahogany → mahogany plank", 6332, 8782, 1500, 1050, 11000],
+ // Sailing logs (lim null = the wiki lists no buy limit, so only your make rate bounds gp/hr)
+ ["Camphor → camphor plank", 32904, 31432, 2500, 1750, null],
+ ["Ironwood → ironwood plank", 32907, 31435, 5000, 3500, 12000],
+ ["Rosewood → rosewood plank", 32910, 31438, 7500, 5250, 12000],
 ];
 
 let LAT = {}, ROWS = [], PLAYER = null, PNAME = null;
@@ -6189,7 +6447,7 @@ function compute(){
     const cc = convertCost(sawFee, pmFee);
     const profit = net(sell) - buy - cc;
     if(profit < MINPU){ continue; }
-    const effRate = Math.min(RATE, lim/4);
+    const effRate = Math.min(RATE, lim ? lim/4 : Infinity);
     const spend = buy + cc;
     out.push({ name, logId, plankId, buy, sell, cc, profit,
       roi: spend>0 ? profit/spend*100 : 0, gpHr: profit*effRate, lim });
@@ -6226,7 +6484,7 @@ function renderBest(){
   el("pk-bestHero").innerHTML = [
     [`+${fmtK(byHr.gpHr)}`, "gp / hr (this log)"],
     [`+${fmt(byHr.profit)}`, "gp / plank"],
-    [`${fmt(byHr.lim)}`, "buy limit / 4h"],
+    [`${byHr.lim?fmt(byHr.lim):"—"}`, "buy limit / 4h"],
   ].map(([n,l])=>`<div><div class="num">${n}</div><div class="lab">${l}</div></div>`).join("");
   el("pk-xpHeadline").innerHTML = `<b>${byU.name}</b>: <b>+${fmt(byU.profit)}</b> gp/plank (${byU.roi.toFixed(1)}% ROI).`;
   el("pk-xpHero").innerHTML = [
@@ -6245,7 +6503,7 @@ function renderTable(){
     `<td class="mono pos">+${fmt(r.profit)}</td>`+
     `<td class="mono pos">${r.roi.toFixed(1)}%</td>`+
     `<td class="mono pos">${fmtK(r.gpHr)}</td>`+
-    `<td class="mono">${fmt(r.lim)}</td></tr>`).join("");
+    `<td class="mono">${r.lim?fmt(r.lim):"—"}</td></tr>`).join("");
   el("pk-count").textContent = `${fmt(ROWS.length)} profitable tier${ROWS.length===1?"":"s"}`;
   el("pk-tblNote").innerHTML = `* <b>gp/hr</b> = profit/plank × the smaller of your make rate and the log's 4h buy limit ÷ 4. Planks aren't buy-limited to sell — the log buy limit is the ceiling.`;
 }
@@ -6269,7 +6527,7 @@ el("pk-rate").addEventListener("input", e=>{ RATE=Math.max(1,Math.round(+e.targe
 el("pk-minpu").addEventListener("input", e=>{ MINPU=Math.max(0,Math.round(+e.target.value)||0); renderAll(); });
 el("pk-footer").innerHTML =
   `Prices are live via the shared header bar. Profit = (plank insta-sell, after 2% tax) − log buy − conversion cost. `+
-  `The <b>sawmill</b> charges 100 / 250 / 500 / 1,500 gp for regular / oak / teak / mahogany. <b>Plank Make</b> (Lunar, <b>Magic 86</b>, from Dream Mentor) charges 70% of that in coins plus 1 nature + 2 astral + 15 earth runes a cast, converting one log per cast. `+
+  `The <b>sawmill</b> charges 100 / 250 / 500 / 1,500 gp for regular / oak / teak / mahogany, and 2,500 / 5,000 / 7,500 gp for the Sailing logs (camphor / ironwood / rosewood). <b>Plank Make</b> (Lunar, <b>Magic 86</b>, from Dream Mentor) charges 70% of that in coins plus 1 nature + 2 astral + 15 earth runes a cast, converting one log per cast. `+
   `gp/hr is capped by the log's 4h GE buy limit ÷ 4. Prices move — re-check before committing gp.`;
 
 function pickLAT(raw, source){
@@ -6419,7 +6677,9 @@ const geTax = p => p<50 ? 0 : Math.min(Math.floor(p*0.02), 5000000);
 const net = p => p - geTax(p);
 
 const STEEL_BAR=2353, CANNONBALL=2, IRON=440, COAL=453, MITH_ORE=447, ADM_ORE=449, RUNE_ORE=451, GOLD_ORE=444, SILVER_ORE=442;
-const CANNON_MAGIC = 35;   // Smithing level for steel cannonballs
+const CANNON_SMITH = 35;   // Smithing level for steel cannonballs
+const BF_COFFER_HR = 72000;   // Blast Furnace coffer: 72k gp/hr pays the dwarves, for every player
+const BF_FOREMAN_HR = 15000;  // extra foreman fee under 60 Smithing: 2,500 gp per 10 minutes
 
 // Blast Furnace bars: [name, barId, [[oreId,qty],...], coalQty(BF-halved), buyLimit(bar), reqSmith]
 const BARS = [
@@ -6450,7 +6710,7 @@ function computeCannon(){
   const barsHr = ballsHr/4;
   const effBars = Math.min(barsHr, (LIM[STEEL_BAR]||10000)/4);
   ROWS = [{ name:"Steel bar → 4 cannonballs", buyStr:`bar ${fmt(buy)}`, sellStr:`ball ${fmt(ball)} ×4`,
-    inCost:buy, profit, roi: buy>0?profit/buy*100:0, gpHr: profit*effBars, lim:LIM[STEEL_BAR]||10000, req:CANNON_MAGIC }];
+    inCost:buy, profit, roi: buy>0?profit/buy*100:0, gpHr: profit*effBars, lim:LIM[STEEL_BAR]||10000, req:CANNON_SMITH }];
 }
 function computeBars(){
   const out = [];
@@ -6469,20 +6729,23 @@ function computeBars(){
     for(const [oreId, q] of ores){ capBars = Math.min(capBars, (LIM[oreId]||Infinity)/q); }
     if(coalN>0){ capBars = Math.min(capBars, (LIM[COAL]||Infinity)/coalN); }
     const effRate = Math.min(RATE, capBars/4);
+    const fees = bfFeesHr();
     out.push({ name, barId, buyStr:parts.join(" + "), sellStr:`bar ${fmt(sell)}`, sell,
-      inCost, profit, roi: inCost>0?profit/inCost*100:0, gpHr: profit*effRate, lim, req });
+      inCost, profit, roi: inCost>0?profit/inCost*100:0, gpHr: profit*effRate - fees, lim, req });
   }
   const key = opt.sort==="unit" ? (r=>r.profit) : opt.sort==="roi" ? (r=>r.roi) : (r=>r.gpHr);
   out.sort((a,b)=>key(b)-key(a));
   ROWS = out;
 }
 function compute(){ if(opt.mode==="cannon"){ computeCannon(); } else { computeBars(); } }
+/** Blast Furnace running cost per hour: the coffer always, plus the foreman below 60 Smithing. */
+function bfFeesHr(){ const s = playerSmith(); return BF_COFFER_HR + (s!=null && s<60 ? BF_FOREMAN_HR : 0); }
 
 function playerSmith(){ return PLAYER ? PLAYER.smithing : null; }
 function gateChip(){
   const s = playerSmith();
   if(s==null){ return ""; }
-  const need = opt.mode==="cannon" ? CANNON_MAGIC : Math.min(...BARS.map(b=>b[5]));
+  const need = opt.mode==="cannon" ? CANNON_SMITH : Math.min(...BARS.map(b=>b[5]));
   return `<span class="chip">Gated by <b>${PNAME}</b> · Smithing ${s}${s<need?` ⚠ &lt;${need}`:""}</span>`;
 }
 function updateChips(){
@@ -6491,6 +6754,7 @@ function updateChips(){
     `<span class="chip"><b>2%</b> GE sell tax</span>`,
     opt.mode==="cannon" ? `<span class="chip">1 steel bar → <b>4</b> cannonballs</span>` : `<span class="chip">Blast Furnace · coal <b>halved</b></span>`,
     opt.mode==="cannon" ? `<span class="chip">35 Smithing</span>` : `<span class="chip">coal ${fmt(buyPrice(COAL))} gp</span>`,
+    opt.mode==="cannon" ? "" : `<span class="chip">BF fees <b>−${fmtK(bfFeesHr())}</b>/hr</span>`,
   ].join("");
 }
 function reqWarn(r){ const s=playerSmith(); return (s!=null && s<r.req) ? ` <span class="best-tag unf">⚠ Smith ${r.req}</span>` : ""; }
@@ -6535,7 +6799,7 @@ function renderTable(){
   el("cb-count").textContent = opt.mode==="cannon" ? "" : `${fmt(ROWS.length)} bar${ROWS.length===1?"":"s"} above the min`;
   el("cb-tblNote").innerHTML = opt.mode==="cannon"
     ? `* <b>gp/hr</b> = profit/bar × bars smithed per hour (${opt.mould==="double"?"4,800":"2,400"} balls ÷ 4), capped by the steel-bar 4h buy limit ÷ 4.`
-    : `* <b>gp/hr</b> = profit/bar × the smaller of your smelt rate and the scarcest input's 4h buy limit ÷ 4. Blast Furnace halves the coal each bar needs.`;
+    : `* <b>gp/hr</b> = profit/bar × the smaller of your smelt rate and the scarcest input's 4h buy limit ÷ 4, minus the Blast Furnace fees (${fmtK(bfFeesHr())}/hr). Blast Furnace halves the coal each bar needs.`;
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderTable(); saveState(); }
 
@@ -6557,14 +6821,14 @@ function syncNotes(){
   el("cb-note-minpu").textContent = `Hide bars below this gp/bar (can go negative to see losses).`;
   el("cb-bestSub").textContent = cannon
     ? `Profit per steel bar (4 balls sold, after tax) × bars smithed per hour.`
-    : `The most gp/hour — profit per bar × your smelt rate, capped by the input's 4h buy limit.`;
+    : `The most gp/hour — profit per bar × your smelt rate, capped by the input's 4h buy limit, minus the Blast Furnace coffer.`;
 }
 el("cb-rate").addEventListener("input", e=>{ RATE=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
 el("cb-minpu").addEventListener("input", e=>{ MINPU=Math.round(+e.target.value)||0; renderAll(); });
 el("cb-footer").innerHTML =
   `Prices are live via the shared header bar. <b>Cannonballs</b>: one steel bar smiths into 4 cannonballs (needs <b>Smithing 35</b> and an ammo mould); profit = 4 balls sold after 2% tax − the steel bar. `+
   `<b>Bar smelting</b> at the <b>Blast Furnace</b> halves the coal each bar needs (mithril 4→2, adamant 6→3, rune 8→4); profit = the bar sold after tax − ore − coal. `+
-  `gp/hr is capped by the scarcest input's 4h GE buy limit ÷ 4. A Blast Furnace coffer fee applies under 60 Smithing and isn't modelled here. Prices move — re-check before committing gp.`;
+  `gp/hr is capped by the scarcest input's 4h GE buy limit ÷ 4, then the Blast Furnace <b>coffer</b> (72,000 gp/hr, paid by everyone) is subtracted — plus the foreman's 2,500 gp per 10 minutes (15,000/hr) if your looked-up Smithing is under 60. Prices move — re-check before committing gp.`;
 
 function pickLAT(raw, source){
   if(source!=="m5"){ return raw.latest||{}; }
@@ -6765,17 +7029,11 @@ const net = p => p - geTax(p);
 /* ------------------------------------------------------------------
    Food table. Fields:
      name, rawId, cookedId, cook (level to cook),
-     range  (stop-burn level on a range/oven),
-     fire   (stop-burn level on a fire/campfire),
-     gaunt  (stop-burn level on a range WITH cooking gauntlets, or null),
+     range, fire, gaunt  (legacy stop-burn levels — kept for reference only;
+                          burn now comes from SUCCESS_CHART below),
      xp     (Cooking xp per successfully cooked food),
      lim    (raw's 4h GE buy limit, from the wiki mapping API),
      kind   ("fish" | "meat")
-   Stop-burn levels are community estimates (exact OSRS burn rates are
-   not officially published). The burn model below is calibrated to the
-   wiki's measured shark-with-gauntlets data: burn falls ~1% per level
-   below the stop-burn level (e.g. shark at 86 with gauntlets ~7%), NOT
-   a steep ramp from the cook level.
    ------------------------------------------------------------------ */
 const FOODS = [
   // meats
@@ -7073,7 +7331,7 @@ Object.keys(TOGGLES).forEach(id=>{ el(id).addEventListener("click", e=>{ const b
 function syncNotes(){
   el("ck-note-lvl").textContent = PLVL!=null ? `Auto-filled from ${PNAME}. Edit to model a different level.` : `Drives your burn rate. Look up an RSN in the header to auto-fill.`;
   el("ck-note-source").textContent = opt.source==="campfire" ? `Fires/campfires burn a bit more than a range.` : opt.source==="range" ? `A range/oven burns less than a fire.` : opt.source==="hos5" ? `Hosidius Kitchen range: +5% cooking-success bonus (less burn).` : `Hosidius + Elite Kourend diary: +10% success bonus (zeroes sailing fish at 99).`;
-  el("ck-note-gaunt").textContent = opt.gaunt==="on" ? `Lowers the stop-burn level for ${GAUNT_FISH}. No effect on other foods.` : `Cooking gauntlets help only ${GAUNT_FISH}.`;
+  el("ck-note-gaunt").textContent = opt.gaunt==="on" ? `Lowers the burn rate for ${GAUNT_FISH}. No effect on other foods.` : `Cooking gauntlets help only ${GAUNT_FISH}.`;
   el("ck-note-cape").textContent = opt.cape==="on" ? (LVL>=99 ? `Cooking cape equipped: zero burn on every food.` : `Cooking cape needs 99 Cooking to wear — no effect until then.`) : `The cape (99 Cooking) stops all burning when worn.`;
   el("ck-note-kind").textContent = opt.kind==="fish" ? `Fish only.` : opt.kind==="meat" ? `Land meats only (rarely profitable).` : `Fish and meat together.`;
   el("ck-note-rate").textContent = `Standard range cooking, whole inventory at once. ~1,500/hr AFK. Karambwan has its own rate below.`;
@@ -7090,7 +7348,7 @@ el("ck-footer").innerHTML =
   `Prices are live via the shared header bar. Profit per food = the cooked fish sold after 2% GE tax, <b>multiplied by (1 - your burn chance)</b>, minus the raw. A burnt food is worth nothing, so a high burn rate quietly eats the margin. `+
   `<b>Burn is OSRS-exact</b> for every food, computed from the game's cooking-success formula using the wiki's per-food control values &mdash; not an estimate. So shark at 86 with gauntlets reads ~7% (not the old 30%), and the six <b>Sailing</b> fish (giant krill, haddock, yellowfin, halibut, bluefin, marlin) read true (bluefin ~68% at 87 on a range). A <b>range</b> beats a <b>fire/campfire</b>; the <b>Hosidius Kitchen</b> (+5%, +10% with the Elite Kourend diary) and <b>cooking gauntlets</b> each lower burn; gauntlets help only ${GAUNT_FISH} (and not at all on sailing fish). A cooking cape removes all burning. `+
   `<b>Cook speed:</b> range fish are cooked a whole inventory at once (~1,500/hr); <b>karambwan</b> is cooked one at a time but can be <b>1-ticked</b> to ~4,500/hr (the fastest Cooking XP in the game) &mdash; for GE-flipping, the raw's ~15k/4h buy limit caps throughput at ~3,250&ndash;3,750/hr. `+
-  `Exact OSRS burn rates aren't officially published &mdash; stop-burn levels are community estimates, so treat gp/hr as a guide and re-check prices before committing gp.`;
+  `Burn chances come from the wiki's per-food success data; cook rates are estimates, so treat gp/hr as a guide and re-check prices before committing gp.`;
 
 function pickLAT(raw, source){
   if(source!=="m5"){ return raw.latest||{}; }
@@ -7115,6 +7373,468 @@ window.Player.subscribe(function(p){
 });
 })();
 </script>
+<section id="view-sailing" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">OSRS · Sailing · shipbuilding supplies</p>
+    <h1>Keels &amp; Repair Kits</h1>
+    <p class="lede">Two Sailing supply flips. <b>Keel parts</b>: smith 5 bars (2 dragon metal sheets) into keel parts at an anvil, then 5 parts (2 for dragon) into <b>large keel parts</b>. <b>Repair kits</b>: planks + nails + swamp paste into 2 kits (3 for ironwood &amp; rosewood). Buy each material, make it from raw inputs, or gather it yourself — then sell after 2% GE tax.</p>
+    <div class="assumptions" id="sl-assumptions"></div>
+  </header>
+
+  <div class="layout">
+  <aside class="sidebar">
+
+    <section class="card">
+      <h2 class="card-title">Your setup</h2>
+      <p class="card-sub">Prices are live from the header bar. Look up an RSN to flag levels you don't have.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Product</p>
+          <div class="toggle" id="sl-tg-mode" role="group" aria-label="Product">
+            <button data-v="keels" class="on">Keel parts</button>
+            <button data-v="kits">Repair kits</button>
+          </div>
+          <p class="opt-note" id="sl-note-mode"></p>
+        </div>
+        <div id="sl-row-bars">
+          <p class="opt-label">Metal bars</p>
+          <div class="toggle" id="sl-tg-bars" role="group" aria-label="Bars source">
+            <button data-v="buy" class="on">Buy</button>
+            <button data-v="make">Make</button>
+            <button data-v="gather">Gather</button>
+          </div>
+          <p class="opt-note" id="sl-note-bars"></p>
+        </div>
+        <div id="sl-row-sheets">
+          <p class="opt-label">Dragon metal sheets</p>
+          <div class="toggle" id="sl-tg-sheets" role="group" aria-label="Dragon metal sheet source">
+            <button data-v="buy" class="on">Buy</button>
+            <button data-v="gather">Gather</button>
+          </div>
+          <p class="opt-note" id="sl-note-sheets"></p>
+        </div>
+        <div id="sl-row-planks" hidden>
+          <p class="opt-label">Planks</p>
+          <div class="toggle" id="sl-tg-planks" role="group" aria-label="Planks source">
+            <button data-v="buy" class="on">Buy</button>
+            <button data-v="make">Make</button>
+            <button data-v="gather">Gather</button>
+          </div>
+          <p class="opt-note" id="sl-note-planks"></p>
+        </div>
+        <div id="sl-row-nails" hidden>
+          <p class="opt-label">Nails</p>
+          <div class="toggle" id="sl-tg-nails" role="group" aria-label="Nails source">
+            <button data-v="buy" class="on">Buy</button>
+            <button data-v="make">Make</button>
+            <button data-v="gather">Gather</button>
+          </div>
+          <p class="opt-note" id="sl-note-nails"></p>
+        </div>
+        <div id="sl-row-paste" hidden>
+          <p class="opt-label">Swamp paste</p>
+          <div class="toggle" id="sl-tg-paste" role="group" aria-label="Swamp paste source">
+            <button data-v="buy" class="on">Buy</button>
+            <button data-v="make">Make</button>
+            <button data-v="gather">Gather</button>
+          </div>
+          <p class="opt-note" id="sl-note-paste"></p>
+        </div>
+        <div>
+          <p class="opt-label">Sort by</p>
+          <div class="toggle" id="sl-tg-sort" role="group" aria-label="Sort">
+            <button data-v="hr" class="on">gp/hr</button>
+            <button data-v="unit">gp/item</button>
+            <button data-v="roi">% ROI</button>
+          </div>
+          <p class="opt-note" id="sl-note-sort"></p>
+        </div>
+        <div>
+          <p class="opt-label">Market cap</p>
+          <div class="toggle" id="sl-tg-mcap" role="group" aria-label="Market volume cap">
+            <button data-v="on" class="on">On</button>
+            <button data-v="off">Off</button>
+          </div>
+          <p class="opt-note" id="sl-note-mcap"></p>
+        </div>
+        <div>
+          <p class="opt-label">Buy inputs at</p>
+          <div class="toggle" id="sl-tg-buyspeed" role="group" aria-label="Buy speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="sl-note-buyspeed"></p>
+        </div>
+        <div>
+          <p class="opt-label">Sell output at</p>
+          <div class="toggle" id="sl-tg-sellspeed" role="group" aria-label="Sell speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="sl-note-sellspeed"></p>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+
+  <div class="main">
+
+    <div class="two-col">
+      <div class="col">
+        <section class="card best-card" id="sl-bestCard">
+          <h2 class="card-title">Best gp/hour right now</h2>
+          <p class="card-sub" id="sl-bestSub"></p>
+          <p class="best-headline" id="sl-bestHeadline"></p>
+          <div class="best-hero" id="sl-bestHero"></div>
+        </section>
+      </div>
+      <div class="col">
+        <section class="card xp-card" id="sl-xpCard">
+          <h2 class="card-title">Fattest margin per item</h2>
+          <p class="card-sub">The widest single-item spread — best when a buy limit or a thin market is your ceiling.</p>
+          <p class="best-headline" id="sl-xpHeadline"></p>
+          <div class="best-hero" id="sl-xpHero"></div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2 class="card-title">Rates — ticks per action</h2>
+      <p class="card-sub">Items/hr comes from the final crafting step only (smithing parts, or assembling kits) plus banking. Time spent making or gathering materials isn't counted — it's the price of the "Make" and "Gather" toggles.</p>
+      <div class="timing-in" id="sl-timingIn">
+        <label for="sl-tPart">Keel part t <input id="sl-tPart" type="number" min="1" step="1" value="5" inputmode="numeric"></label>
+        <label for="sl-tKit">Kit action t <input id="sl-tKit" type="number" min="1" step="1" value="4" inputmode="numeric"></label>
+        <label for="sl-tBank">Bank ticks / trip <input id="sl-tBank" type="number" min="0" step="1" value="6" inputmode="numeric"></label>
+      </div>
+      <p class="opt-note" id="sl-ratesNote"></p>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title" id="sl-tblTitle">Keel parts</h2>
+          <p class="card-note" id="sl-count"></p>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table id="sl-tbl">
+          <thead id="sl-thead"></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="opt-note" id="sl-tblNote"></p>
+    </section>
+
+    <footer id="sl-footer"></footer>
+  </div>
+  </div>
+</div>
+</section>
+<script>
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const root = el("view-sailing");
+const fmt = n => (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const fmtK = v => { const a=Math.abs(v); return a>=1e6 ? (v<0?"-":"")+(a/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,"")+"m" : a>=1000 ? (v<0?"-":"")+(a/1000).toFixed(a>=1e5?0:1).replace(/\.0$/,"")+"k" : fmt(v); };
+const geTax = p => p<50 ? 0 : Math.min(Math.floor(p*0.02), 5000000);
+const net = p => p - geTax(p);
+
+/* ---- recipes (OSRS wiki, Sailing release) ----
+   Keel parts: n bars (or dragon metal sheets) at an anvil (dragon forge for dragon).
+   Large keel parts: largeN keel parts. XP is Smithing per action. */
+const SHEET = 31996, COAL = 453;
+const KEELS = [
+  { tier:"Bronze",  lvl:10, xp:62.5,  part:31999, large:32020, bar:2349, n:5, largeN:5, largeXp:5 },
+  { tier:"Iron",    lvl:22, xp:125,   part:32002, large:32023, bar:2351, n:5, largeN:5, largeXp:5 },
+  { tier:"Steel",   lvl:38, xp:187.5, part:32005, large:32026, bar:2353, n:5, largeN:5, largeXp:5 },
+  { tier:"Mithril", lvl:56, xp:250,   part:32008, large:32029, bar:2359, n:5, largeN:5, largeXp:5 },
+  { tier:"Adamant", lvl:74, xp:312.5, part:32011, large:32032, bar:2361, n:5, largeN:5, largeXp:5 },
+  { tier:"Rune",    lvl:86, xp:375,   part:32014, large:32035, bar:2363, n:5, largeN:5, largeXp:5 },
+  { tier:"Dragon",  lvl:94, xp:700,   part:32017, large:32038, sheet:true, n:2, largeN:2, largeXp:500, ticks:4 },
+];
+/* smelting at a normal furnace: ores + coal per bar; iron ore only succeeds 50% of the time */
+const SMELT = {
+  2349:{ name:"Bronze bar",    ores:[[436,1],[438,1]], coal:0, succ:1 },
+  2351:{ name:"Iron bar",      ores:[[440,1]], coal:0, succ:0.5 },
+  2353:{ name:"Steel bar",     ores:[[440,1]], coal:2, succ:1 },
+  2359:{ name:"Mithril bar",   ores:[[447,1]], coal:4, succ:1 },
+  2361:{ name:"Adamantite bar",ores:[[449,1]], coal:6, succ:1 },
+  2363:{ name:"Runite bar",    ores:[[451,1]], coal:8, succ:1 },
+};
+/* Repair kits (Construction): pq planks + nq nails + 5 swamp paste → out kits per action */
+const PASTE = 1941, TAR = 1939, FLOUR = 1933, PASTE_Q = 5;
+const KITS = [
+  { name:"Repair kit",          id:31964, lvl:1,  xp:43.5, plank:960,   log:1511,  saw:100,  pq:2, nail:4819,  nbar:2349, nq:10, out:2 },
+  { name:"Oak repair kit",      id:31967, lvl:19, xp:90,   plank:8778,  log:1521,  saw:250,  pq:2, nail:4820,  nbar:2351, nq:10, out:2 },
+  { name:"Teak repair kit",     id:31970, lvl:30, xp:135,  plank:8780,  log:6333,  saw:500,  pq:2, nail:1539,  nbar:2353, nq:10, out:2 },
+  { name:"Mahogany repair kit", id:31973, lvl:47, xp:210,  plank:8782,  log:6332,  saw:1500, pq:2, nail:4822,  nbar:2359, nq:10, out:2 },
+  { name:"Camphor repair kit",  id:31976, lvl:66, xp:255,  plank:31432, log:32904, saw:2500, pq:2, nail:4823,  nbar:2361, nq:10, out:2 },
+  { name:"Ironwood repair kit", id:31979, lvl:80, xp:300,  plank:31435, log:32907, saw:5000, pq:1, nail:4824,  nbar:2363, nq:10, out:3 },
+  { name:"Rosewood repair kit", id:31982, lvl:92, xp:330,  plank:31438, log:32910, saw:7500, pq:1, nail:31406, nsheet:true, nq:5, out:3 },
+];
+const NAILS_PER_BAR = 15;
+/* GE 4h buy limits of everything a route can buy (null / missing = no listed limit) */
+const LIM = { 2349:10000, 2351:10000, 2353:10000, 2359:10000, 2361:10000, 2363:10000, [SHEET]:64,
+  436:13000, 438:13000, 440:13000, 447:13000, 449:4500, 451:4500, [COAL]:13000,
+  960:13000, 8778:13000, 8780:13000, 8782:13000, 31432:13000, 31435:13000,
+  1511:15000, 1521:15000, 6333:13000, 6332:11000, 32907:12000, 32910:12000,
+  4819:13000, 4820:13000, 1539:13000, 4822:13000, 4823:13000, 4824:13000, 31406:13000,
+  [PASTE]:13000, [TAR]:13000, [FLOUR]:13000 };
+const lim = id => LIM[id] || Infinity;
+const INV_FREE = 27;   // 28 slots minus the hammer
+
+let LAT = {}, H24 = {}, ROWS = [], PLAYER = null, PNAME = null;
+const opt = { mode:"keels", bars:"buy", sheets:"buy", planks:"buy", nails:"buy", paste:"buy", sort:"hr", mcap:"on", buySpeed:"instant", sellSpeed:"instant" };
+let TIMING = { tPart:5, tKit:4, tBank:6 };
+const LS_KEY = "sailing-unified-v1";
+const hi = id => (LAT[id]||{}).high || 0;
+const lo = id => (LAT[id]||{}).low  || 0;
+const buyPrice  = id => opt.buySpeed==="patient"  ? (lo(id)||hi(id)) : (hi(id)||lo(id));
+const sellPrice = id => opt.sellSpeed==="patient" ? (hi(id)||lo(id)) : (lo(id)||hi(id));
+const vol24 = id => { const h = H24[id]; return h ? (h.highPriceVolume||0)+(h.lowPriceVolume||0) : 0; };
+const WORD = { buy:"buy", make:"make", gather:"gather" };
+
+/* ---- material sources: gp per unit, and units per 4h the route's GE buy limits allow ---- */
+function barSource(barId){
+  const sm = SMELT[barId];
+  if(opt.bars==="gather"){ return { unit:0, per4h:Infinity, ok:true }; }
+  if(opt.bars==="make"){
+    let unit = sm.coal*buyPrice(COAL), per4h = sm.coal ? lim(COAL)/sm.coal*sm.succ : Infinity, ok = !sm.coal || buyPrice(COAL)>0;
+    for(const [id,q] of sm.ores){ unit += q*buyPrice(id); per4h = Math.min(per4h, lim(id)/q*sm.succ); ok = ok && buyPrice(id)>0; }
+    return { unit:unit/sm.succ, per4h, ok };
+  }
+  return { unit:buyPrice(barId), per4h:lim(barId), ok:buyPrice(barId)>0 };
+}
+function sheetSource(){
+  if(opt.sheets==="gather"){ return { unit:0, per4h:Infinity, ok:true }; }
+  return { unit:buyPrice(SHEET), per4h:lim(SHEET), ok:buyPrice(SHEET)>0 };
+}
+function plankSource(k){
+  if(opt.planks==="gather"){ return { unit:k.saw, per4h:Infinity, ok:true }; }            // cut the logs, pay the sawmill
+  if(opt.planks==="make"){ return { unit:buyPrice(k.log)+k.saw, per4h:lim(k.log), ok:buyPrice(k.log)>0 }; }
+  return { unit:buyPrice(k.plank), per4h:lim(k.plank), ok:buyPrice(k.plank)>0 };
+}
+function nailSource(k){
+  if(k.nsheet){
+    // dragon nails: 15 per dragon metal sheet at the dragon forge
+    if(opt.nails==="buy"){ return { unit:buyPrice(k.nail), per4h:lim(k.nail), ok:buyPrice(k.nail)>0 }; }
+    if(opt.nails==="gather"){ return { unit:0, per4h:Infinity, ok:true }; }                 // sheets from your own drops
+    return { unit:buyPrice(SHEET)/NAILS_PER_BAR, per4h:lim(SHEET)*NAILS_PER_BAR, ok:buyPrice(SHEET)>0 };
+  }
+  if(opt.nails==="gather"){ return { unit:0, per4h:Infinity, ok:true }; }                 // mine, smelt and smith yourself
+  if(opt.nails==="make"){ return { unit:buyPrice(k.nbar)/NAILS_PER_BAR, per4h:lim(k.nbar)*NAILS_PER_BAR, ok:buyPrice(k.nbar)>0 }; }
+  return { unit:buyPrice(k.nail), per4h:lim(k.nail), ok:buyPrice(k.nail)>0 };
+}
+function pasteSource(){
+  if(opt.paste==="gather"){ return { unit:buyPrice(FLOUR), per4h:lim(FLOUR), ok:buyPrice(FLOUR)>0 }; }  // gather the tar, buy the flour
+  if(opt.paste==="make"){ return { unit:buyPrice(TAR)+buyPrice(FLOUR), per4h:Math.min(lim(TAR), lim(FLOUR)), ok:buyPrice(TAR)>0 && buyPrice(FLOUR)>0 }; }
+  return { unit:buyPrice(PASTE), per4h:lim(PASTE), ok:buyPrice(PASTE)>0 };
+}
+
+/* items/hr: tick-model speed, the inputs' buy limits (÷4), and — with Market cap on — the product's 24h volume ÷ 24 */
+function rateOf(ticks, inputPer4h, productId){
+  const speed = ticks>0 ? 6000/ticks : 0;
+  const buyCap = inputPer4h/4;
+  const v = vol24(productId);
+  const sellCap = opt.mcap==="on" && v>0 ? v/24 : Infinity;
+  const rate = Math.min(speed, buyCap, sellCap);
+  const bind = rate===speed ? "speed" : rate===buyCap ? "buy limit" : "market volume";
+  return { rate, speed, bind };
+}
+
+function computeKeels(){
+  const out = [];
+  const bank = TIMING.tBank;
+  for(const k of KEELS){
+    const src = k.sheet ? sheetSource() : barSource(k.bar);
+    const tPart = k.ticks || TIMING.tPart;
+    const smithOK = !PLAYER || (PLAYER.smithing||1) >= k.lvl;
+    const matName = k.sheet ? "dragon metal sheet" : SMELT[k.bar].name.toLowerCase();
+    // regular keel parts
+    const sellP = sellPrice(k.part);
+    if(src.ok && sellP){
+      const cost = k.n*src.unit;
+      const perInv = Math.max(1, Math.floor(INV_FREE/k.n));
+      const r = rateOf(tPart + bank/perInv, src.per4h/k.n, k.part);
+      const profit = net(sellP) - cost;
+      out.push({ name:`${k.tier} keel parts`, lvl:k.lvl, ok:smithOK, inStr:`${k.n}× ${matName} ${fmt(src.unit)}`, cost, sell:sellP, profit,
+        roi: cost>0 ? profit/cost*100 : null, rate:r.rate, bind:r.bind, gpHr:profit*r.rate, xpHr:r.rate*k.xp, vol:vol24(k.part), id:k.part });
+    }
+    // large keel parts (smith the regular parts, then combine)
+    const sellL = sellPrice(k.large);
+    if(src.ok && sellL){
+      const units = k.n*k.largeN;
+      const cost = units*src.unit;
+      const perInv = Math.max(1, Math.floor(INV_FREE/units));
+      const ticks = k.largeN*tPart + tPart + bank/perInv;
+      const r = rateOf(ticks, src.per4h/units, k.large);
+      const profit = net(sellL) - cost;
+      const vsParts = profit - k.largeN*(net(sellP||0) - k.n*src.unit);   // extra gp vs selling the parts
+      out.push({ name:`Large ${k.tier.toLowerCase()} keel parts`, lvl:k.lvl, ok:smithOK, inStr:`${units}× ${matName} ${fmt(src.unit)}`, cost, sell:sellL, profit,
+        roi: cost>0 ? profit/cost*100 : null, rate:r.rate, bind:r.bind, gpHr:profit*r.rate, xpHr:r.rate*(k.largeN*k.xp + k.largeXp), vol:vol24(k.large), id:k.large,
+        note: sellP ? (vsParts>=0 ? `+${fmt(vsParts)} vs selling ${k.largeN} parts` : `${fmt(vsParts)} vs selling ${k.largeN} parts`) : "" });
+    }
+  }
+  return out;
+}
+function computeKits(){
+  const out = [];
+  const paste = pasteSource();
+  for(const k of KITS){
+    const pl = plankSource(k), na = nailSource(k);
+    const sell = sellPrice(k.id);
+    if(!pl.ok || !na.ok || !paste.ok || !sell){ continue; }
+    const actionCost = k.pq*pl.unit + k.nq*na.unit + PASTE_Q*paste.unit;
+    const cost = actionCost/k.out;                                   // per kit
+    const profit = net(sell) - cost;
+    const perInv = Math.max(1, Math.floor((INV_FREE-3)/Math.max(k.pq, k.out)));   // saw, nails & paste take 3 slots
+    const actionsPer4h = Math.min(pl.per4h/k.pq, na.per4h/k.nq, paste.per4h/PASTE_Q);
+    const r = rateOf((TIMING.tKit + TIMING.tBank/perInv)/k.out, actionsPer4h*k.out, k.id);
+    const conOK = !PLAYER || PLAYER.construction==null || PLAYER.construction >= k.lvl;
+    out.push({ name:k.name, lvl:k.lvl, ok:conOK, inStr:`${k.pq} plank${k.pq>1?"s":""} ${fmt(pl.unit)} + ${k.nq} nails ${fmt(na.unit)} + 5 paste ${fmt(paste.unit)} → ${k.out} kits`,
+      cost, sell, profit, roi: cost>0 ? profit/cost*100 : null, rate:r.rate, bind:r.bind, gpHr:profit*r.rate, xpHr:r.rate*k.xp/k.out, vol:vol24(k.id), id:k.id });
+  }
+  return out;
+}
+function compute(){
+  const rows = opt.mode==="kits" ? computeKits() : computeKeels();
+  const key = opt.sort==="unit" ? (r=>r.profit) : opt.sort==="roi" ? (r=>r.roi==null?Infinity:r.roi) : (r=>r.gpHr);
+  rows.sort((a,b)=>key(b)-key(a));
+  ROWS = rows;
+}
+
+/* ---- chips ---- */
+function updateChips(){
+  const lvl = PLAYER ? (opt.mode==="kits"
+    ? (PLAYER.construction!=null ? `Construction ${PLAYER.construction}` : "Construction not in lookup")
+    : `Smithing ${PLAYER.smithing}`) : "";
+  el("sl-assumptions").innerHTML = [
+    PLAYER ? `<span class="chip">Gated by <b>${PNAME}</b> · ${lvl}</span>` : "",
+    `<span class="chip"><b>2%</b> GE sell tax</span>`,
+    `<span class="chip">Needs <b>Pandemonium</b>${opt.mode==="keels"?" · dragon: Dragon Slayer II":""}</span>`,
+    opt.mode==="keels"
+      ? `<span class="chip">Bars: <b>${WORD[opt.bars]}</b> · sheets: <b>${WORD[opt.sheets]}</b></span>`
+      : `<span class="chip">Planks <b>${WORD[opt.planks]}</b> · nails <b>${WORD[opt.nails]}</b> · paste <b>${WORD[opt.paste]}</b></span>`,
+    opt.mcap==="on" ? `<span class="chip">Capped by 24h market volume</span>` : "",
+  ].filter(Boolean).join("");
+}
+function reqWarn(r){
+  if(r.ok){ return ""; }
+  return ` <span class="best-tag unf">⚠ ${opt.mode==="kits"?"Con":"Smith"} ${r.lvl}</span>`;
+}
+
+function renderBest(){
+  const pool = ROWS.filter(r=>r.ok).length ? ROWS.filter(r=>r.ok) : ROWS;
+  const byHr = pool.slice().sort((a,b)=>b.gpHr-a.gpHr)[0];
+  const byU = pool.slice().sort((a,b)=>b.profit-a.profit)[0];
+  el("sl-bestSub").textContent = `Profit per ${opt.mode==="kits"?"kit":"item"} × items/hr — the slowest of your crafting speed, the inputs' 4h buy limits${opt.mcap==="on"?", and the product's 24h trade volume":""}.`;
+  if(!byHr){
+    el("sl-bestHeadline").innerHTML = `No live prices yet &mdash; hit Refresh in the header.`;
+    el("sl-bestHero").innerHTML=""; el("sl-xpHeadline").innerHTML=""; el("sl-xpHero").innerHTML=""; return;
+  }
+  const sgn = v => v<0 ? "" : "+";
+  el("sl-bestHeadline").innerHTML = `<b>${byHr.name}</b> — cost ${fmt(byHr.cost)}, sells ${fmt(byHr.sell)}, limited by ${byHr.bind}.`;
+  el("sl-bestHero").innerHTML = [
+    [`${sgn(byHr.gpHr)}${fmtK(byHr.gpHr)}`, "gp / hr"],
+    [`${sgn(byHr.profit)}${fmt(byHr.profit)}`, `gp / ${opt.mode==="kits"?"kit":"item"}`],
+    [`${fmt(Math.round(byHr.rate))}`, "items / hr"],
+  ].map(([n,l])=>`<div><div class="num ${n.startsWith("-")?"loss":""}">${n}</div><div class="lab">${l}</div></div>`).join("");
+  el("sl-xpHeadline").innerHTML = `<b>${byU.name}</b>: <b>${sgn(byU.profit)}${fmt(byU.profit)}</b> gp each${byU.roi==null?"":` (${byU.roi.toFixed(1)}% ROI)`}.`;
+  el("sl-xpHero").innerHTML = [
+    [`${sgn(byU.profit)}${fmt(byU.profit)}`, "gp / item"],
+    [byU.roi==null ? "free" : `${byU.roi.toFixed(1)}%`, "return on spend"],
+    [`${fmtK(byU.xpHr)}`, `${opt.mode==="kits"?"Construction":"Smithing"} xp / hr`],
+  ].map(([n,l])=>`<div><div class="num ${n.startsWith("-")?"loss":""}">${n}</div><div class="lab">${l}</div></div>`).join("");
+}
+
+const tb = root.querySelector("#sl-tbl tbody");
+function renderTable(){
+  const skill = opt.mode==="kits" ? "Con" : "Smith";
+  el("sl-thead").innerHTML = `<tr><th>Item</th><th>${skill}</th><th>Inputs</th><th>Cost</th><th>Sell</th><th>Profit / item</th><th>ROI</th><th>items/hr</th><th>gp/hr *</th><th>xp/hr</th><th>Vol / 24h</th></tr>`;
+  tb.innerHTML = ROWS.map(r=>{
+    const pc = r.profit<0 ? "negv" : "pos", sign = r.profit<0?"":"+";
+    return `<tr><td>${r.name}${reqWarn(r)}${r.note?`<br><small class="opt-note">${r.note}</small>`:""}</td>`+
+      `<td class="mono">${r.lvl}</td>`+
+      `<td class="mono">${r.inStr}</td>`+
+      `<td class="mono">${fmt(r.cost)}</td>`+
+      `<td class="mono">${fmt(r.sell)}</td>`+
+      `<td class="mono ${pc}">${sign}${fmt(r.profit)}</td>`+
+      `<td class="mono ${pc}">${r.roi==null?"free":r.roi.toFixed(1)+"%"}</td>`+
+      `<td class="mono" title="limited by ${r.bind}">${fmt(Math.round(r.rate))}</td>`+
+      `<td class="mono ${r.gpHr<0?"negv":"pos"}">${r.gpHr<0?"":"+"}${fmtK(r.gpHr)}</td>`+
+      `<td class="mono">${fmtK(r.xpHr)}</td>`+
+      `<td class="mono">${r.vol?fmt(r.vol):"—"}</td></tr>`;
+  }).join("");
+  el("sl-tblTitle").textContent = opt.mode==="kits" ? "Repair kits" : "Keel parts";
+  el("sl-count").textContent = `${fmt(ROWS.length)} item${ROWS.length===1?"":"s"} priced`;
+  el("sl-tblNote").innerHTML = `* <b>gp/hr</b> = profit per item × items/hr, where items/hr is the slowest of: the crafting tick model, the 4h GE buy limit of what you buy (÷ 4)${opt.mcap==="on"?", and the product's 24h traded volume ÷ 24 — keel parts trade thinly, so this often binds":""}. Hover items/hr to see which one binds. Make/gather time for materials isn't included.`;
+}
+function renderRates(){
+  const pk = (INV_FREE/5)|0;
+  el("sl-ratesNote").textContent = opt.mode==="kits"
+    ? `A kit action is ${TIMING.tKit} ticks for 2–3 kits. Kits don't stack, so an inventory (hammer, saw, nails, paste + 24 slots) does 12 actions of 2-plank kits or 8 of 1-plank/3-kit kits, then banks (${TIMING.tBank}t).`
+    : `A keel part is ${TIMING.tPart} ticks (dragon forge: 4). ${pk*5} bars make ${pk} parts per inventory, or 1 large part (5 parts + 1 combine); then bank (${TIMING.tBank}t). Dragon: 2 sheets per part, 2 parts per large.`;
+}
+function renderAll(){ compute(); updateChips(); renderBest(); renderRates(); renderTable(); saveState(); }
+
+/* ---- toggles ---- */
+const TOGGLES = { "sl-tg-mode":{key:"mode"}, "sl-tg-bars":{key:"bars"}, "sl-tg-sheets":{key:"sheets"}, "sl-tg-planks":{key:"planks"},
+  "sl-tg-nails":{key:"nails"}, "sl-tg-paste":{key:"paste"}, "sl-tg-sort":{key:"sort"}, "sl-tg-mcap":{key:"mcap"},
+  "sl-tg-buyspeed":{key:"buySpeed"}, "sl-tg-sellspeed":{key:"sellSpeed"} };
+function syncToggle(id){ const def=TOGGLES[id]; [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[def.key])); }
+Object.keys(TOGGLES).forEach(id=>{ el(id).addEventListener("click", e=>{ const b=e.target.closest("button"); if(!b){ return; } opt[TOGGLES[id].key]=b.dataset.v; syncToggle(id); syncNotes(); renderAll(); }); });
+function syncNotes(){
+  const kits = opt.mode==="kits";
+  ["bars","sheets"].forEach(k=>{ el("sl-row-"+k).hidden = kits; });
+  ["planks","nails","paste"].forEach(k=>{ el("sl-row-"+k).hidden = !kits; });
+  el("sl-note-mode").textContent = kits ? `Planks + nails + swamp paste → 2 kits (3 for ironwood & rosewood). Construction.` : `Bars → keel parts → large keel parts at an anvil. Smithing.`;
+  el("sl-note-bars").textContent = opt.bars==="buy" ? `Buy the bars on the GE.` : opt.bars==="make" ? `Buy ore + coal and smelt at a furnace (iron ore succeeds 50% of the time).` : `Mine the ore & coal and smelt yourself — the bars cost no gp, only time.`;
+  el("sl-note-sheets").textContent = opt.sheets==="buy" ? `Buy dragon metal sheets on the GE (64 per 4h). They can't be made.` : `Sheets from your own drops (frost dragons, lava strykewyrms, sailing bounties) — no gp.`;
+  el("sl-note-planks").textContent = opt.planks==="buy" ? `Buy planks on the GE.` : opt.planks==="make" ? `Buy logs and pay the sawmill fee.` : `Cut the logs yourself; you still pay the sawmill fee.`;
+  el("sl-note-nails").textContent = opt.nails==="buy" ? `Buy nails on the GE.` : opt.nails==="make" ? `Buy bars and smith 15 nails each (dragon nails: buy dragon metal sheets, 15 nails per sheet at the dragon forge).` : `Mine, smelt and smith the nails yourself — no gp (dragon nails: sheets from your own drops).`;
+  el("sl-note-paste").textContent = opt.paste==="buy" ? `Buy swamp paste on the GE.` : opt.paste==="make" ? `Buy swamp tar + a pot of flour, mix, then cook on a fire.` : `Gather the swamp tar yourself; only the pot of flour costs gp.`;
+  el("sl-note-sort").textContent = opt.sort==="hr" ? `Rank by gp/hr.` : opt.sort==="unit" ? `Rank by profit per item.` : `Rank by return on gp spent.`;
+  el("sl-note-mcap").textContent = opt.mcap==="on" ? `Never assume you sell faster than the item's 24h GE volume ÷ 24.` : `Ignore market depth — only speed and buy limits cap items/hr.`;
+  el("sl-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy inputs at the bid — cheaper, waits to fill.` : `Insta-buy inputs at the ask.`;
+  el("sl-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell at the ask — more gp, waits.` : `Insta-sell at the bid.`;
+}
+["tPart","tKit","tBank"].forEach(key=>{
+  el("sl-"+key).addEventListener("input", e=>{ const min = key==="tBank" ? 0 : 1; const v = Math.round(+e.target.value); TIMING[key] = Math.max(min, Number.isFinite(v) ? v : min); el("sl-"+key).value = TIMING[key]; renderAll(); });
+});
+el("sl-footer").innerHTML =
+  `Prices are live via the shared header bar. Profit per item = sell after 2% GE tax − materials. `+
+  `<b>Keel parts</b> (Smithing, anvil): 5 bars → 1 keel part (bronze 10 · iron 22 · steel 38 · mithril 56 · adamant 74 · rune 86), and 5 parts → 1 large keel part at the same level. <b>Dragon</b> (94, dragon forge, Dragon Slayer II): 2 dragon metal sheets → 1 part, 2 parts → 1 large part. `+
+  `<b>Repair kits</b> (Construction, no workbench): 2 planks + 10 nails + 5 swamp paste → 2 kits for wooden (bronze nails, lvl 1), oak (iron, 19), teak (steel, 30), mahogany (mithril, 47) and camphor (adamant, 66); ironwood (rune nails, 80) and rosewood (5 dragon nails, 92) use 1 plank → 3 kits. `+
+  `<b>Buy / Make / Gather</b>: Make buys the raw inputs and processes them (ore + coal smelted at a normal furnace; logs + sawmill fee; bars → 15 nails; swamp tar + pot of flour → swamp paste). Gather assumes you collect the raw inputs yourself, so they cost no gp — the sawmill fee and the pot of flour are still paid. Dragon metal sheets can only be bought or looted. `+
+  `Both need the <b>Pandemonium</b> quest. Keel parts have a 100/4h buy limit and trade thinly, so the market cap usually binds — sell in tranches. Prices move — re-check before committing gp.`;
+
+/* ---- shared feeds ---- */
+function pickLAT(raw, source){
+  if(source!=="m5"){ return raw.latest||{}; }
+  const out={}, m5=raw.m5||{}, lat=raw.latest||{};
+  const ids=new Set([...Object.keys(m5),...Object.keys(lat)]);
+  ids.forEach(id=>{ const a=m5[id]||{}, l=lat[id]||{}; out[id]={ high:(a.avgHighPrice ?? l.high ?? l.low), low:(a.avgLowPrice ?? l.low ?? l.high) }; });
+  return out;
+}
+function applyPrices(raw, source){ LAT = pickLAT(raw, source); H24 = raw.h24 || {}; renderAll(); }
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,TIMING})); }catch(e){} }
+function loadState(){
+  let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; }
+  if(!s){ return; }
+  if(s.opt){ Object.assign(opt, s.opt); }
+  if(s.TIMING){ ["tPart","tKit","tBank"].forEach(k=>{ if(Number.isFinite(s.TIMING[k])){ TIMING[k] = s.TIMING[k]; } }); }
+}
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); ["tPart","tKit","tBank"].forEach(k=>{ el("sl-"+k).value = TIMING[k]; }); syncNotes(); }
+
+loadState(); syncControls(); renderAll();
+window.PriceHub.subscribe(applyPrices);
+window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; renderAll(); });
+})();
+</script>
+
 <section id="view-rune" class="view">
 <div class="wrap">
   <header>
@@ -7139,9 +7859,22 @@ window.Player.subscribe(function(p){
           <p class="opt-note">Instant = insta-buy (high). Patient = insta-sell (low, slower fills).</p>
         </div>
         <div>
-          <p class="opt-label">Elemental runes</p>
-          <div class="toggle" id="rn-elem" role="group" aria-label="Elemental runes"><button data-v="buy" class="on">Buy them</button><button data-v="skip">Have staff</button></div>
-          <p class="opt-note">&quot;Have staff&quot; skips air / water / earth / fire.</p>
+          <p class="opt-label"><label for="rn-staff">Elemental staff</label></p>
+          <select id="rn-staff" aria-label="Elemental staff">
+            <option value="none">None &mdash; buy every rune</option>
+            <option value="auto">Best staff for this spell</option>
+            <option value="air">Staff of air</option>
+            <option value="water">Staff of water</option>
+            <option value="earth">Staff of earth</option>
+            <option value="fire">Staff of fire</option>
+            <option value="mist">Mist staff (air + water)</option>
+            <option value="dust">Dust staff (air + earth)</option>
+            <option value="mud">Mud staff (water + earth)</option>
+            <option value="smoke">Smoke staff (air + fire)</option>
+            <option value="steam">Steam staff (water + fire)</option>
+            <option value="lava">Lava staff (earth + fire)</option>
+          </select>
+          <p class="opt-note" id="rn-note-staff"></p>
         </div>
       </div>
     </section>
@@ -7205,18 +7938,30 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     564:"Cosmic", 562:"Chaos", 561:"Nature", 563:"Law", 560:"Death", 565:"Blood", 566:"Soul",
     9075:"Astral", 21880:"Wrath", 1963:"Banana", 567:"Unpowered orb" };
   const ELEM = new Set([556, 555, 557, 554]);
+  /** Elemental runes each staff supplies (a combination staff covers two). */
+  const STAFF = { none:[], air:[556], water:[555], earth:[557], fire:[554],
+    mist:[556,555], dust:[556,557], mud:[555,557], smoke:[556,554], steam:[555,554], lava:[557,554] };
+  const STAFF_NAME = { none:"no staff", air:"staff of air", water:"staff of water", earth:"staff of earth", fire:"staff of fire",
+    mist:"mist staff", dust:"dust staff", mud:"mud staff", smoke:"smoke staff", steam:"steam staff", lava:"lava staff" };
   const BOOKS = ["Standard", "Ancient", "Lunar", "Arceuus"];
   const ico = id => RUNEICON[id] ? `<img class="rn-ico" alt="" src="${RUNEICON[id]}">` : "";
 
   const LS = "unified-rune-v1";
-  const opt = { buy:"instant", elem:"buy", book:"Standard",
+  const opt = { buy:"instant", staff:"none", book:"Standard",
                 lvl:99, lvlAuto:true, budget:1000000, sel:null, own:{} };
 
   function save(){ try { localStorage.setItem(LS, JSON.stringify(opt)); } catch(e){} }
   function load(){
     try {
       const s = JSON.parse(localStorage.getItem(LS)||"null");
-      if(s){ Object.assign(opt, s); if(!BOOKS.includes(opt.book)){ opt.book="Standard"; } if(!opt.own){ opt.own={}; } }
+      if(s){
+        Object.assign(opt, s);
+        if(!BOOKS.includes(opt.book)){ opt.book="Standard"; }
+        if(!opt.own){ opt.own={}; }
+        if(s.elem==="skip" && !s.staff){ opt.staff = "auto"; }   // old "Have staff" toggle
+        if(!(opt.staff==="auto" || STAFF[opt.staff])){ opt.staff = "none"; }
+        delete opt.elem;
+      }
     } catch(e){}
   }
 
@@ -7232,22 +7977,40 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     return opt.buy==="patient" ? (d.low||d.high||0) : (d.high||d.low||0);
   }
 
-  /* ---- optimiser: max casts C with Σ max(0, q·C − owned)·price ≤ budget ---- */
+  /** The staff in use for a spell: the chosen one, or (auto) whichever covers the most rune cost. */
+  function staffFor(sp){
+    if(opt.staff!=="auto"){ return opt.staff; }
+    let best = "none", bestVal = 0;
+    Object.keys(STAFF).forEach(k =>
+    {
+      const v = STAFF[k].reduce((s,id) => s + (sp.r[id] ? sp.r[id]*(priceOf(id)||1) : 0), 0);
+      if(v > bestVal){ best = k; bestVal = v; }
+    });
+    return best;
+  }
+  function spellRunes(sp){
+    const free = new Set(STAFF[staffFor(sp)]);
+    return Object.entries(sp.r).filter(([id]) => !free.has(+id));
+  }
+
+  /* ---- optimiser: max casts C with Σ max(0, q·C − owned)·price ≤ budget ----
+     A rune with no live price can't be bought, so it caps casts at what you already hold. */
   function optimise(sp){
     const budget = Math.max(0, opt.budget||0);
-    const items = Object.entries(sp.r)
-      .filter(([id]) => !(opt.elem==="skip" && ELEM.has(+id)))
+    const items = spellRunes(sp)
       .map(([id,q]) => ({ id:+id, q, own:Math.max(0, opt.own[id]||0), price:priceOf(+id) }));
     if(!items.length){ return { free:true, items:[], casts:Infinity, spend:0, leftover:budget, now:Infinity }; }
     const cost = C => items.reduce((s,it) => s + Math.max(0, it.q*C - it.own)*it.price, 0);
     const now = items.reduce((m,it) => Math.min(m, Math.floor(it.own/it.q)), Infinity);
+    const limit = Math.min(1e12, items.reduce((m,it) => it.price>0 ? m : Math.min(m, Math.floor(it.own/it.q)), Infinity));
     let lo = 0, hi = 1;
-    while(cost(hi) <= budget && hi < 1e12){ lo = hi; hi *= 2; }
+    while(hi <= limit && cost(hi) <= budget){ lo = hi; hi *= 2; }
+    hi = Math.min(hi, limit + 1);
     while(lo + 1 < hi){ const mid = Math.floor((lo+hi)/2); if(cost(mid) <= budget){ lo = mid; } else { hi = mid; } }
     const C = lo;
     const spend = cost(C);
     const rows = items.map(it => ({ ...it, buy:Math.max(0, it.q*C - it.own), sub:Math.max(0, it.q*C - it.own)*it.price }));
-    const missing = rows.some(r => r.buy>0 && r.price<=0);
+    const missing = rows.some(r => r.price<=0);
     return { free:false, items:rows, casts:C, spend, leftover:budget-spend, now, missing };
   }
 
@@ -7257,7 +8020,7 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     el("rn-assumptions").innerHTML = [
       `<span class="chip">Magic <b>${opt.lvl}</b>${opt.lvlAuto&&window.Player&&Player.name?` &middot; ${Player.name}`:""}</span>`,
       `<span class="chip">${src} &middot; <b>${opt.buy==="patient"?"patient (insta-sell)":"instant (insta-buy)"}</b></span>`,
-      opt.elem==="skip" ? `<span class="chip">elemental runes from <b>staff</b></span>` : "",
+      opt.staff!=="none" ? `<span class="chip">elemental runes from <b>${opt.staff==="auto"?"best staff per spell":STAFF_NAME[opt.staff]}</b></span>` : "",
       `<span class="chip">budget <b>${fmt(opt.budget)}</b> gp</span>`,
     ].filter(Boolean).join("");
   }
@@ -7332,7 +8095,8 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     const sp = SPELLS[opt.sel];
     const r = optimise(sp);
     let owned = "";
-    const ownRunes = Object.entries(sp.r).filter(([id]) => !(opt.elem==="skip" && ELEM.has(+id)));
+    const ownRunes = spellRunes(sp);
+    const staff = staffFor(sp);
     if(ownRunes.length){
       owned = `<div class="rn-owned"><p class="opt-label">Runes you already have</p><div class="rn-own-grid">`
         + ownRunes.map(([id]) => `<label>${ico(id)}<span>${RUNE_NAME[id]||id}</span><input type="number" min="0" data-own="${id}" value="${opt.own[id]||0}" inputmode="numeric"></label>`).join("")
@@ -7341,7 +8105,7 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     if(r.free){
       box.innerHTML = `<div class="card-head"><h2 class="card-title">${sp.n}</h2></div>`
         + `<p class="card-sub">${sp.b} &middot; level ${sp.l} &middot; ${costStr(sp)}</p>`
-        + `<p class="rn-empty">This spell costs no runes${opt.elem==="skip"?" (elemental runes covered by your staff)":""} — cast it as much as you like.</p>`;
+        + `<p class="rn-empty">This spell costs no runes${staff!=="none"?` (your ${STAFF_NAME[staff]} covers the elementals)`:""} — cast it as much as you like.</p>`;
       return;
     }
     const casts = r.casts;
@@ -7363,7 +8127,7 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
       + `</div>`
       + owned
       + `<div class="tbl-wrap"><table class="rn-tbl"><thead><tr><th>Rune</th><th>/cast</th><th>have</th><th>buy</th><th>price ea</th><th>subtotal</th></tr></thead><tbody>${rows}</tbody></table></div>`
-      + `<p class="card-note">${casts>0?`All ${ownRunes.length>1?"runes run out together":"of it is used"} at ${fmt(casts)} casts &mdash; no waste. You can already cast <b>${r.now===Infinity?"&infin;":fmt(r.now)}</b> with what you hold.`:"Budget too low to buy a full cast's runes."}${r.missing?" <b>Some runes have no live price</b> &mdash; hit Refresh or check the source.":""} Set buy offers at the prices shown.</p>`;
+      + `<p class="card-note">${casts>0?`${spareNote(r)} You can already cast <b>${r.now===Infinity?"&infin;":fmt(r.now)}</b> with what you hold.`:"Budget too low to buy a full cast's runes."}${staff!=="none"?` Elementals from your ${STAFF_NAME[staff]} are left off.`:""}${r.missing?" <b>Some runes have no live price</b>, so casts are capped at the ones you already hold &mdash; hit Refresh or check the source.":""} Set buy offers at the prices shown.</p>`;
     box.querySelectorAll("input[data-own]").forEach(inp => {
       inp.addEventListener("input", () => {
         const id = inp.dataset.own; const v = Math.max(0, parseInt(inp.value,10)||0);
@@ -7372,26 +8136,40 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     });
   }
 
-  function renderAll(){ chips(); renderGrid(); renderResult(); }
+  /** Whether every rune runs out at the same cast, or which ones you'll have spare. */
+  function spareNote(r){
+    const spare = r.items.filter(it => it.own > it.q*r.casts).map(it => `${fmt(it.own - it.q*r.casts)} ${RUNE_NAME[it.id]||it.id}`);
+    if(!spare.length){ return `Every rune runs out together at ${fmt(r.casts)} casts &mdash; no waste.`; }
+    return `At ${fmt(r.casts)} casts you'll still hold ${spare.join(", ")}.`;
+  }
+  function staffNote(){
+    el("rn-note-staff").textContent = opt.staff==="auto"
+      ? "Assumes you wield whichever staff saves the most on the chosen spell."
+      : opt.staff==="none" ? "Every elemental rune is bought." : `Your ${STAFF_NAME[opt.staff]}'s runes are free; the rest are bought.`;
+  }
+  function renderAll(){ chips(); staffNote(); renderGrid(); renderResult(); }
 
   /* ---- wire controls ---- */
   el("rn-book").addEventListener("click", e => { const b = e.target.closest("button"); if(!b){ return; } opt.book = b.dataset.v; save(); renderGrid(); });
   el("rn-buy").addEventListener("click", e => { const b = e.target.closest("button"); if(!b){ return; } opt.buy = b.dataset.v; syncToggles(); save(); renderAll(); });
-  el("rn-elem").addEventListener("click", e => { const b = e.target.closest("button"); if(!b){ return; } opt.elem = b.dataset.v; syncToggles(); save(); renderAll(); });
+  el("rn-staff").addEventListener("change", e => { opt.staff = e.target.value; save(); renderAll(); });
   el("rn-lvl").addEventListener("input", e => { opt.lvl = Math.max(1, Math.min(99, parseInt(e.target.value,10)||1)); opt.lvlAuto = false; save(); renderAll(); });
   el("rn-budget").addEventListener("input", e => { opt.budget = Math.max(0, parseInt(e.target.value,10)||0); save(); chips(); renderResult(); });
 
   function syncToggles(){
     [...el("rn-buy").children].forEach(b => b.classList.toggle("on", b.dataset.v===opt.buy));
-    [...el("rn-elem").children].forEach(b => b.classList.toggle("on", b.dataset.v===opt.elem));
+    el("rn-staff").value = opt.staff;
     el("rn-lvl").value = opt.lvl; el("rn-budget").value = opt.budget;
   }
 
   /* ---- shared feeds ---- */
   if(window.PriceHub){ PriceHub.subscribe(() => renderAll()); }
+  let ready = false;   // true once saved state is loaded; later broadcasts are fresh lookups
   if(window.Player){
     Player.subscribe(p => {
-      if(p && p.levels && opt.lvlAuto){ opt.lvl = p.levels.magic || opt.lvl; el("rn-lvl").value = opt.lvl; renderAll(); }
+      if(!p || !p.levels){ return; }
+      if(ready){ opt.lvlAuto = true; }   // a new lookup re-enables auto-fill over a manual level
+      if(opt.lvlAuto){ opt.lvl = p.levels.magic || opt.lvl; el("rn-lvl").value = opt.lvl; save(); renderAll(); }
     });
   }
 
@@ -7399,6 +8177,7 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   if(window.Player && Player.levels && opt.lvlAuto){ opt.lvl = Player.levels.magic || opt.lvl; }
   syncToggles();
   renderAll();
+  ready = true;
 })();
 </script>
 <script>
@@ -7406,8 +8185,8 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   "use strict";
   try { if(('ontouchstart' in window) || (navigator.maxTouchPoints > 0)){ document.documentElement.classList.add("is-touch"); } } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), cooking: document.getElementById("view-cooking"), rune: document.getElementById("view-rune") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", cooking: "cook fish & meat \u2014 burn-adjusted", rune: "spell runes \u2014 max casts per gp" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), cooking: document.getElementById("view-cooking"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", cooking: "cook fish & meat \u2014 burn-adjusted", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
