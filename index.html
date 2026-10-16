@@ -963,8 +963,15 @@
       setStatus("live fetch blocked \u2014 open this file locally (file://), not inside a sandbox.", "err");
     } finally {
       if(btn){ btn.disabled = false; btn.classList.remove("loading"); }
-      if(AUTO){ autoNextTs = Date.now()+AUTO_MS; updateAutoNote(); }
+      if(AUTO){ scheduleAuto(); }
     }
+  }
+  /** Re-arms the single auto-refresh timer so the countdown always matches the real next fetch. */
+  function scheduleAuto(){
+    if(autoTimer){ clearTimeout(autoTimer); }
+    autoNextTs = Date.now()+AUTO_MS;
+    autoTimer = setTimeout(refresh, AUTO_MS);
+    updateAutoNote();
   }
   function setSource(v){
     if(v!=="latest" && v!=="m5"){ return; }
@@ -975,9 +982,9 @@
   }
   function setAuto(on){
     AUTO = on; const b = el("hubAuto"); if(b){ b.classList.toggle("on", AUTO); }
-    if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+    if(autoTimer){ clearTimeout(autoTimer); autoTimer = null; }
     if(autoTick){ clearInterval(autoTick); autoTick = null; }
-    if(AUTO){ autoNextTs = Date.now()+AUTO_MS; autoTimer = setInterval(refresh, AUTO_MS); autoTick = setInterval(updateAutoNote, 1000); updateAutoNote(); }
+    if(AUTO){ scheduleAuto(); autoTick = setInterval(updateAutoNote, 1000); }
     else { autoNextTs = null; updateAutoNote(); }
     save();
   }
@@ -1449,7 +1456,7 @@ const sellPrice = dose => (dose === 4 ? P.sanfew4 : P.sanfew3);
 function econ(dose, base, isMake) {
   const g = opt.goggles ? GOGGLE_SAVE : 0;   // goggles save each secondary 10% of the time
   const dust = dustCost() * (1 - g);
-  const snake = P.snakeweed;
+  const snake = P.snakeweed * (1 - g);       // goggles save the weed too: 1 weed → 1/(1-g) serums
   const nails = P.nails * (1 - g);
   const cost = base + dust + snake + nails;
 
@@ -1718,7 +1725,7 @@ function renderBreakeven(c) {
   const beHtml = head >= 0
     ? `Break-even sell for Sanfew (${dose}) is <b>${fmt(beSell)}</b> gp — it's at <b>${fmt(cur)}</b>, <span class="ok">${fmt(head)} gp of headroom</span> before a loss.`
     : `Break-even sell for Sanfew (${dose}) is <b>${fmt(beSell)}</b> gp — it's at <b>${fmt(cur)}</b>, <span class="bad">${fmt(-head)} gp short</span> (losing money).`;
-  const weedCeil = c.perSnake;
+  const weedCeil = c.perSnake + P.snakeweed;          // profit per weed before the weed's own cost
   const weedHtml = ` Your gathering time is worth up to <b>${fmt(weedCeil)}</b> gp per snake weed — above that, buying serums outright would beat making them.`;
   document.getElementById("breakeven").innerHTML = beHtml + weedHtml;
 }
@@ -1822,18 +1829,23 @@ function renderBest() {
 /* ---- best XP path that still turns a profit ----
    Same route search, but ranked by Herblore XP per serum, keeping only routes with
    profit ≥ 0. Making from scratch tops raw XP but is dropped when it loses money. */
+const MAKE_SNAP_PLANS = [["make", "grimy", "grimy snap"], ["make", "clean", "clean snap"], ["buy", "clean", "buy unf"]];
 function renderXpPath() {
   const all = [];
   [4, 3].forEach(D => {
     baseRoutes(D).forEach(r => {
-      // for the make route, evaluate its max-XP variant: make the unf from grimy snapdragon
-      // (this is also the cheapest snapdragon plan, so it dominates buy-unf / clean here)
-      let base = r.base, sUnf = "buy", sSnap = "clean", label = r.label;
-      if (r.id === "make") {
-        base = makeOrBuyBase(madeSR3For("make", "grimy"), 3, D, true).base;
-        sUnf = "make"; sSnap = "grimy"; label = r.label + " · grimy";
+      if (r.id !== "make") {
+        all.push({ D, id: r.id, label: r.label, sUnf: "buy", sSnap: "clean",
+          e: econ(D, r.base, false), xp: xpFor(r.id, "buy", "clean", D) });
+        return;
       }
-      all.push({ D, id: r.id, label, sUnf, sSnap, e: econ(D, base, r.id === "make"), xp: xpFor(r.id, sUnf, sSnap, D) });
+      // the make route has three snapdragon plans; grimy earns the most XP, but if it loses
+      // money a buy-unf or clean-snapdragon plan can still be a green Make route
+      MAKE_SNAP_PLANS.forEach(([sUnf, sSnap, tag]) => {
+        const base = makeOrBuyBase(madeSR3For(sUnf, sSnap), 3, D, true).base;
+        all.push({ D, id: r.id, label: `${r.label} · ${tag}`, sUnf, sSnap,
+          e: econ(D, base, true), xp: xpFor(r.id, sUnf, sSnap, D) });
+      });
     });
   });
   const maxXp = all.reduce((m, s) => Math.max(m, s.xp), 0);
@@ -4139,7 +4151,9 @@ function mixInputLim(p){
   if(opt.unfSrc==="buy"){ return Math.min(p.unfLim, secMakes); }
   return Math.min(p.herbLim, VIAL_LIM, secMakes);
 }
-function comboInputLim(c){ return c.inputs.reduce((m,[,,q,lim])=>Math.min(m, lim/q), Infinity); }
+/** Units of combo input i used per make: the last input is the secondary, which goggles save 10% of the time. */
+function comboQty(c, i){ return c.inputs[i][2] * (i===c.inputs.length-1 && opt.goggles ? 0.9 : 1); }
+function comboInputLim(c){ return c.inputs.reduce((m,[,,,lim],i)=>Math.min(m, lim/comboQty(c,i)), Infinity); }
 
 // per-3-dose-make economics for a mix potion
 function calcMix(p){
@@ -4168,7 +4182,7 @@ const CLEAN_XP = {25:7.5,40:8.8,48:10,54:11.3,59:11.8,65:12.5,67:13.1,70:13.8,75
 function cleanXpFor(p){ return CLEAN_XP[p.cl] || 0; }
 
 function calcCombine(c){
-  const cost = c.inputs.reduce((s,[,id,q])=>s + q*buyPrice(id), 0);
+  const cost = c.inputs.reduce((s,[,id],i)=>s + comboQty(c,i)*buyPrice(id), 0);
   const prof4 = net(sellPrice(c.p4)) - cost;
   return {
     type:"combine", name:c.name, lvl:c.lvl, c, cost, prof3:null, prof4, xpMake:c.xp, avgDoses:4,
@@ -4432,7 +4446,7 @@ function renderBatch(){
       if(opt.unfSrc!=="buy"){ ids.push(VIAL_ID); }
     }
     else {
-      r.c.inputs.forEach(([nm,id,q])=>{ rows.push({ name:nm, id, q:qty*q, unit:buyPrice(id) }); ids.push(id); });
+      r.c.inputs.forEach(([nm,id],i)=>{ rows.push({ name:nm, id, q:Math.ceil(qty*comboQty(r.c,i)), unit:buyPrice(id) }); ids.push(id); });
       ids.push(r.c.p4);
     }
     return { rows, ids, makes, total:rows.reduce((s,x)=>s+x.q*x.unit,0) };
@@ -4757,7 +4771,9 @@ function reliable(id, buy){
   if(!h){ return false; }                            // no 24h trade data → illiquid, skip
   const vol = (h.highPriceVolume||0)+(h.lowPriceVolume||0);
   if(vol < MINVOL){ return false; }                  // too thin — one-offs live here
-  const ref = h.avgHighPrice || h.avgLowPrice;       // the 24h "usual" price
+  const ref = opt.buySpeed==="patient"                 // compare like with like: patient buys sit at the low side
+    ? (h.avgLowPrice || h.avgHighPrice)
+    : (h.avgHighPrice || h.avgLowPrice);
   if(ref && (buy < ref*(1-DEV) || buy > ref*(1+DEV))){ return false; }  // latest is an outlier vs usual
   return true;
 }
@@ -5930,7 +5946,7 @@ const HIDES = [
 
 let LAT = {}, ROWS = [], PLAYER = null, PNAME = null;
 const opt = { method:"tanner", fire:"staff", sort:"hr", buySpeed:"instant", sellSpeed:"instant" };
-let RATE = 2000, MINPU = 1;
+let RATE = { tanner:2000, spell:8000 }, MINPU = 1;   // hides/hr per method: banking at a tanner vs ~1,600 casts × 5
 const LS_KEY = "tanning-unified-v1";
 const hi = id => (LAT[id]||{}).high || 0;
 const lo = id => (LAT[id]||{}).low  || 0;
@@ -5953,7 +5969,7 @@ function compute(){
     const profit = net(sell) - buy - tc;
     if(profit < MINPU){ continue; }
     const cap = lim/4;                         // hides you can buy per hour
-    const effRate = Math.min(RATE, cap);
+    const effRate = Math.min(RATE[opt.method], cap);
     const spend = buy + tc;
     out.push({ name, hideId, leatherId, buy, sell, tc, profit,
       roi: spend>0 ? profit/spend*100 : 0, gpHr: profit*effRate, lim });
@@ -6026,10 +6042,11 @@ function syncNotes(){
   el("tn-note-sort").textContent = opt.sort==="hr" ? `Rank by single-hide gp/hr (buy-limit capped).` : opt.sort==="unit" ? `Rank by the raw margin per hide.` : `Rank by return on gp invested.`;
   el("tn-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy hides at the bid — cheaper, waits to fill.` : `Insta-buy hides at the ask.`;
   el("tn-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell leather at the ask — more gp, waits.` : `Insta-sell leather at the bid.`;
-  el("tn-note-rate").textContent = `≈2,000/hr banking at a tanner; the spell can hit ~8,000/hr. Feeds gp/hr.`;
+  el("tn-rate").value = RATE[opt.method];
+  el("tn-note-rate").textContent = spell ? `Tan Leather rate: ~1,600 casts × 5 = ~8,000 hides/hr. Saved separately from the tanner rate.` : `Tanner rate: ≈2,000/hr banking. Saved separately from the spell rate.`;
   el("tn-note-minpu").textContent = `Hide razor-thin tiers (below this gp/hide).`;
 }
-el("tn-rate").addEventListener("input", e=>{ RATE=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
+el("tn-rate").addEventListener("input", e=>{ RATE[opt.method]=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
 el("tn-minpu").addEventListener("input", e=>{ MINPU=Math.max(0,Math.round(+e.target.value)||0); renderAll(); });
 el("tn-footer").innerHTML =
   `Prices are live via the shared header bar. Profit = (leather insta-sell, after 2% tax) − hide buy − tan cost. `+
@@ -6045,8 +6062,8 @@ function pickLAT(raw, source){
 }
 function applyPrices(raw, source){ LAT = pickLAT(raw, source); renderAll(); }
 function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,RATE,MINPU})); }catch(e){} }
-function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.RATE)){ RATE=Math.max(1,s.RATE); } if(Number.isFinite(s.MINPU)){ MINPU=Math.max(0,s.MINPU); } }
-function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("tn-rate").value=RATE; el("tn-minpu").value=MINPU; syncNotes(); }
+function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.RATE)){ RATE.tanner=Math.max(1,s.RATE); } else if(s.RATE){ ["tanner","spell"].forEach(k=>{ if(Number.isFinite(s.RATE[k])){ RATE[k]=Math.max(1,s.RATE[k]); } }); } if(Number.isFinite(s.MINPU)){ MINPU=Math.max(0,s.MINPU); } }
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("tn-rate").value=RATE[opt.method]; el("tn-minpu").value=MINPU; syncNotes(); }
 
 loadState(); syncControls(); renderAll();
 window.PriceHub.subscribe(applyPrices);
@@ -6338,7 +6355,7 @@ window.PriceHub.subscribe(applyPrices);
         <div>
           <p class="opt-label">Make rate</p>
           <div class="timing-in" style="margin:0">
-            <label for="pk-rate">planks / hr <input id="pk-rate" type="number" min="1" step="100" value="1400" inputmode="numeric"></label>
+            <label for="pk-rate">planks / hr <input id="pk-rate" type="number" min="1" step="100" value="2800" inputmode="numeric"></label>
           </div>
           <p class="opt-note" id="pk-note-rate"></p>
         </div>
@@ -6426,7 +6443,7 @@ const LOGS = [
 
 let LAT = {}, ROWS = [], PLAYER = null, PNAME = null;
 const opt = { method:"sawmill", earth:"staff", sort:"hr", buySpeed:"instant", sellSpeed:"instant" };
-let RATE = 1400, MINPU = 1;
+let RATE = { sawmill:2800, spell:960 }, MINPU = 1;   // planks/hr per method (wiki money-making guides)
 const LS_KEY = "planks-unified-v1";
 const hi = id => (LAT[id]||{}).high || 0;
 const lo = id => (LAT[id]||{}).low  || 0;
@@ -6447,7 +6464,7 @@ function compute(){
     const cc = convertCost(sawFee, pmFee);
     const profit = net(sell) - buy - cc;
     if(profit < MINPU){ continue; }
-    const effRate = Math.min(RATE, lim ? lim/4 : Infinity);
+    const effRate = Math.min(RATE[opt.method], lim ? lim/4 : Infinity);
     const spend = buy + cc;
     out.push({ name, logId, plankId, buy, sell, cc, profit,
       roi: spend>0 ? profit/spend*100 : 0, gpHr: profit*effRate, lim });
@@ -6520,10 +6537,11 @@ function syncNotes(){
   el("pk-note-sort").textContent = opt.sort==="hr" ? `Rank by single-log gp/hr (buy-limit capped).` : opt.sort==="unit" ? `Rank by the raw margin per plank.` : `Rank by return on gp invested.`;
   el("pk-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy logs at the bid — cheaper, waits to fill.` : `Insta-buy logs at the ask.`;
   el("pk-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell planks at the ask — more gp, waits.` : `Insta-sell planks at the bid.`;
-  el("pk-note-rate").textContent = `≈1,400/hr banking at the sawmill or spamming Plank Make. Feeds gp/hr.`;
+  el("pk-rate").value = RATE[opt.method];
+  el("pk-note-rate").textContent = spell ? `Plank Make rate: ~960 casts/hr. Saved separately from the sawmill rate.` : `Sawmill rate: ~104 runs × 27 logs ≈ 2,800/hr. Saved separately from the spell rate.`;
   el("pk-note-minpu").textContent = `Hide razor-thin tiers (below this gp/plank).`;
 }
-el("pk-rate").addEventListener("input", e=>{ RATE=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
+el("pk-rate").addEventListener("input", e=>{ RATE[opt.method]=Math.max(1,Math.round(+e.target.value)||1); renderAll(); });
 el("pk-minpu").addEventListener("input", e=>{ MINPU=Math.max(0,Math.round(+e.target.value)||0); renderAll(); });
 el("pk-footer").innerHTML =
   `Prices are live via the shared header bar. Profit = (plank insta-sell, after 2% tax) − log buy − conversion cost. `+
@@ -6539,8 +6557,8 @@ function pickLAT(raw, source){
 }
 function applyPrices(raw, source){ LAT = pickLAT(raw, source); renderAll(); }
 function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,RATE,MINPU})); }catch(e){} }
-function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.RATE)){ RATE=Math.max(1,s.RATE); } if(Number.isFinite(s.MINPU)){ MINPU=Math.max(0,s.MINPU); } }
-function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("pk-rate").value=RATE; el("pk-minpu").value=MINPU; syncNotes(); }
+function loadState(){ let s; try{ s=JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; } if(!s){ return; } if(s.opt){ Object.assign(opt,s.opt); } if(Number.isFinite(s.RATE) && s.RATE!==1400){ RATE.sawmill=Math.max(1,s.RATE); } else if(s.RATE && !Number.isFinite(s.RATE)){ ["sawmill","spell"].forEach(k=>{ if(Number.isFinite(s.RATE[k])){ RATE[k]=Math.max(1,s.RATE[k]); } }); } if(Number.isFinite(s.MINPU)){ MINPU=Math.max(0,s.MINPU); } }
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); el("pk-rate").value=RATE[opt.method]; el("pk-minpu").value=MINPU; syncNotes(); }
 
 loadState(); syncControls(); renderAll();
 window.PriceHub.subscribe(applyPrices);
