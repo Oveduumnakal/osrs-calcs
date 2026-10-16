@@ -314,6 +314,7 @@
   .shop li .cost { color: var(--muted); font-family: "IBM Plex Mono", monospace; white-space: nowrap; }
   .shop li > span:first-child { min-width: 0; }
   .shop li.free .cost { color: var(--c-snake); font-weight: 600; }
+  .shop li .save { display: block; font-size: 11px; color: var(--profit); margin-top: 2px; }
   .shop li.total { border-top: 1.5px solid var(--line-strong); font-weight: 600; }
   .stkpl-btn { margin-top: 12px; font: 600 12px "Inter", sans-serif; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
   .stkpl-btn:hover { border-color: var(--accent); }
@@ -4429,24 +4430,34 @@ function renderBatch(){
     let makes = qty;
     if(r.type==="mix"){
       makes = Math.ceil(qty * D / r.avgDoses);
+      const plainMakes = Math.ceil(qty * D / 3);
+      const neckSave = plainMakes > makes ? `−${fmt(plainMakes-makes)} amulet` : "";
       const herbId = opt.unfSrc==="grimy" ? r.p.grimy : r.p.clean;
-      if(opt.unfSrc==="buy"){ rows.push({ name:r.p.name+" (unf)", id:r.p.unf, q:makes, unit:buyPrice(r.p.unf) }); }
+      if(opt.unfSrc==="buy"){ rows.push({ name:r.p.name+" (unf)", id:r.p.unf, q:makes, unit:buyPrice(r.p.unf), save:neckSave }); }
       else {
         const herbName = (opt.unfSrc==="grimy" ? "Grimy " : "Clean ") + r.p.herb;
-        rows.push({ name:herbName, id:herbId, q:makes, unit:buyPrice(herbId) });
-        rows.push({ name:"Vial of water", id:VIAL_ID, q:makes, unit:buyPrice(VIAL_ID) });
+        rows.push({ name:herbName, id:herbId, q:makes, unit:buyPrice(herbId), save:neckSave });
+        rows.push({ name:"Vial of water", id:VIAL_ID, q:makes, unit:buyPrice(VIAL_ID), save:neckSave });
       }
-      rows.push({ name:r.secName, id:r.p.sec[1], q:Math.round(makes*g), unit:buyPrice(r.p.sec[1]) });
+      const secQ = Math.round(makes*g);
+      rows.push({ name:r.secName, id:r.p.sec[1], q:secQ, unit:buyPrice(r.p.sec[1]),
+        save: [neckSave, secQ < makes ? `−${fmt(makes-secQ)} goggles` : ""].filter(Boolean).join(" · ") });
       if(opt.neck!=="none"){
         const procs = makes*NECK_P[opt.neck];
-        rows.push({ name:"Amulet of chemistry (charges)", id:CHEM_AMY_ID, q:Math.ceil(procs/NECK_CH[opt.neck]), unit:buyPrice(CHEM_AMY_ID) });
+        const amyName = opt.neck==="alch" ? `Amulet of chemistry (${NECK_CH.alch} alchemist's charges ea)` : "Amulet of chemistry";
+        rows.push({ name:amyName, id:CHEM_AMY_ID, q:Math.ceil(procs/NECK_CH[opt.neck]), unit:buyPrice(CHEM_AMY_ID),
+          save:`~${fmt(procs)} free doses` });
         ids.push(CHEM_AMY_ID);
       }
       ids.push(opt.unfSrc==="buy" ? r.p.unf : herbId, r.p.sec[1], D===3 ? r.p.p3 : r.p.p4);
       if(opt.unfSrc!=="buy"){ ids.push(VIAL_ID); }
     }
     else {
-      r.c.inputs.forEach(([nm,id],i)=>{ rows.push({ name:nm, id, q:Math.ceil(qty*comboQty(r.c,i)), unit:buyPrice(id) }); ids.push(id); });
+      r.c.inputs.forEach(([nm,id],i)=>{
+        const q = Math.ceil(qty*comboQty(r.c,i)), full = qty*r.c.inputs[i][2];
+        rows.push({ name:nm, id, q, unit:buyPrice(id), save: q < full ? `−${fmt(full-q)} goggles` : "" });
+        ids.push(id);
+      });
       ids.push(r.c.p4);
     }
     return { rows, ids, makes, total:rows.reduce((s,x)=>s+x.q*x.unit,0) };
@@ -4465,7 +4476,7 @@ function renderBatch(){
   const { rows, ids, makes } = list, buyTotal = list.total;
   const totalProfit = qty*prof, rate = capOf(r,D), hrs = rate>0 ? qty/rate : 0;
   el("pt-shopList").innerHTML = rows.map(x=>
-    `<li><span>${x.name} <span class="q">×${fmt(x.q)}${x.unit>0?` @ ${fmt(x.unit)} ea`:""}</span></span><span class="cost">${fmt(x.q*x.unit)} gp</span></li>`).join("")
+    `<li><span>${x.name} <span class="q">×${fmt(x.q)}${x.unit>0?` @ ${fmt(x.unit)} ea`:""}</span>${x.save?`<span class="save">${x.save}</span>`:""}</span><span class="cost">${fmt(x.q*x.unit)} gp</span></li>`).join("")
     + `<li class="total"><span>Total to buy</span><span class="q">${fmt(buyTotal)} gp</span></li>`
     + (budget ? `<li><span>Gp left over</span><span class="q">${fmt(BATCH.gp-buyTotal)} gp</span></li>` : "");
   const bp = el("pt-batchProfit"); bp.textContent=(totalProfit>=0?"+":"")+fmt(totalProfit)+" gp"; bp.classList.toggle("loss", totalProfit<0);
