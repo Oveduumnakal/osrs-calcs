@@ -2000,7 +2000,7 @@ function renderBatch() {
 
   document.getElementById("shopList").innerHTML = rows.map(r =>
     `<li class="${r.free && r.unit === 0 ? "free" : ""}">
-       <span>${r.name} <span class="q">×${fmt(r.q)}${r.unit > 0 ? ` @ ${fmt(r.unit)} ea` : ""}</span></span>
+       <span>${r.name} <span class="q">×${fmt(r.q)}${r.unit > 0 ? ` @ ${fmt(r.unit)} ea` : ""}</span>${r.save ? `<span class="save">${r.save}</span>` : ""}</span>
        <span class="cost">${r.free && r.unit === 0 ? "gathered · free" : fmt(r.q * r.unit) + " gp"}</span>
      </li>`).join("") +
     `<li class="total"><span>Total to buy</span><span class="q">${fmt(buyTotal)} gp</span></li>`;
@@ -2027,20 +2027,23 @@ function buildRows(dose, serums, secQty, snakeQty) {
   const rows = [];
   const s = SOURCES[opt.base];
   const p0 = neckP();
-  let brews = 0;
+  let brews = 0, brewSave = "";
+  const gogSave = n => (n < serums ? `−${fmt(serums - n)} goggles` : "");
   if (opt.base === "make") {
     // 3-dose brews to make, then decant. Selling (4)s, the neck amulet's free (4) restores mean
     // fewer brews (same model as makeOrBuyBase); selling (3)s it's one brew per serum.
     brews = dose === 4 && p0 > 0 ? Math.ceil(serums * 4 / (3 + p0)) : Math.ceil(serums * dose / 3);
+    const plainBrews = Math.ceil(serums * dose / 3);
+    brewSave = brews < plainBrews ? `−${fmt(plainBrews - brews)} amulet` : "";
     if (opt.snapUnf === "make") {
       const grimy = opt.snap === "grimy";
       rows.push({ name: grimy ? "Grimy snapdragon" : "Clean snapdragon", id: grimy ? FIELD_MAP.snapGrimy.id : FIELD_MAP.snapClean.id,
-                  q: brews, unit: grimy ? P.snapGrimy : P.snapClean });
-      rows.push({ name: "Vial of water", id: FIELD_MAP.vialWater.id, q: brews, unit: P.vialWater });
+                  q: brews, unit: grimy ? P.snapGrimy : P.snapClean, save: brewSave });
+      rows.push({ name: "Vial of water", id: FIELD_MAP.vialWater.id, q: brews, unit: P.vialWater, save: brewSave });
     } else {
-      rows.push({ name: "Snapdragon (unf)", id: FIELD_MAP.snapUnf.id, q: brews, unit: P.snapUnf });
+      rows.push({ name: "Snapdragon (unf)", id: FIELD_MAP.snapUnf.id, q: brews, unit: P.snapUnf, save: brewSave });
     }
-    rows.push({ name: "Red spiders' eggs", id: FIELD_MAP.redEggs.id, q: brews, unit: P.redEggs });
+    rows.push({ name: "Red spiders' eggs", id: FIELD_MAP.redEggs.id, q: brews, unit: P.redEggs, save: brewSave });
   } else {
     const potions = Math.ceil(serums * dose / s.native);
     rows.push({ name: `Super restore (${s.native})`, id: s.native === 4 ? FIELD_MAP.sr4.id : FIELD_MAP.sr3.id, q: potions, unit: s.unit() });
@@ -2051,13 +2054,13 @@ function buildRows(dose, serums, secQty, snakeQty) {
     rows.push({ name: `Empty vials (decant · ${opt.decant === "npc" ? "Bob +2" : "GE"})`, id: FIELD_MAP.vial.id, q: vials, unit: vialUnit() });
   }
   if (opt.dust === "grind") {
-    rows.push({ name: "Unicorn horn", id: FIELD_MAP.horn.id, q: secQty, unit: P.horn });
+    rows.push({ name: "Unicorn horn", id: FIELD_MAP.horn.id, q: secQty, unit: P.horn, save: gogSave(secQty) });
   } else {
-    rows.push({ name: "Unicorn horn dust", id: FIELD_MAP.dust.id, q: secQty, unit: P.dust });
+    rows.push({ name: "Unicorn horn dust", id: FIELD_MAP.dust.id, q: secQty, unit: P.dust, save: gogSave(secQty) });
   }
-  rows.push({ name: "Nail beast nails", id: FIELD_MAP.nails.id, q: secQty, unit: P.nails });
+  rows.push({ name: "Nail beast nails", id: FIELD_MAP.nails.id, q: secQty, unit: P.nails, save: gogSave(secQty) });
   if (snakeQty != null) {
-    rows.push({ name: "Snake weed", q: snakeQty, unit: P.snakeweed, free: true });
+    rows.push({ name: "Snake weed", q: snakeQty, unit: P.snakeweed, free: true, save: gogSave(snakeQty) });
   }
   // charges the neck amulet burns (matches econ / makeOrBuyBase): serum procs on (3)s, restore-brew procs when making
   let procs = 0;
@@ -2135,7 +2138,7 @@ function renderBudget() {
 
   document.getElementById("budgetShop").innerHTML = rows.map(r =>
     `<li>
-       <span>${r.name} <span class="q">×${fmt(r.q)}${r.unit > 0 ? ` @ ${fmt(r.unit)} ea` : ""}</span></span>
+       <span>${r.name} <span class="q">×${fmt(r.q)}${r.unit > 0 ? ` @ ${fmt(r.unit)} ea` : ""}</span>${r.save ? `<span class="save">${r.save}</span>` : ""}</span>
        <span class="cost">${fmt(r.q * r.unit)} gp</span>
      </li>`).join("") +
     `<li class="free">
