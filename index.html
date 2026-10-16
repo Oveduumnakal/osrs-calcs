@@ -1411,7 +1411,9 @@ function snapUnfCostFor(snapUnf, snap) {
 }
 const snapUnfCost = () => snapUnfCostFor(opt.snapUnf, opt.snap);
 /* super restore ingredient cost per made (3)-dose potion, for a given snapdragon plan */
-const madeSR3For = (snapUnf, snap) => snapUnfCostFor(snapUnf, snap) + P.redEggs;
+/** Red spiders' eggs are super restore's secondary, so goggles save 10% of them too. */
+const eggsPerBrew = () => (opt.goggles ? 1 - GOGGLE_SAVE : 1);
+const madeSR3For = (snapUnf, snap) => snapUnfCostFor(snapUnf, snap) + P.redEggs * eggsPerBrew();
 const madeSR3 = () => madeSR3For(opt.snapUnf, opt.snap);
 /* per-vial price when decanting: manual = plain GE vial; Bob Barter sells missing vials at GE + 2 */
 const vialUnit = () => (opt.decant === "npc" ? P.vial + 2 : P.vial);
@@ -2043,7 +2045,9 @@ function buildRows(dose, serums, secQty, snakeQty) {
     } else {
       rows.push({ name: "Snapdragon (unf)", id: FIELD_MAP.snapUnf.id, q: brews, unit: P.snapUnf, save: brewSave });
     }
-    rows.push({ name: "Red spiders' eggs", id: FIELD_MAP.redEggs.id, q: brews, unit: P.redEggs, save: brewSave });
+    const eggs = Math.round(brews * eggsPerBrew());
+    rows.push({ name: "Red spiders' eggs", id: FIELD_MAP.redEggs.id, q: eggs, unit: P.redEggs,
+                save: [brewSave, eggs < brews ? `−${fmt(brews - eggs)} goggles` : ""].filter(Boolean).join(" · ") });
   } else {
     const potions = Math.ceil(serums * dose / s.native);
     rows.push({ name: `Super restore (${s.native})`, id: s.native === 4 ? FIELD_MAP.sr4.id : FIELD_MAP.sr3.id, q: potions, unit: s.unit() });
