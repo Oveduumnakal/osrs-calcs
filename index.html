@@ -869,6 +869,44 @@
   table.rn-tbl td.mono, table.rn-tbl .mono { font-family:"IBM Plex Mono", monospace; font-variant-numeric:tabular-nums; }
   table.rn-tbl tr.rn-elem td { opacity:0.5; }
   .rn-na { color:var(--neg); font-size:11px; }
+  /* ---- sanfew price-history chart ---- */
+  :root { --sfh-4:#1f6fa8; --sfh-3:#b5701f; }
+  :root:not([data-theme="light"]) { @media (prefers-color-scheme: dark) { --sfh-4:#3d8fd0; --sfh-3:#c47d2c; } }
+  :root[data-theme="dark"] { --sfh-4:#3d8fd0; --sfh-3:#c47d2c; }
+  .sfh-card { margin-top: 18px; }
+  .sfh-head { display: flex; gap: 14px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+  .sfh-head > div { flex: 1 1 320px; min-width: 0; }
+  .sfh-controls { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 10px; }
+  .sfh-controls .toggle { flex: 0 1 auto; }
+  .sfh-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); margin-bottom: 6px; }
+  .sfh-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sfh-sw { display: inline-block; width: 14px; height: 2px; border-radius: 2px; }
+  .sfh-s4 { background: var(--sfh-4); }
+  .sfh-s3 { background: var(--sfh-3); }
+  .sfh-plot { position: relative; width: 100%; touch-action: pan-y; }
+  .sfh-plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .sfh-plot .ax text { font: 10.5px "IBM Plex Mono", monospace; fill: var(--muted); }
+  .sfh-plot .grid line { stroke: var(--line); stroke-width: 1; }
+  .sfh-plot .band { fill: var(--surface-2); }
+  .sfh-plot .band-l { font: 600 10px "IBM Plex Mono", monospace; fill: var(--muted); letter-spacing: .04em; }
+  .sfh-plot .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .sfh-plot .ln4 { stroke: var(--sfh-4); }
+  .sfh-plot .ln3 { stroke: var(--sfh-3); }
+  .sfh-plot .xh { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
+  .sfh-plot .dot { stroke: var(--surface); stroke-width: 2; }
+  .sfh-plot .dl { font: 600 11px "Inter", sans-serif; fill: var(--ink-2); }
+  .sfh-tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 9px; box-shadow: var(--shadow); padding: 8px 10px; font-size: 12px; color: var(--ink); white-space: nowrap; z-index: 5; }
+  .sfh-tip .t { font: 10.5px "IBM Plex Mono", monospace; color: var(--muted); margin-bottom: 4px; }
+  .sfh-tip .r { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+  .sfh-tiles { margin: 14px 0 6px; }
+  .sfh-vol { margin-top: 6px; border-top: 1px solid var(--line); padding-top: 4px; }
+  .sfh-controls .toggle button { white-space: nowrap; }
+  .sfh-table summary { cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin-top: 8px; }
+  .sfh-table .tw { max-height: 280px; overflow: auto; margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; }
+  .sfh-table table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+  .sfh-table th, .sfh-table td { padding: 5px 10px; text-align: right; border-bottom: 1px solid var(--line); }
+  .sfh-table th:first-child, .sfh-table td:first-child { text-align: left; }
+  .sfh-table th { position: sticky; top: 0; background: var(--surface-2); color: var(--ink-2); font-weight: 600; }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -1330,6 +1368,39 @@
 
       </div>
     </div>
+<!-- PRICE HISTORY: price per dose, 30 days -->
+  <section class="card sfh-card" id="sfhCard">
+    <div class="sfh-head">
+      <div>
+        <h2 class="card-title">Price per dose — last 30 days</h2>
+        <p class="card-sub">Sanfew serum (4) vs (3), each price divided by its dose count. Uses <b>1-hour</b> wiki bars wherever they reach (roughly the last 15 days); the older stretch falls back to <b>6-hour</b> bars, since the API only keeps 365 points per step.</p>
+      </div>
+      <button class="refresh-btn" id="sfhReload" type="button">Reload history</button>
+    </div>
+    <div class="sfh-controls">
+      <div class="toggle" id="sfh-price" role="group" aria-label="Price line">
+        <button data-v="mid" class="on">Mid</button>
+        <button data-v="high">Insta-buy</button>
+        <button data-v="low">Insta-sell</button>
+      </div>
+      <div class="toggle" id="sfh-range" role="group" aria-label="Time range">
+        <button data-v="30" class="on">30d</button>
+        <button data-v="7">7d</button>
+        <button data-v="1">24h</button>
+      </div>
+    </div>
+    <div class="sfh-legend" id="sfhLegend">
+      <span><i class="sfh-sw sfh-s4"></i>Sanfew serum (4) ÷ 4</span>
+      <span><i class="sfh-sw sfh-s3"></i>Sanfew serum (3) ÷ 3</span>
+    </div>
+    <div class="sfh-plot" id="sfhPlot"><p class="opt-note" style="padding:24px 4px">Loading price history…</p></div>
+    <div class="tiles sfh-tiles" id="sfhTiles"></div>
+    <p class="opt-note" id="sfhNote"></p>
+    <details class="sfh-table">
+      <summary>Show as table</summary>
+      <div id="sfhTable"></div>
+    </details>
+  </section>
   </div>
   </div>
 
@@ -1337,6 +1408,240 @@
 </div>
 <div class="tip" id="tip"></div>
 </section>
+<script>
+/* ============================================================
+   Sanfew price history — price per dose over 30 days. 1-hour bars
+   where available, 6-hour bars before that (each step returns at most
+   365 points: 1h ≈ 15d, 6h ≈ 91d).
+   ============================================================ */
+(function(){
+  "use strict";
+  const API = "https://prices.runescape.wiki/api/v1/osrs/timeseries";
+  const SERIES = [
+    { key:"s4", id:10925, dose:4, name:"Sanfew (4)", cls:"ln4", color:"var(--sfh-4)" },
+    { key:"s3", id:10927, dose:3, name:"Sanfew (3)", cls:"ln3", color:"var(--sfh-3)" },
+  ];
+  const STEPS = [ ["6h",21600], ["1h",3600] ];
+  const LS = "sanfew-hist-v1";
+  const el = id => document.getElementById(id);
+  const plot = el("sfhPlot");
+  let DATA = null, CUTS = null, PRICE = "mid", RANGE = 30;
+  try { const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ if(["mid","high","low"].includes(s.PRICE)){ PRICE=s.PRICE; } if([1,7,30].includes(s.RANGE)){ RANGE=s.RANGE; } } } catch(e){}
+  function save(){ try { localStorage.setItem(LS, JSON.stringify({PRICE, RANGE})); } catch(e){} }
+  function syncToggles(){
+    [...el("sfh-price").children].forEach(b => b.classList.toggle("on", b.dataset.v===PRICE));
+    [...el("sfh-range").children].forEach(b => b.classList.toggle("on", +b.dataset.v===RANGE));
+  }
+
+  const fmt = n => n==null || !isFinite(n) ? "—" : Math.round(n).toLocaleString("en-US");
+  const fmt1 = n => n==null || !isFinite(n) ? "—" : n.toLocaleString("en-US", {maximumFractionDigits: n<100?1:0});
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const pad = n => String(n).padStart(2,"0");
+  const fDate = t => { const d = new Date(t*1000); return `${MON[d.getMonth()]} ${d.getDate()}`; };
+  const fTime = t => { const d = new Date(t*1000); return `${MON[d.getMonth()]} ${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+  async function getSteps(id){
+    const out = {};
+    await Promise.all(STEPS.map(async ([s]) => {
+      const r = await fetch(`${API}?timestep=${s}&id=${id}`);
+      if(!r.ok){ throw new Error("HTTP " + r.status); }
+      out[s] = ((await r.json()).data || []).slice().sort((a,b) => a.timestamp-b.timestamp);
+    }));
+    return out;
+  }
+
+  /* 1h covers its own span; 6h fills the older stretch */
+  function stitch(raw, cut1){
+    const pts = [];
+    const add = (arr, step, from, to) => arr.forEach(p => {
+      if(p.timestamp >= from && p.timestamp < to){ pts.push({ t:p.timestamp, step, h:p.avgHighPrice, l:p.avgLowPrice, hv:p.highPriceVolume||0, lv:p.lowPriceVolume||0 }); }
+    });
+    add(raw["6h"], 21600, -Infinity, cut1);
+    add(raw["1h"], 3600, cut1, Infinity);
+    return pts;
+  }
+
+  async function load(){
+    const btn = el("sfhReload"); btn.disabled = true;
+    el("sfhNote").textContent = "fetching price history…";
+    try {
+      const raws = await Promise.all(SERIES.map(s => getSteps(s.id)));
+      /* shared cut points so both series switch resolution at the same moment */
+      const first = (k) => Math.min(...raws.map(r => r[k].length ? r[k][0].timestamp : Infinity));
+      const cut1 = first("1h");
+      CUTS = { cut1 };
+      DATA = {};
+      SERIES.forEach((s,i) => { DATA[s.key] = stitch(raws[i], cut1); });
+      render();
+    } catch(err){
+      plot.innerHTML = `<p class="opt-note warn" style="padding:24px 4px">Couldn't load price history (${err.message||"error"}). Try <b>Reload history</b>.</p>`;
+      el("sfhNote").textContent = "";
+    } finally { btn.disabled = false; }
+  }
+
+  function val(p, dose){
+    let v;
+    if(PRICE==="high"){ v = p.h; }
+    else if(PRICE==="low"){ v = p.l; }
+    else { v = (p.h!=null && p.l!=null) ? (p.h+p.l)/2 : (p.h!=null ? p.h : p.l); }
+    return v==null ? null : v/dose;
+  }
+
+  function niceTicks(lo, hi, n){
+    const span = hi-lo || Math.abs(hi) || 1;
+    const raw = span/n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1,2,2.5,5,10].map(m => m*mag).find(s => s >= raw) || raw;
+    const a = Math.floor(lo/step)*step, b = Math.ceil(hi/step)*step, out = [];
+    for(let v=a; v<=b+step/2; v+=step){ out.push(+v.toFixed(6)); }
+    return out;
+  }
+
+  function render(){
+    if(!DATA){ return; }
+    const now = Date.now()/1000, t0 = now - RANGE*86400;
+    const ser = SERIES.map(s => ({ ...s, pts: DATA[s.key].filter(p => p.t >= t0).map(p => ({...p, v: val(p, s.dose)})).filter(p => p.v!=null) }));
+    const all = ser.flatMap(s => s.pts);
+    if(!all.length){ plot.innerHTML = `<p class="opt-note" style="padding:24px 4px">No trades in this window.</p>`; el("sfhTiles").innerHTML=""; return; }
+
+    const W = Math.max(300, plot.clientWidth || 600), mobile = W < 520;
+    const H = mobile ? 230 : 290;
+    const M = { l: 46, r: mobile ? 12 : 64, t: 22, b: 26 };
+    const tMin = Math.max(t0, Math.min(...all.map(p => p.t))), tMax = now;
+    let vMin = Math.min(...all.map(p => p.v)), vMax = Math.max(...all.map(p => p.v));
+    const padv = (vMax-vMin)*0.08 || vMax*0.02 || 1; vMin -= padv; vMax += padv;
+    const yt = niceTicks(vMin, vMax, 4); vMin = Math.min(vMin, yt[0]); vMax = Math.max(vMax, yt[yt.length-1]);
+    const X = t => M.l + (t-tMin)/(tMax-tMin) * (W-M.l-M.r);
+    const Y = v => M.t + (1-(v-vMin)/(vMax-vMin)) * (H-M.t-M.b);
+
+    /* resolution bands (alternating shade so the switch points are visible) */
+    const bands = [ ["6h", tMin, CUTS.cut1], ["1h", Math.max(tMin, CUTS.cut1), tMax] ]
+      .filter(b => b[2] > b[1] && b[2] > tMin);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Sanfew serum price per dose, last ${RANGE===1?"24 hours":RANGE+" days"}">`;
+    bands.forEach((b,i) => {
+      const x1 = X(Math.max(b[1],tMin)), x2 = X(Math.min(b[2],tMax));
+      if(i%2===1){ svg += `<rect class="band" x="${x1}" y="${M.t}" width="${Math.max(0,x2-x1)}" height="${H-M.t-M.b}"/>`; }
+      if(x2-x1 > 26){ svg += `<text class="band-l" x="${x1+4}" y="${M.t-8}">${b[0]}</text>`; }
+    });
+    svg += `<g class="grid">` + yt.map(v => `<line x1="${M.l}" x2="${W-M.r}" y1="${Y(v)}" y2="${Y(v)}"/>`).join("") + `</g>`;
+    svg += `<g class="ax">` + yt.map(v => `<text x="${M.l-6}" y="${Y(v)+3.5}" text-anchor="end">${fmt(v)}</text>`).join("");
+    /* x ticks: days for 7d/30d, hours for 24h */
+    const xs = [];
+    if(RANGE===1){ const d = new Date(tMin*1000); d.setMinutes(0,0,0); let t = d.getTime()/1000; while(t <= tMax){ if(t>=tMin && new Date(t*1000).getHours()%(mobile?6:4)===0){ xs.push([t, `${pad(new Date(t*1000).getHours())}:00`]); } t += 3600; } }
+    else { const d = new Date(tMin*1000); d.setHours(0,0,0,0); d.setDate(d.getDate()+1); const every = RANGE===30 ? (mobile?10:5) : (mobile?2:1); let i=0; while(d.getTime()/1000 <= tMax){ if(i%every===0){ xs.push([d.getTime()/1000, fDate(d.getTime()/1000)]); } d.setDate(d.getDate()+1); i++; } }
+    xs.forEach(([t,l]) => { svg += `<text x="${X(t)}" y="${H-8}" text-anchor="middle">${l}</text>`; });
+    svg += `</g>`;
+
+    /* lines — break where trades are missing for >3 steps */
+    ser.forEach(s => {
+      let d = "", prev = null;
+      s.pts.forEach(p => {
+        const gap = prev && (p.t - prev.t) > 3*Math.max(p.step, prev.step);
+        d += `${(!prev||gap)?"M":"L"}${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`;
+        prev = p;
+      });
+      svg += `<path class="ln ${s.cls}" d="${d}"/>`;
+    });
+
+    /* direct end labels (desktop), nudged apart */
+    if(!mobile){
+      const ends = ser.filter(s => s.pts.length).map(s => ({ s, y: Y(s.pts[s.pts.length-1].v) }));
+      if(ends.length===2 && Math.abs(ends[0].y-ends[1].y) < 14){ const mid=(ends[0].y+ends[1].y)/2, up = ends[0].y<=ends[1].y ? 0 : 1; ends[up].y = mid-7; ends[1-up].y = mid+7; }
+      ends.forEach(e => { svg += `<text class="dl" x="${W-M.r+6}" y="${e.y+4}">${e.s.dose===4?"(4)":"(3)"} ${fmt(e.s.pts[e.s.pts.length-1].v)}</text>`; });
+    }
+    svg += `<g id="sfhHover" style="display:none"><line class="xh" y1="${M.t}" y2="${H-M.b}"/>` +
+      ser.map(s => `<circle class="dot" r="4.5" fill="${s.color}" data-k="${s.key}"/>`).join("") + `</g>`;
+    svg += `<rect x="${M.l}" y="${M.t}" width="${W-M.l-M.r}" height="${H-M.t-M.b}" fill="transparent" id="sfhHit"/>`;
+    svg += `</svg>`;
+
+    /* volume: trades per hour (buys + sells), normalised so 6h and 1h bars share one scale */
+    const vser = SERIES.map(s => ({ ...s, pts: DATA[s.key].filter(p => p.t >= tMin).map(p => ({ ...p, vh: (p.hv+p.lv) / (p.step/3600) })) }));
+    const VH = mobile ? 96 : 116, VM = { t: 18, b: 22 };
+    const vMaxV = Math.max(1, ...vser.flatMap(s => s.pts.map(p => p.vh)));
+    const vt = niceTicks(0, vMaxV, 2), vTop = vt[vt.length-1];
+    const VY = v => VM.t + (1 - v/vTop) * (VH-VM.t-VM.b);
+    let vsvg = `<svg viewBox="0 0 ${W} ${VH}" role="img" aria-label="Sanfew serum trades per hour">`;
+    vsvg += `<text class="band-l" x="${M.l}" y="11">TRADES / HOUR</text>`;
+    bands.forEach((b,i) => { if(i%2===1){ const x1 = X(Math.max(b[1],tMin)), x2 = X(Math.min(b[2],tMax)); vsvg += `<rect class="band" x="${x1}" y="${VM.t}" width="${Math.max(0,x2-x1)}" height="${VH-VM.t-VM.b}"/>`; } });
+    vsvg += `<g class="grid">` + vt.map(v => `<line x1="${M.l}" x2="${W-M.r}" y1="${VY(v)}" y2="${VY(v)}"/>`).join("") + `</g>`;
+    vsvg += `<g class="ax">` + vt.map(v => `<text x="${M.l-6}" y="${VY(v)+3.5}" text-anchor="end">${fmt(v)}</text>`).join("");
+    xs.forEach(([t,l]) => { vsvg += `<text x="${X(t)}" y="${VH-6}" text-anchor="middle">${l}</text>`; });
+    vsvg += `</g>`;
+    vser.forEach(s => {
+      let d = "", prev = null;
+      s.pts.forEach(p => { const gap = prev && (p.t - prev.t) > 3*Math.max(p.step, prev.step); d += `${(!prev||gap)?"M":"L"}${X(p.t).toFixed(1)},${VY(p.vh).toFixed(1)}`; prev = p; });
+      vsvg += `<path class="ln ${s.cls}" style="stroke-width:1.5" d="${d}"/>`;
+    });
+    vsvg += `<line class="xh" id="sfhVX" y1="${VM.t}" y2="${VH-VM.b}" style="display:none"/>`;
+    vsvg += `<rect x="${M.l}" y="${VM.t}" width="${W-M.l-M.r}" height="${VH-VM.t-VM.b}" fill="transparent" id="sfhVHit"/></svg>`;
+    plot.innerHTML = svg + `<div class="sfh-vol">${vsvg}</div><div class="sfh-tip" id="sfhTip" hidden></div>`;
+
+    /* hover: crosshair + tooltip at the nearest timestamp */
+    const hit = el("sfhHit"), vhit = el("sfhVHit"), vx = el("sfhVX"), hov = el("sfhHover"), tip = el("sfhTip");
+    const vby = vser.map(s => s.pts);
+    const near = (pts, t) => { let lo=0, hi=pts.length-1; if(hi<0){ return null; } while(lo<hi){ const m=(lo+hi)>>1; if(pts[m].t < t){ lo=m+1; } else { hi=m; } } const c = [pts[lo], pts[lo-1]].filter(Boolean).sort((a,b)=>Math.abs(a.t-t)-Math.abs(b.t-t))[0]; return c && Math.abs(c.t-t) <= 3*c.step ? c : null; };
+    function move(ev){
+      const r = ev.currentTarget.ownerSVGElement.getBoundingClientRect(), sx = W / r.width;
+      const x = (ev.clientX - r.left) * sx;
+      const t = tMin + (x-M.l)/(W-M.l-M.r)*(tMax-tMin);
+      const hits = ser.map(s => ({ s, p: near(s.pts, t) }));
+      const ref = hits.map(h => h.p).filter(Boolean).sort((a,b)=>Math.abs(a.t-t)-Math.abs(b.t-t))[0];
+      if(!ref){ hov.style.display="none"; vx.style.display="none"; tip.hidden=true; return; }
+      const cx = X(ref.t);
+      vx.style.display=""; vx.setAttribute("x1",cx); vx.setAttribute("x2",cx);
+      hov.style.display=""; const ln = hov.querySelector("line"); ln.setAttribute("x1",cx); ln.setAttribute("x2",cx);
+      hits.forEach(h => { const c = hov.querySelector(`[data-k="${h.s.key}"]`); if(h.p){ c.style.display=""; c.setAttribute("cx", X(h.p.t)); c.setAttribute("cy", Y(h.p.v)); } else { c.style.display="none"; } });
+      const step = ref.step===3600 ? "1-hour" : "6-hour";
+      tip.innerHTML = `<div class="t">${fTime(ref.t)} · ${step} avg</div>` + hits.map(h =>
+        `<div class="r"><i class="sfh-sw ${h.s.dose===4?"sfh-s4":"sfh-s3"}"></i>${h.s.name}: <b>${h.p?fmt1(h.p.v):"—"}</b> gp/dose${h.p?` <span style="color:var(--muted)">· ${fmt(h.p.hv+h.p.lv)} traded (${fmt1((h.p.hv+h.p.lv)/(h.p.step/3600))}/hr)</span>`:""}</div>`).join("");
+      tip.hidden = false;
+      const px = cx / sx, pw = tip.offsetWidth;
+      tip.style.left = Math.max(0, Math.min(r.width - pw, px + 12 + pw > r.width ? px - pw - 12 : px + 12)) + "px";
+      tip.style.top = (M.t/ (H/r.height)) + "px";
+    }
+    hit.addEventListener("pointermove", move);
+    hit.addEventListener("pointerdown", move);
+    hit.addEventListener("pointerleave", () => { hov.style.display="none"; vx.style.display="none"; tip.hidden=true; });
+    vhit.addEventListener("pointermove", move);
+    vhit.addEventListener("pointerdown", move);
+    vhit.addEventListener("pointerleave", () => { hov.style.display="none"; vx.style.display="none"; tip.hidden=true; });
+
+    /* tiles */
+    const last = s => s.pts.length ? s.pts[s.pts.length-1] : null;
+    const avg = s => { let w=0, sum=0; s.pts.forEach(p => { const vol = (p.hv+p.lv) || 1; sum += p.v*vol; w += vol; }); return w ? sum/w : null; };
+    const [a4, a3] = ser, l4 = last(a4), l3 = last(a3);
+    const prem = l4 && l3 ? (l4.v/l3.v - 1)*100 : null;
+    const rng = s => s.pts.length ? `${fmt(Math.min(...s.pts.map(p=>p.v)))}–${fmt(Math.max(...s.pts.map(p=>p.v)))}` : "—";
+    const win = RANGE===1 ? "24h" : RANGE+"d";
+    const tiles = [
+      { k:"(4) per dose now", v: fmt(l4&&l4.v), u:`${win} range ${rng(a4)}` },
+      { k:"(3) per dose now", v: fmt(l3&&l3.v), u:`${win} range ${rng(a3)}` },
+      { k:`(4) ${win} avg`, v: fmt(avg(a4)), u:"volume-weighted" },
+      { k:`(3) ${win} avg`, v: fmt(avg(a3)), u:"volume-weighted" },
+      { k:"(4) vs (3) per dose", v: prem==null ? "—" : `${prem>=0?"+":""}${prem.toFixed(1)}%`, u: prem==null ? "" : (prem>=0 ? "(4) dearer per dose" : "(3) dearer per dose") },
+    ];
+    el("sfhTiles").innerHTML = tiles.map(t => `<div class="tile"><p class="k">${t.k}</p><div class="v">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
+    const counts = ser.map(s => `${s.name}: ${s.pts.length} points`).join(" · ");
+    const lbl = PRICE==="mid" ? "Mid = average of insta-buy and insta-sell for each bar (one side alone when the other had no trades)." : PRICE==="high" ? "Insta-buy = average price paid by buyers in each bar." : "Insta-sell = average price received by sellers in each bar.";
+    el("sfhNote").textContent = `${lbl} Lines break where a dose went more than 3 bars without a trade. ${counts}.`;
+
+    /* table view */
+    const times = [...new Set(all.map(p=>p.t))].sort((a,b)=>b-a);
+    const by = ser.map(s => new Map(s.pts.map(p => [p.t, p])));
+    el("sfhTable").innerHTML = `<div class="tw"><table><thead><tr><th>Time</th><th>Bar</th><th>(4) gp/dose</th><th>(3) gp/dose</th><th>(4) traded</th><th>(3) traded</th></tr></thead><tbody>` +
+      times.map(t => { const p4 = by[0].get(t), p3 = by[1].get(t), st = (p4||p3).step; return `<tr><td>${fTime(t)}</td><td>${st===3600?"1h":"6h"}</td><td>${p4?fmt1(p4.v):"—"}</td><td>${p3?fmt1(p3.v):"—"}</td><td>${p4?fmt(p4.hv+p4.lv):"—"}</td><td>${p3?fmt(p3.hv+p3.lv):"—"}</td></tr>`; }).join("") +
+      `</tbody></table></div>`;
+  }
+
+  el("sfh-price").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ PRICE = b.dataset.v; syncToggles(); save(); render(); } });
+  el("sfh-range").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ RANGE = +b.dataset.v; syncToggles(); save(); render(); } });
+  el("sfhReload").addEventListener("click", load);
+  let rt = null; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
+  /* re-measure when the Sanfew tab becomes visible (width is 0 while hidden) */
+  if(window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { const w = plot.clientWidth; if(w && w !== lw){ lw = w; render(); } }).observe(plot); }
+  syncToggles();
+  load();
+})();
+</script>
 <script>
 (function(){
 
