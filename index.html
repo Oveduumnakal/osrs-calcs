@@ -895,6 +895,8 @@
   .sfh-plot .xh { stroke: var(--ink-2); stroke-width: 1; stroke-dasharray: 3 3; }
   .sfh-plot .dot { stroke: var(--surface); stroke-width: 2; }
   .sfh-plot .dl { font: 600 11px "Inter", sans-serif; fill: var(--ink-2); }
+  .sfh-plot .clipm { stroke: var(--surface); stroke-width: 1; }
+  .sfh-plot .clipl { font: 600 10.5px "IBM Plex Mono", monospace; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; }
   .sfh-tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 9px; box-shadow: var(--shadow); padding: 8px 10px; font-size: 12px; color: var(--ink); white-space: nowrap; z-index: 5; }
   .sfh-tip .t { font: 10.5px "IBM Plex Mono", monospace; color: var(--muted); margin-bottom: 4px; }
   .sfh-tip .r { display: flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
@@ -1388,6 +1390,10 @@
         <button data-v="7">7d</button>
         <button data-v="1">24h</button>
       </div>
+      <div class="toggle" id="sfh-scale" role="group" aria-label="Price axis">
+        <button data-v="cap" class="on">Capped</button>
+        <button data-v="full">Full</button>
+      </div>
     </div>
     <div class="sfh-legend" id="sfhLegend">
       <span><i class="sfh-sw sfh-s4"></i>Sanfew serum (4) ÷ 4</span>
@@ -1425,12 +1431,22 @@
   const LS = "sanfew-hist-v1";
   const el = id => document.getElementById(id);
   const plot = el("sfhPlot");
-  let DATA = null, CUTS = null, PRICE = "mid", RANGE = 30;
-  try { const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ if(["mid","high","low"].includes(s.PRICE)){ PRICE=s.PRICE; } if([1,7,30].includes(s.RANGE)){ RANGE=s.RANGE; } } } catch(e){}
-  function save(){ try { localStorage.setItem(LS, JSON.stringify({PRICE, RANGE})); } catch(e){} }
+  let DATA = null, CUTS = null, PRICE = "mid", RANGE = 30, SCALE = "cap";
+  try { const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ if(["mid","high","low"].includes(s.PRICE)){ PRICE=s.PRICE; } if([1,7,30].includes(s.RANGE)){ RANGE=s.RANGE; } if(["cap","full"].includes(s.SCALE)){ SCALE=s.SCALE; } } } catch(e){}
+  function save(){ try { localStorage.setItem(LS, JSON.stringify({PRICE, RANGE, SCALE})); } catch(e){} }
   function syncToggles(){
     [...el("sfh-price").children].forEach(b => b.classList.toggle("on", b.dataset.v===PRICE));
     [...el("sfh-range").children].forEach(b => b.classList.toggle("on", +b.dataset.v===RANGE));
+    [...el("sfh-scale").children].forEach(b => b.classList.toggle("on", b.dataset.v===SCALE));
+  }
+
+  /* outlier fences: 3×IQR past the quartiles, but never tighter than ±30% of the median,
+     so a calm 24h window isn't clipped on ordinary noise */
+  function fences(vals){
+    const s = vals.slice().sort((a,b) => a-b);
+    const q = f => { const i = (s.length-1)*f, lo = Math.floor(i); return s[lo] + (s[Math.ceil(i)]-s[lo])*(i-lo); };
+    const q1 = q(0.25), q3 = q(0.75), med = q(0.5), iqr = q3-q1;
+    return { lo: Math.min(q1 - 3*iqr, med*0.7), hi: Math.max(q3 + 3*iqr, med*1.3) };
   }
 
   const fmt = n => n==null || !isFinite(n) ? "—" : Math.round(n).toLocaleString("en-US");
@@ -1507,11 +1523,14 @@
     const H = mobile ? 230 : 290;
     const M = { l: 46, r: mobile ? 12 : 64, t: 22, b: 26 };
     const tMin = Math.max(t0, Math.min(...all.map(p => p.t))), tMax = now;
-    let vMin = Math.min(...all.map(p => p.v)), vMax = Math.max(...all.map(p => p.v));
+    const F = SCALE==="cap" ? fences(all.map(p => p.v)) : { lo: -Infinity, hi: Infinity };
+    const inl = all.filter(p => p.v >= F.lo && p.v <= F.hi).map(p => p.v);
+    const dom = inl.length ? inl : all.map(p => p.v);
+    let vMin = Math.min(...dom), vMax = Math.max(...dom);
     const padv = (vMax-vMin)*0.08 || vMax*0.02 || 1; vMin -= padv; vMax += padv;
     const yt = niceTicks(vMin, vMax, 4); vMin = Math.min(vMin, yt[0]); vMax = Math.max(vMax, yt[yt.length-1]);
     const X = t => M.l + (t-tMin)/(tMax-tMin) * (W-M.l-M.r);
-    const Y = v => M.t + (1-(v-vMin)/(vMax-vMin)) * (H-M.t-M.b);
+    const Y = v => M.t + (1-(Math.max(vMin, Math.min(vMax, v))-vMin)/(vMax-vMin)) * (H-M.t-M.b);
 
     /* resolution bands (alternating shade so the switch points are visible) */
     const bands = [ ["6h", tMin, CUTS.cut1], ["1h", Math.max(tMin, CUTS.cut1), tMax] ]
@@ -1542,6 +1561,31 @@
       svg += `<path class="ln ${s.cls}" d="${d}"/>`;
     });
 
+    /* capped outliers: a caret on the edge per bar, the run's extreme value labelled once */
+    let nClip = 0;
+    const lblX = [];
+    ser.forEach(s => {
+      const runs = [];
+      s.pts.forEach((p, i) => {
+        const side = p.v > vMax ? 1 : p.v < vMin ? -1 : 0;
+        if(!side){ return; }
+        nClip++;
+        const prev = s.pts[i-1], last = runs[runs.length-1];
+        if(last && last.side===side && prev && last.pts[last.pts.length-1]===prev && (p.t-prev.t) <= 3*Math.max(p.step, prev.step)){ last.pts.push(p); }
+        else { runs.push({ side, pts: [p] }); }
+      });
+      runs.forEach(r => {
+        const yE = r.side > 0 ? M.t : H-M.b, dy = r.side > 0 ? 6 : -6;
+        r.pts.forEach(p => { const x = X(p.t); svg += `<path class="clipm" style="fill:${s.color}" d="M${(x-4).toFixed(1)},${yE+dy} L${x.toFixed(1)},${yE} L${(x+4).toFixed(1)},${yE+dy} Z"/>`; });
+        const pk = r.pts.reduce((a,b) => (r.side > 0 ? b.v > a.v : b.v < a.v) ? b : a);
+        const x = X(pk.t);
+        if(lblX.some(o => Math.abs(o-x) < 46)){ return; }
+        lblX.push(x);
+        const anchor = x > W-M.r-30 ? "end" : x < M.l+30 ? "start" : "middle";
+        svg += `<text class="clipl" style="fill:${s.color}" x="${x.toFixed(1)}" y="${r.side > 0 ? yE+18 : yE-10}" text-anchor="${anchor}">${fmt(pk.v)}</text>`;
+      });
+    });
+
     /* direct end labels (desktop), nudged apart */
     if(!mobile){
       const ends = ser.filter(s => s.pts.length).map(s => ({ s, y: Y(s.pts[s.pts.length-1].v) }));
@@ -1549,7 +1593,7 @@
       ends.forEach(e => { svg += `<text class="dl" x="${W-M.r+6}" y="${e.y+4}">${e.s.dose===4?"(4)":"(3)"} ${fmt(e.s.pts[e.s.pts.length-1].v)}</text>`; });
     }
     svg += `<g id="sfhHover" style="display:none"><line class="xh" y1="${M.t}" y2="${H-M.b}"/>` +
-      ser.map(s => `<circle class="dot" r="4.5" fill="${s.color}" data-k="${s.key}"/>`).join("") + `</g>`;
+      ser.map(s => `<circle class="dot" r="4.5" style="fill:${s.color}" data-k="${s.key}"/>`).join("") + `</g>`;
     svg += `<rect x="${M.l}" y="${M.t}" width="${W-M.l-M.r}" height="${H-M.t-M.b}" fill="transparent" id="sfhHit"/>`;
     svg += `</svg>`;
 
@@ -1622,7 +1666,8 @@
     el("sfhTiles").innerHTML = tiles.map(t => `<div class="tile"><p class="k">${t.k}</p><div class="v">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
     const counts = ser.map(s => `${s.name}: ${s.pts.length} points`).join(" · ");
     const lbl = PRICE==="mid" ? "Mid = average of insta-buy and insta-sell for each bar (one side alone when the other had no trades)." : PRICE==="high" ? "Insta-buy = average price paid by buyers in each bar." : "Insta-sell = average price received by sellers in each bar.";
-    el("sfhNote").textContent = `${lbl} Lines break where a dose went more than 3 bars without a trade. ${counts}.`;
+    const clipNote = nClip ? ` ${nClip} outlier bar${nClip===1?"":"s"} pinned to the chart edge (▲/▼, peak labelled) so normal prices stay readable — switch to Full to see them to scale.` : "";
+    el("sfhNote").textContent = `${lbl} Lines break where a dose went more than 3 bars without a trade.${clipNote} ${counts}.`;
 
     /* table view */
     const times = [...new Set(all.map(p=>p.t))].sort((a,b)=>b-a);
@@ -1634,6 +1679,7 @@
 
   el("sfh-price").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ PRICE = b.dataset.v; syncToggles(); save(); render(); } });
   el("sfh-range").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ RANGE = +b.dataset.v; syncToggles(); save(); render(); } });
+  el("sfh-scale").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ SCALE = b.dataset.v; syncToggles(); save(); render(); } });
   el("sfhReload").addEventListener("click", load);
   let rt = null; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(render, 150); });
   /* re-measure when the Sanfew tab becomes visible (width is 0 while hidden) */
