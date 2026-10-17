@@ -909,6 +909,45 @@
   .sfh-table th, .sfh-table td { padding: 5px 10px; text-align: right; border-bottom: 1px solid var(--line); }
   .sfh-table th:first-child, .sfh-table td:first-child { text-align: left; }
   .sfh-table th { position: sticky; top: 0; background: var(--surface-2); color: var(--ink-2); font-weight: 600; }
+  /* ---- Giants' Foundry (molten amber) ---- */
+  body[data-tab="foundry"] {
+    --bg:#f3ede4; --surface:#fcf8f1; --surface-2:#eadfce; --ink:#2a2013; --ink-2:#5c4930; --muted:#9a8262;
+    --line:#e3d4bc; --line-strong:#cdb48d; --accent:#b45309;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="foundry"] {
+        --bg:#14100c; --surface:#1d1712; --surface-2:#292018; --ink:#f3e8d8; --ink-2:#d1b894; --muted:#a38a68;
+        --line:#352a1e; --line-strong:#4d3c28; --accent:#f59e0b;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="foundry"] {
+    --bg:#14100c; --surface:#1d1712; --surface-2:#292018; --ink:#f3e8d8; --ink-2:#d1b894; --muted:#a38a68;
+    --line:#352a1e; --line-strong:#4d3c28; --accent:#f59e0b;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
+  #view-foundry .gf-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap:18px; align-items:start; }
+  #view-foundry .gf-head { display:flex; align-items:center; justify-content:space-between; gap:8px 12px; flex-wrap:wrap; margin-bottom:12px; }
+  #view-foundry .gf-head .card-title { margin:0; }
+  #view-foundry .gf-list { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  #view-foundry .gf-item { display:grid; grid-template-columns:26px minmax(0, 1fr) auto; gap:4px 10px; align-items:center; padding:10px 12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; }
+  #view-foundry .gf-item.top { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+  #view-foundry .gf-rank { width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font:600 12px "IBM Plex Mono", monospace; background:var(--surface); border:1px solid var(--line-strong); color:var(--ink-2); }
+  #view-foundry .gf-item.top .gf-rank { background:var(--accent); border-color:var(--accent); color:var(--surface); }
+  #view-foundry .gf-name { font-weight:600; font-size:14px; color:var(--ink); overflow-wrap:anywhere; }
+  #view-foundry .gf-bars { font:500 10.5px "IBM Plex Mono", monospace; color:var(--accent); margin-left:6px; white-space:nowrap; }
+  #view-foundry .gf-low { font:500 10.5px "IBM Plex Mono", monospace; color:var(--neg); background:var(--neg-soft); border-radius:5px; padding:1px 6px; margin-left:6px; white-space:nowrap; }
+  #view-foundry .gf-meta { font:500 11px "IBM Plex Mono", monospace; color:var(--muted); margin-top:2px; overflow-wrap:anywhere; }
+  #view-foundry .gf-per { text-align:right; font-variant-numeric:tabular-nums; }
+  #view-foundry .gf-per b { display:block; font:700 17px "Cinzel", serif; color:var(--accent); line-height:1.1; }
+  #view-foundry .gf-per span { font:500 10px "IBM Plex Mono", monospace; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); }
+  #view-foundry .gf-fill { margin:12px 2px 0; font-size:12px; line-height:1.55; color:var(--ink-2); }
+  #view-foundry .gf-fill b { color:var(--ink); font-weight:600; }
+  #view-foundry .gf-fill .sv { color:var(--profit); font-weight:600; }
+  #view-foundry .gf-empty { font-size:12.5px; color:var(--muted); margin:0; }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -928,6 +967,7 @@
         <button data-view="grinding" role="tab">Grinding</button>
         <button data-view="planks" role="tab">Plank Make</button>
         <button data-view="smithing" role="tab">Smithing</button>
+        <button data-view="foundry" role="tab">Giants' Foundry</button>
         <button data-view="cooking" role="tab">Cooking</button>
         <button data-view="sailing" role="tab">Sailing</button>
         <button data-view="rune" role="tab">Rune Calculator</button>
@@ -7235,6 +7275,209 @@ window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; 
 })();
 </script>
 
+<section id="view-foundry" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">OSRS · Smithing · Giants' Foundry</p>
+    <h1>Giants' Foundry Metal</h1>
+    <p class="lede">The crucible takes <b>28 bars' worth</b> of metal. A bar counts as 1; smithed gear counts as the bars it takes to smith minus 1. So the cheapest way to fill it is often <b>gear, not bars</b>. This shows the two cheapest items per bar-equivalent for every metal, live.</p>
+    <div class="assumptions" id="gf-assumptions"></div>
+  </header>
+
+  <div class="layout">
+  <aside class="sidebar">
+
+    <section class="card">
+      <h2 class="card-title">Your setup</h2>
+      <p class="card-sub">Prices are live from the header bar.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Buy items at</p>
+          <div class="toggle" id="gf-tg-buyspeed" role="group" aria-label="Buy speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="gf-note-buyspeed"></p>
+        </div>
+        <div>
+          <p class="opt-label">Low-volume items</p>
+          <div class="toggle" id="gf-tg-lowvol" role="group" aria-label="Low-volume items">
+            <button data-v="hide" class="on">Hide</button>
+            <button data-v="show">Show</button>
+          </div>
+          <div class="timing-in" style="margin:8px 0 0">
+            <label for="gf-minvol">low = under <input id="gf-minvol" type="number" min="0" step="10" value="100" inputmode="numeric"> trades/24h</label>
+          </div>
+          <p class="opt-note" id="gf-note-minvol"></p>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+
+  <div class="main">
+    <div class="gf-grid" id="gf-grid"></div>
+    <p class="opt-note" id="gf-hidden"></p>
+    <footer id="gf-footer"></footer>
+  </div>
+  </div>
+</div>
+</section>
+
+<script>
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const fmt = n => (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const fmt1 = n => n>=100 ? fmt(n) : (Math.round(n*10)/10).toLocaleString("en-US", {maximumFractionDigits:1});
+
+const CRUCIBLE = 28;   // bars' worth of metal the crucible holds
+// [kind, bar-equivalents]: a bar is 1; gear is (bars to smith) - 1
+const KINDS = [["bar",1],["scimitar",1],["longsword",1],["full helm",1],["sq shield",1],["claws",1],["warhammer",2],["battleaxe",2],["chainbody",2],["kiteshield",2],["2h sword",2],["platelegs",2],["plateskirt",2],["platebody",4]];
+// [metal, bar item prefix, Smithing level to add it to the crucible, item ids in KINDS order]
+const METALS = [
+ ["Bronze", "Bronze", 1, [2349,1321,1291,1155,1173,3095,1337,1375,1103,1189,1307,1075,1087,1117]],
+ ["Iron", "Iron", 15, [2351,1323,1293,1153,1175,3096,1335,1363,1101,1191,1309,1067,1081,1115]],
+ ["Steel", "Steel", 30, [2353,1325,1295,1157,1177,3097,1339,1365,1105,1193,1311,1069,1083,1119]],
+ ["Mithril", "Mithril", 50, [2359,1329,1299,1159,1181,3099,1343,1369,1109,1197,1315,1071,1085,1121]],
+ ["Adamant", "Adamantite", 70, [2361,1331,1301,1161,1183,3100,1345,1371,1111,1199,1317,1073,1091,1123]],
+ ["Rune", "Runite", 85, [2363,1333,1303,1163,1185,3101,1347,1373,1113,1201,1319,1079,1093,1127]],
+];
+
+let LAT = {}, H24 = {}, ROWS = [], PLAYER = null, PNAME = null;
+const opt = { buySpeed:"instant", lowVol:"hide" };
+let MINVOL = 100;
+const LS_KEY = "foundry-v1";
+const hi = id => (LAT[id]||{}).high || 0;
+const lo = id => (LAT[id]||{}).low  || 0;
+const buyPrice = id => opt.buySpeed==="patient" ? (lo(id)||hi(id)) : (hi(id)||lo(id));
+/** 24h trade count, or null when the 24h feed hasn't loaded (so the floor can't be applied). */
+function tradesOf(id){
+  if(!Object.keys(H24).length){ return null; }
+  const h = H24[id];
+  return h ? (h.highPriceVolume||0) + (h.lowPriceVolume||0) : 0;
+}
+
+function compute(){
+  ROWS = METALS.map(([label, barPrefix, req, ids]) => {
+    const cand = [];
+    let hidden = 0;
+    ids.forEach((id, i) => {
+      const [kind, bars] = KINDS[i];
+      const price = buyPrice(id);
+      const trades = tradesOf(id);
+      const low = trades!=null && trades<MINVOL;
+      if(!price || (low && opt.lowVol==="hide")){ hidden++; return; }
+      cand.push({ id, bars, price, trades, low, per:price/bars, name:i===0 ? `${barPrefix} bar` : `${label} ${kind}`, isBar:i===0 });
+    });
+    cand.sort((a, b) => a.per-b.per || (b.trades||0)-(a.trades||0));
+    const bar = cand.find(c => c.isBar) || null;
+    return { label, req, top:cand.slice(0, 2), bar, hidden, total:ids.length };
+  });
+}
+
+function playerSmith(){ return PLAYER ? PLAYER.smithing : null; }
+function updateChips(){
+  const s = playerSmith();
+  el("gf-assumptions").innerHTML = [
+    s!=null ? `<span class="chip">Gated by <b>${PNAME}</b> · Smithing ${s}</span>` : "",
+    `<span class="chip">Crucible <b>${CRUCIBLE}</b> bars' worth</span>`,
+    `<span class="chip">Bar <b>1</b> · 2-bar gear <b>1</b> · 3-bar gear <b>2</b> · platebody <b>4</b></span>`,
+    `<span class="chip">${opt.buySpeed==="patient" ? "Patient (bid)" : "Instant (ask)"} prices</span>`,
+  ].join("");
+}
+
+function itemHtml(c, i){
+  const trades = c.trades==null ? "" : ` · ${fmt(c.trades)} trades/24h`;
+  return `<li class="gf-item${i===0?" top":""}">`+
+    `<span class="gf-rank">${i+1}</span>`+
+    `<div><div class="gf-name">${c.name}${c.bars>1?`<span class="gf-bars">= ${c.bars} bars</span>`:""}${c.low?`<span class="gf-low">low volume</span>`:""}</div>`+
+    `<div class="gf-meta">${fmt(c.price)} gp each${trades}</div></div>`+
+    `<div class="gf-per"><b>${fmt1(c.per)}</b><span>gp / bar</span></div></li>`;
+}
+function fillHtml(r){
+  const best = r.top[0];
+  if(!best){ return ""; }
+  const n = CRUCIBLE/best.bars, total = n*best.price;
+  let line = `Fill the crucible: <b>${n} × ${best.name}</b> ≈ <b>${fmt(total)}</b> gp`;
+  if(r.bar && r.bar.id!==best.id){
+    const barTotal = CRUCIBLE*r.bar.price, save = barTotal-total;
+    if(save>0){ line += ` · <span class="sv">${fmt(save)} less</span> than ${CRUCIBLE} bars (${fmt(barTotal)})`; }
+  }
+  return `<p class="gf-fill">${line}.</p>`;
+}
+function renderGrid(){
+  const s = playerSmith();
+  el("gf-grid").innerHTML = ROWS.map(r => {
+    const warn = s!=null && s<r.req;
+    const tag = warn ? `<span class="best-tag unf">⚠ Smith ${r.req} to add</span>` : `<span class="chip">Smith ${r.req}</span>`;
+    const body = r.top.length
+      ? `<ol class="gf-list">${r.top.map(itemHtml).join("")}</ol>${fillHtml(r)}`
+      : `<p class="gf-empty">No priced item above the trade floor right now. Lower the minimum or refresh prices.</p>`;
+    return `<section class="card"><div class="gf-head"><h2 class="card-title">${r.label}</h2>${tag}</div>${body}</section>`;
+  }).join("");
+  const hid = ROWS.reduce((a, r) => a + r.hidden, 0), tot = ROWS.reduce((a, r) => a + r.total, 0);
+  const why = opt.lowVol==="hide" ? `no price, or fewer than ${fmt(MINVOL)} trades in the last 24h` : "no price";
+  el("gf-hidden").textContent = hid ? `${hid} of ${tot} items skipped: ${why}.` : "";
+}
+function syncNotes(){
+  el("gf-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Bid price: cheaper, but offers wait to fill.` : `Ask price: buy now.`;
+  el("gf-note-minvol").textContent = opt.lowVol==="hide"
+    ? `Items under this many trades in 24h are skipped; thin markets show stale prices.`
+    : `Items under this many trades in 24h are kept and tagged "low volume".`;
+}
+function renderAll(){ compute(); updateChips(); renderGrid(); saveState(); }
+
+el("gf-tg-buyspeed").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if(!b){ return; }
+  opt.buySpeed = b.dataset.v;
+  syncControls();
+  renderAll();
+});
+el("gf-tg-lowvol").addEventListener("click", e => {
+  const b = e.target.closest("button");
+  if(!b){ return; }
+  opt.lowVol = b.dataset.v;
+  syncControls();
+  renderAll();
+});
+el("gf-minvol").addEventListener("input", e => { MINVOL = Math.max(0, Math.round(+e.target.value) || 0); renderAll(); });
+el("gf-footer").innerHTML =
+  `Prices are live via the shared header bar. The crucible holds <b>28 bars' worth</b> of metal: a bar is worth 1, and smithed gear is worth the bars it takes to smith minus 1 — scimitar, longsword, full helm, sq shield and claws = 1; warhammer, battleaxe, chainbody, kiteshield, 2h sword, platelegs and plateskirt = 2; platebody = 4. `+
+  `Items are ranked by gp per bar-equivalent; low-volume items (thin markets, stale prices) are hidden by default and can be shown from the sidebar. Ornamental armour, lovakite, blurite and elemental metal can't be used. Adding a metal needs its smelting level (boosts work). `+
+  `Mixing two metals scores higher than one, so take the best items from the two cards you plan to combine. Prices move — re-check before buying.`;
+
+function pickLAT(raw, source){
+  if(source!=="m5"){ return raw.latest||{}; }
+  const out={}, m5=raw.m5||{}, lat=raw.latest||{};
+  const ids=new Set([...Object.keys(m5),...Object.keys(lat)]);
+  ids.forEach(id=>{ const a=m5[id]||{}, l=lat[id]||{}; out[id]={ high:(a.avgHighPrice ?? l.high ?? l.low), low:(a.avgLowPrice ?? l.low ?? l.high) }; });
+  return out;
+}
+function applyPrices(raw, source){ LAT = pickLAT(raw, source); H24 = raw.h24||{}; renderAll(); }
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt,MINVOL})); }catch(e){} }
+function loadState(){
+  let s;
+  try{ s = JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; }
+  if(!s){ return; }
+  if(s.opt && (s.opt.buySpeed==="instant" || s.opt.buySpeed==="patient")){ opt.buySpeed = s.opt.buySpeed; }
+  if(s.opt && (s.opt.lowVol==="hide" || s.opt.lowVol==="show")){ opt.lowVol = s.opt.lowVol; }
+  if(Number.isFinite(s.MINVOL)){ MINVOL = Math.max(0, s.MINVOL); }
+}
+function syncControls(){
+  [...el("gf-tg-buyspeed").querySelectorAll("button")].forEach(b => b.classList.toggle("on", b.dataset.v===opt.buySpeed));
+  [...el("gf-tg-lowvol").querySelectorAll("button")].forEach(b => b.classList.toggle("on", b.dataset.v===opt.lowVol));
+  el("gf-minvol").value = MINVOL;
+  syncNotes();
+}
+
+loadState(); syncControls(); renderAll();
+window.PriceHub.subscribe(applyPrices);
+window.Player.subscribe(function(p){ PLAYER = p.levels||null; PNAME = p.name||null; renderAll(); });
+})();
+</script>
+
 <section id="view-cooking" class="view">
 <div class="wrap">
   <header>
@@ -8572,8 +8815,8 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   "use strict";
   try { if(('ontouchstart' in window) || (navigator.maxTouchPoints > 0)){ document.documentElement.classList.add("is-touch"); } } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), cooking: document.getElementById("view-cooking"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", cooking: "cook fish & meat \u2014 burn-adjusted", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
