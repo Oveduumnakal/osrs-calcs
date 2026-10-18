@@ -1140,8 +1140,7 @@
       if(!lr.ok || !mr.ok){ throw new Error("HTTP "+lr.status+"/"+mr.status); }
       const [lj, mj] = await Promise.all([lr.json(), mr.json()]);
       raw.latest = lj.data || {}; raw.m5 = mj.data || {};
-      try { const h = await fetch(API+"/1h"); if(h.ok){ raw.h1 = (await h.json()).data || {}; } } catch(e){}
-      try { const h = await fetch(API+"/24h"); if(h.ok){ raw.h24 = (await h.json()).data || {}; } } catch(e){}
+      await Promise.all([ getSlow("h1", "/1h"), getSlow("h24", "/24h") ]);
       fetchedTs = new Date();
       broadcast();
       setStatus(`${srcLabel()} \u00b7 updated ${stamp()}`, "ok");
@@ -1152,13 +1151,36 @@
       if(AUTO){ scheduleAuto(); }
     }
   }
-  /** Re-arms the single auto-refresh timer so the countdown always matches the real next fetch. */
+  /* The hourly and daily averages only change when the API's Expires time passes (top of the hour /
+     midnight UTC), so skip them until then. The browser cache can't do this for /24h: Cloudflare's Age
+     header outruns its Expires after noon UTC, which made every refresh re-check it. */
+  const slowExp = { h1:0, h24:0 };
+  async function getSlow(key, path){
+    if(Date.now() < slowExp[key] && Object.keys(raw[key]).length){ return; }
+    try {
+      const r = await fetch(API+path);
+      if(!r.ok){ return; }
+      raw[key] = (await r.json()).data || {};
+      const exp = Date.parse(r.headers.get("expires") || "");
+      slowExp[key] = Math.min(Number.isFinite(exp) ? exp : 0, Date.now() + 24*3600*1000);
+    } catch(e){}
+  }
+  /** Re-arms the single auto-refresh timer so the countdown always matches the real next fetch.
+      While the tab is hidden no timer runs; showing the tab again catches up (see visibilitychange). */
   function scheduleAuto(){
-    if(autoTimer){ clearTimeout(autoTimer); }
+    if(autoTimer){ clearTimeout(autoTimer); autoTimer = null; }
     autoNextTs = Date.now()+AUTO_MS;
-    autoTimer = setTimeout(refresh, AUTO_MS);
+    if(!document.hidden){ autoTimer = setTimeout(refresh, AUTO_MS); }
     updateAutoNote();
   }
+  /* Auto pauses while the tab is hidden — nobody is looking, so don't poll — and refreshes on return if it's due. */
+  document.addEventListener("visibilitychange", () => {
+    if(!AUTO){ return; }
+    if(autoTimer){ clearTimeout(autoTimer); autoTimer = null; }
+    if(document.hidden){ return; }
+    const wait = (autoNextTs || 0) - Date.now();
+    if(wait <= 0){ refresh(); } else { autoTimer = setTimeout(refresh, wait); }
+  });
   function setSource(v){
     if(v!=="latest" && v!=="m5"){ return; }
     SOURCE = v;
@@ -1856,7 +1878,13 @@
   /* re-measure when the Sanfew tab becomes visible (width is 0 while hidden) */
   if(window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { const w = plot.clientWidth; if(w && w !== lw){ lw = w; render(); } }).observe(plot); }
   syncToggles();
-  load();
+  /* fetch the 4 timeseries only once this card is (nearly) on screen — most visits never scroll down to it,
+     and a hidden tab never intersects */
+  const card = el("sfhCard");
+  if(window.IntersectionObserver && card){
+    const io = new IntersectionObserver(entries => { if(entries.some(e => e.isIntersecting)){ io.disconnect(); load(); } }, { rootMargin:"300px 0px" });
+    io.observe(card);
+  } else { load(); }
 })();
 </script>
 <script>
@@ -5451,7 +5479,7 @@ el("ha-search").addEventListener("input", e=>{ SEARCH=e.target.value; renderTabl
 
 /* ---- footer ---- */
 el("ha-footer").innerHTML =
-  `Item list &amp; alch values from the <a href="https://prices.runescape.wiki" target="_blank" rel="noopener">RuneScape Wiki</a> item mapping (fetched once); buy prices are live via the shared header bar. `+
+  `Item list &amp; alch values from the <a href="https://prices.runescape.wiki" target="_blank" rel="noopener">RuneScape Wiki</a> item mapping (fetched the first time you open this tab); buy prices are live via the shared header bar. `+
   `Profit = High Alch value − insta-buy price − 1 nature rune (− 5 fire runes if you don't use a fire staff). <b>No GE tax</b> — alching gives coins directly, it isn't a GE sale. `+
   `High Level Alchemy needs <b>Magic 55</b> and gives 65 Magic XP/cast. <b>gp/hr</b> per item is capped by its 4h GE buy limit ÷ 4, so profitable alching means buying across many items — treat the ranked list as your rotation. `+
   `Rune prices are editable (overrides stick until Reset); the members filter and a min-limit cutoff trim the list. `+
@@ -5500,7 +5528,11 @@ function syncControls(){
 loadState(); syncControls(); renderAll();
 window.PriceHub.subscribe(applyPrices);
 window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; renderAll(); });
-loadMapping();
+/* the ~860 KB item mapping is only used here: fetch it the first time this tab is on screen */
+if(window.IntersectionObserver){
+  const io = new IntersectionObserver(entries => { if(entries.some(e => e.isIntersecting)){ io.disconnect(); loadMapping(); } });
+  io.observe(root);
+} else { loadMapping(); }
 })();
 </script>
 <section id="view-shops" class="view">
