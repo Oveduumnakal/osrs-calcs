@@ -976,6 +976,80 @@
   #view-shops .hs-tag { display:inline-block; font:500 10px "IBM Plex Mono", monospace; padding:1px 6px; border-radius:5px; margin:2px 0 0 6px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-2); white-space:nowrap; }
   #view-shops .hs-tag.stack { color:var(--accent); border-color:var(--accent); }
   #view-shops .hs-tag.far { color:var(--neg); border-color:var(--neg-soft); }
+  /* ---- Ironman Money (iron grey + coin gold) ---- */
+  body[data-tab="iron"] {
+    --bg:#eceef1; --surface:#f9fafb; --surface-2:#e0e4e9; --ink:#1d2127; --ink-2:#47505b; --muted:#76808b;
+    --line:#d4d9e0; --line-strong:#b9c1cb; --accent:#855f00;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="iron"] {
+        --bg:#0e1013; --surface:#16191d; --surface-2:#1f2328; --ink:#e8eaee; --ink-2:#b5bbc4; --muted:#868e98;
+        --line:#292e35; --line-strong:#3b424b; --accent:#e9b949;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="iron"] {
+    --bg:#0e1013; --surface:#16191d; --surface-2:#1f2328; --ink:#e8eaee; --ink-2:#b5bbc4; --muted:#868e98;
+    --line:#292e35; --line-strong:#3b424b; --accent:#e9b949;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
+  #view-iron .im-lv-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:5px; }
+  #view-iron .im-lv { display:flex; align-items:center; gap:3px; min-width:0; background:var(--surface-2); border:1px solid var(--line); border-radius:8px; padding:3px 4px 3px 6px; }
+  #view-iron .im-lv span { flex:1; min-width:0; font:600 11px "Inter", sans-serif; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #view-iron .im-lv input { width:32px; font:600 13px "IBM Plex Mono", monospace; color:var(--ink); background:var(--surface); border:1px solid var(--line-strong); border-radius:6px; padding:3px 3px; text-align:right; }
+  #view-iron .im-lv input:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  #view-iron .im-lv.stale { border-color:var(--c-nails); }
+  #view-iron .im-lv.stale span { color:var(--c-nails); }
+  #view-iron .im-ul-h { font:600 10.5px "IBM Plex Mono", monospace; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:14px 0 6px; }
+  #view-iron details.im-ug { border-top:1px solid var(--line); }
+  #view-iron details.im-ug:first-child { margin-top:10px; }
+  #view-iron details.im-ug > summary { list-style:none; cursor:pointer; display:flex; align-items:center; gap:7px; margin:0; padding:9px 0; }
+  #view-iron details.im-ug > summary::-webkit-details-marker { display:none; }
+  #view-iron details.im-ug > summary::before { content:"▸"; font-size:11px; transition:transform .12s; }
+  #view-iron details.im-ug[open] > summary::before { transform:rotate(90deg); }
+  #view-iron details.im-ug > summary:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #view-iron .im-ug-n { margin-left:auto; text-transform:none; letter-spacing:0; font-weight:500; color:var(--ink-2); }
+  #view-iron details.im-ug .im-ul { padding:0 0 10px; }
+  #view-iron .im-ul { display:flex; flex-direction:column; gap:4px; }
+  #view-iron .im-ul label { display:flex; align-items:center; gap:8px; font-size:12px; line-height:1.3; color:var(--ink-2); cursor:pointer; }
+  #view-iron .im-ul input { width:15px; height:15px; flex:0 0 auto; margin:0; }
+  #view-iron .im-qbtns { display:flex; gap:8px; margin-top:12px; }
+  #view-iron .im-qbtns .stkpl-btn { margin-top:0; }
+  #view-iron .im-search { font:500 13px "IBM Plex Mono", monospace; color:var(--ink); background:var(--surface); border:1px solid var(--line-strong); border-radius:8px; padding:7px 11px; width:200px; max-width:60vw; }
+  #view-iron .im-search:focus-visible { outline:2px solid var(--accent); outline-offset:1px; }
+  #view-iron .im-tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  #view-iron .im-cats { display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 4px; }
+  #view-iron .im-cats button { font:600 11.5px "Inter", sans-serif; color:var(--ink-2); background:var(--surface-2); border:1px solid var(--line); border-radius:999px; padding:5px 11px; cursor:pointer; }
+  #view-iron .im-cats button:hover { color:var(--ink); border-color:var(--line-strong); }
+  #view-iron .im-cats button.on { color:var(--surface); background:var(--accent); border-color:var(--accent); }
+  #view-iron .im-cats button:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #view-iron .tbl-wrap { max-height:75vh; overflow:auto; }
+  #view-iron td.im-m { white-space:normal; min-width:210px; max-width:330px; }
+  #view-iron th.im-r, #view-iron td.im-r { text-align:left; white-space:normal; min-width:230px; max-width:400px; }
+  #view-iron a.im-name { color:var(--ink); font-weight:600; text-decoration:none; border-bottom:1px dotted var(--line-strong); }
+  #view-iron a.im-name:hover { color:var(--accent); border-bottom-color:var(--accent); }
+  #view-iron a.im-name:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+  #view-iron .im-sub { display:block; font:500 10.5px "IBM Plex Mono", monospace; color:var(--muted); margin-top:3px; line-height:1.45; }
+  #view-iron .im-tag { display:inline-block; font:500 10px "IBM Plex Mono", monospace; padding:1px 6px; border-radius:5px; margin:2px 0 0 6px; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-2); white-space:nowrap; vertical-align:1px; }
+  #view-iron .im-tag.calc { color:var(--accent); border-color:var(--accent); }
+  #view-iron .im-tag.wild, #view-iron .im-tag.uim { color:var(--neg); border-color:var(--neg); background:var(--neg-soft); }
+  #view-iron .im-tag.bank { color:var(--c-nails); border-color:var(--c-nails); }
+  #view-iron .im-rq { display:inline-block; font:500 10.5px "IBM Plex Mono", monospace; padding:1px 6px; border-radius:5px; margin:2px 4px 2px 0; background:var(--surface); border:1px solid var(--line); color:var(--ink-2); white-space:nowrap; }
+  #view-iron .im-rq.ok { color:var(--profit); border-color:var(--profit); }
+  #view-iron .im-rq.miss { color:var(--neg); border-color:var(--neg); background:var(--neg-soft); }
+  #view-iron .im-rq.rec { color:var(--muted); border-style:dashed; }
+  #view-iron tr.im-locked td.im-gp, #view-iron tr.im-locked td.im-xp { color:var(--muted); font-weight:400; }
+  #view-iron .im-lock { display:block; font:500 10px "IBM Plex Mono", monospace; color:var(--muted); margin-top:2px; }
+  #view-iron .im-ups { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; }
+  #view-iron .im-up { padding:10px 12px; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; }
+  #view-iron .im-up-h { display:flex; justify-content:space-between; align-items:baseline; gap:10px; font-size:13.5px; font-weight:600; color:var(--ink); }
+  #view-iron .im-up-h b { font:700 13px "IBM Plex Mono", monospace; color:var(--accent); white-space:nowrap; }
+  #view-iron .im-up-s { font:500 11px "IBM Plex Mono", monospace; color:var(--muted); margin:3px 0 5px; }
+  #view-iron .im-empty { font-size:12.5px; line-height:1.5; color:var(--muted); margin:0; }
+  #view-iron .im-note { font-size:12.5px; line-height:1.55; color:var(--ink-2); margin:0 0 14px; }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -1000,6 +1074,7 @@
         <button data-view="cooking" role="tab">Cooking</button>
         <button data-view="sailing" role="tab">Sailing</button>
         <button data-view="rune" role="tab">Rune Calculator</button>
+        <button data-view="iron" role="tab">Ironman Money</button>
       </div>
       <select id="navSelect" class="nav-select" hidden aria-label="Calculator"></select>
       <span class="nav-sub" id="navSub">live GE margins</span>
@@ -1137,12 +1212,14 @@
 
   /* ---- player lookup (Wise Old Man — the CORS-friendly OSRS levels source) ---- */
   const PLS = "unified-player-v1";
-  const player = { name:null, levels:null };
+  const player = { name:null, levels:null, type:null };
+  const TYPE_TAG = { ironman:"Ironman", hardcore:"Hardcore ironman", ultimate:"Ultimate ironman" };
+  const typeTag = () => TYPE_TAG[player.type] ? ` (${TYPE_TAG[player.type]})` : "";
   const psubs = [];
   function pStatus(t, cls){ const s = el("plStatus"); if(s){ s.textContent = t; s.className = "lb-status" + (cls?" "+cls:""); } }
   function pBroadcast(){ psubs.forEach(fn => { try { fn(player); } catch(e){ console.error(e); } }); }
-  function psave(){ try { localStorage.setItem(PLS, JSON.stringify({ name:player.name, levels:player.levels })); } catch(e){} }
-  function pload(){ try { const s = JSON.parse(localStorage.getItem(PLS)||"null"); if(s && s.levels){ player.name = s.name; player.levels = s.levels; } } catch(e){} }
+  function psave(){ try { localStorage.setItem(PLS, JSON.stringify({ name:player.name, levels:player.levels, type:player.type })); } catch(e){} }
+  function pload(){ try { const s = JSON.parse(localStorage.getItem(PLS)||"null"); if(s && s.levels){ player.name = s.name; player.levels = s.levels; player.type = s.type || null; } } catch(e){} }
   async function womPlayer(name){
     const url = "https://api.wiseoldman.net/v2/players/" + encodeURIComponent(name);
     let r = await fetch(url);
@@ -1160,21 +1237,23 @@
       const skills = data && data.latestSnapshot && data.latestSnapshot.data && data.latestSnapshot.data.skills;
       if(!skills){ throw new Error("no skill data"); }
       const lv = {};
-      ["crafting","herblore","magic","smithing","cooking","farming","mining","fletching","construction"].forEach(k => { lv[k] = (skills[k] && skills[k].level) || 1; });
+      Object.keys(skills).forEach(k => { if(k !== "overall"){ lv[k] = (skills[k] && skills[k].level) || 1; } });
+      ["crafting","herblore","magic","smithing","cooking","farming","mining","fletching","construction"].forEach(k => { if(lv[k] == null){ lv[k] = 1; } });
       player.name = data.displayName || name;
       player.levels = lv;
+      player.type = data.type || null;
       psave(); pBroadcast();
-      pStatus(`${player.name} \u00b7 Craft ${lv.crafting} \u00b7 Herb ${lv.herblore} \u00b7 Magic ${lv.magic} \u00b7 Cook ${lv.cooking}`, "ok");
+      pStatus(`${player.name}${typeTag()} \u00b7 Craft ${lv.crafting} \u00b7 Herb ${lv.herblore} \u00b7 Magic ${lv.magic} \u00b7 Cook ${lv.cooking}`, "ok");
     } catch(err){
       pStatus("lookup failed (" + (err.message||"error") + ") \u2014 manual inputs still work", "err");
     } finally {
       if(btn){ btn.disabled = false; btn.classList.remove("loading"); }
     }
   }
-  function clearPlayer(){ player.name = null; player.levels = null; psave(); pBroadcast(); const i = el("plName"); if(i){ i.value = ""; } pStatus("levels not set \u2014 manual inputs, all actions shown"); }
+  function clearPlayer(){ player.name = null; player.levels = null; player.type = null; psave(); pBroadcast(); const i = el("plName"); if(i){ i.value = ""; } pStatus("levels not set \u2014 manual inputs, all actions shown"); }
   window.Player = {
     subscribe(fn){ psubs.push(fn); if(player.levels){ try { fn(player); } catch(e){} } },
-    lookup, clear: clearPlayer, get levels(){ return player.levels; }, get name(){ return player.name; },
+    lookup, clear: clearPlayer, get levels(){ return player.levels; }, get name(){ return player.name; }, get type(){ return player.type; },
   };
 
   el("hub-src").addEventListener("click", e => { const b = e.target.closest("button"); if(b){ setSource(b.dataset.v); } });
@@ -1185,7 +1264,7 @@
   el("plName").addEventListener("keydown", e => { if(e.key === "Enter"){ lookup(el("plName").value); } });
   pload();
   if(player.name){ const i = el("plName"); if(i){ i.value = player.name; } }
-  if(player.levels){ const lv = player.levels; pStatus(`${player.name} \u00b7 Craft ${lv.crafting} \u00b7 Herb ${lv.herblore} \u00b7 Magic ${lv.magic}${lv.cooking!=null?` \u00b7 Cook ${lv.cooking}`:""} (saved)`, "ok"); }
+  if(player.levels){ const lv = player.levels; pStatus(`${player.name}${typeTag()} \u00b7 Craft ${lv.crafting} \u00b7 Herb ${lv.herblore} \u00b7 Magic ${lv.magic}${lv.cooking!=null?` \u00b7 Cook ${lv.cooking}`:""} (saved)`, "ok"); }
 
   load();
   [...el("hub-src").children].forEach(b => b.classList.toggle("on", b.dataset.v===SOURCE));
@@ -9038,6 +9117,981 @@ window.Player.subscribe(function(p){ PLAYER=p.levels||null; PNAME=p.name||null; 
   </div>
 </div>
 </section>
+<section id="view-iron" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">OSRS &middot; Money making &middot; Ironman</p>
+    <h1>Ironman Money</h1>
+    <p class="lede">No Grand Exchange, so coins have to come from <b>coin drops, shops and High Alchemy</b>. This ranks every ironman money maker by <b>gp/hr at the levels you enter</b>, gates each one on its skills, quests and diaries, and lists the <b>cheapest upgrades</b> to a better method. Look up any RSN in the Player bar, or type the levels in.</p>
+    <div class="assumptions" id="im-assumptions"></div>
+  </header>
+
+  <div class="layout">
+  <aside class="sidebar">
+
+    <section class="card">
+      <h2 class="card-title">Account</h2>
+      <p class="card-sub">A Player lookup sets the mode from the account type.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Mode</p>
+          <div class="toggle" id="im-tg-mode" role="group" aria-label="Ironman mode">
+            <button data-v="iron" class="on">Ironman</button>
+            <button data-v="hcim">Hardcore</button>
+            <button data-v="uim">Ultimate</button>
+          </div>
+          <p class="opt-note" id="im-note-mode"></p>
+        </div>
+        <div>
+          <p class="opt-label">Show</p>
+          <div class="toggle" id="im-tg-show" role="group" aria-label="Methods shown">
+            <button data-v="all" class="on">All methods</button>
+            <button data-v="now">Can do now</button>
+          </div>
+        </div>
+        <div>
+          <p class="opt-label">Wilderness methods</p>
+          <div class="toggle" id="im-tg-wild" role="group" aria-label="Wilderness methods">
+            <button data-v="show" class="on">Show</button>
+            <button data-v="hide">Hide</button>
+          </div>
+          <p class="opt-note" id="im-note-wild"></p>
+        </div>
+        <div>
+          <p class="opt-label">Needs banked materials</p>
+          <div class="toggle" id="im-tg-banked" role="group" aria-label="Methods that need banked materials">
+            <button data-v="hide" class="on">Hide</button>
+            <button data-v="show">Show</button>
+          </div>
+          <p class="opt-note" id="im-note-banked"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Levels</h2>
+      <p class="card-sub" id="im-lv-src"></p>
+      <div class="im-lv-grid" id="im-lv-grid"></div>
+      <p class="opt-note" id="im-lv-note"></p>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Quests, diaries &amp; items</h2>
+      <p class="card-sub">Tick what the account has done or owns. A lookup can't see quests.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Ardougne Diary</p>
+          <div class="toggle" id="im-tg-ardy" role="group" aria-label="Ardougne Diary tier">
+            <button data-v="0" class="on">None</button>
+            <button data-v="1">Easy</button>
+            <button data-v="2">Med</button>
+            <button data-v="3">Hard</button>
+            <button data-v="4">Elite</button>
+          </div>
+          <p class="opt-note" id="im-note-ardy"></p>
+        </div>
+      </div>
+      <div id="im-unlocks"></div>
+      <div class="im-qbtns">
+        <button type="button" class="stkpl-btn" id="im-q-all">Tick all</button>
+        <button type="button" class="stkpl-btn" id="im-q-none">Clear all</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">Thieving setup</h2>
+      <p class="card-sub">Feeds the pickpocketing rows, which use the wiki's success charts.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Rogue outfit (double loot)</p>
+          <div class="toggle" id="im-tg-rogue" role="group" aria-label="Rogue outfit">
+            <button data-v="off" class="on">Don't have</button>
+            <button data-v="on">Full set</button>
+          </div>
+          <p class="opt-note" id="im-note-rogue"></p>
+        </div>
+        <div>
+          <p class="opt-label">Gloves of silence (+5%)</p>
+          <div class="toggle" id="im-tg-gloves" role="group" aria-label="Gloves of silence">
+            <button data-v="off" class="on">Off</button>
+            <button data-v="on">On</button>
+          </div>
+          <p class="opt-note" id="im-note-gloves"></p>
+        </div>
+        <div>
+          <p class="opt-label">Dodgy necklace (25% no stun)</p>
+          <div class="toggle" id="im-tg-dodgy" role="group" aria-label="Dodgy necklace">
+            <button data-v="on" class="on">On</button>
+            <button data-v="off">Off</button>
+          </div>
+        </div>
+        <div>
+          <p class="opt-label">Shadow Veil (15% no stun)</p>
+          <div class="toggle" id="im-tg-veil" role="group" aria-label="Shadow Veil">
+            <button data-v="off" class="on">Off</button>
+            <button data-v="on">On</button>
+          </div>
+          <p class="opt-note" id="im-note-veil"></p>
+        </div>
+        <div>
+          <p class="opt-label">Thieving cape (+10%)</p>
+          <div class="toggle" id="im-tg-cape" role="group" aria-label="Thieving cape">
+            <button data-v="on" class="on">Wear at 99</button>
+            <button data-v="off">Off</button>
+          </div>
+        </div>
+        <div>
+          <p class="opt-label">Pace</p>
+          <div class="timing-in" style="margin:0">
+            <label for="im-eff">tick-perfect × <input id="im-eff" type="number" min="50" max="100" step="1" value="95" inputmode="numeric"> %</label>
+          </div>
+          <p class="opt-note" id="im-note-eff"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">High Alchemy</h2>
+      <p class="card-sub">Cost of one cast, with a fire staff. Shops sell nature runes at about 180.</p>
+      <div class="timing-in" style="margin:0">
+        <label for="im-nat">nature rune <input id="im-nat" type="number" min="0" max="1000" step="5" value="180" inputmode="numeric"> gp</label>
+      </div>
+      <p class="opt-note" id="im-note-nat"></p>
+    </section>
+
+  </aside>
+
+  <div class="main">
+
+    <div class="two-col">
+      <div class="col">
+        <section class="card best-card">
+          <h2 class="card-title">Best for you now</h2>
+          <p class="card-sub" id="im-best-sub"></p>
+          <p class="best-headline" id="im-best-head"></p>
+          <div class="best-hero" id="im-best-hero"></div>
+          <p class="im-note" id="im-best-note"></p>
+          <p class="best-rank-h" id="im-rank-h">Next best</p>
+          <ol class="best-rank" id="im-best-rank"></ol>
+        </section>
+      </div>
+      <div class="col">
+        <section class="card xp-card">
+          <h2 class="card-title">Cheapest upgrades</h2>
+          <p class="card-sub">Locked methods that pay more than your best, fewest requirements away first.</p>
+          <ul class="im-ups" id="im-ups"></ul>
+        </section>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">Every method</h2>
+          <p class="card-note" id="im-count"></p>
+        </div>
+        <div class="im-tools">
+          <div class="toggle" id="im-tg-sort" role="group" aria-label="Sort">
+            <button data-v="gp" class="on">gp/hr</button>
+            <button data-v="close">Closest</button>
+            <button data-v="az">A&ndash;Z</button>
+          </div>
+          <input id="im-search" type="text" placeholder="search method…" autocomplete="off" spellcheck="false" class="im-search" aria-label="Search methods">
+        </div>
+      </div>
+      <div class="im-cats" id="im-cats" role="group" aria-label="Category"></div>
+      <div class="tbl-wrap">
+        <table id="im-tbl">
+          <thead><tr>
+            <th>Method</th><th>gp/hr</th><th>XP/hr</th><th>Effort</th><th class="im-r">Requirements</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="opt-note" id="im-tblNote"></p>
+    </section>
+
+    <footer id="im-footer"></footer>
+  </div>
+  </div>
+</div>
+</section>
+<script>
+/* ============================================================
+   Ironman Money: ranks the ways an ironman (no Grand Exchange) can
+   make coins by gp/hr at the entered levels. Pickpocketing rows are
+   computed from each NPC's wiki success chart; salvage, ore and alch
+   rows recompute with the nature rune cost; the rest use the OSRS
+   Wiki ironman guide's hourly figures. Item values are high alch or
+   shop prices, so nothing here depends on the live GE feed.
+   ============================================================ */
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const fmt = n => (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+function fmtK(n){
+  const a = Math.abs(n);
+  if(a >= 1e6){ return (n/1e6).toFixed(a >= 1e7 ? 1 : 2).replace(/\.?0+$/, "") + "m"; }
+  if(a >= 1e4){ return Math.round(n/1e3) + "k"; }
+  if(a >= 1e3){ return (n/1e3).toFixed(1).replace(/\.0$/, "") + "k"; }
+  return fmt(n);
+}
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[ch]));
+const WIKI = "https://oldschool.runescape.wiki/w/";
+
+/* [key, name, short label], in the in-game skill tab's order read row by row */
+const SKILLS = [
+ ["attack","Attack","Att"], ["hitpoints","Hitpoints","HP"], ["mining","Mining","Mine"],
+ ["strength","Strength","Str"], ["agility","Agility","Agil"], ["smithing","Smithing","Smith"],
+ ["defence","Defence","Def"], ["herblore","Herblore","Herb"], ["fishing","Fishing","Fish"],
+ ["ranged","Ranged","Rng"], ["thieving","Thieving","Thiev"], ["cooking","Cooking","Cook"],
+ ["prayer","Prayer","Pray"], ["crafting","Crafting","Craft"], ["firemaking","Firemaking","FM"],
+ ["magic","Magic","Mage"], ["fletching","Fletching","Fletch"], ["woodcutting","Woodcutting","WC"],
+ ["runecrafting","Runecraft","RC"], ["slayer","Slayer","Slay"], ["farming","Farming","Farm"],
+ ["construction","Construction","Con"], ["hunter","Hunter","Hunt"], ["sailing","Sailing","Sail"],
+];
+const SKILL_NAME = Object.fromEntries(SKILLS.map(s => [s[0], s[1]]));
+const minLv = k => k==="hitpoints" ? 10 : 1;
+
+/* [group, key, label]: everything a method can be gated on besides levels */
+const UNLOCKS = [
+ ["Quests","cots","Children of the Sun"], ["Quests","feud","The Feud"], ["Quests","dttd","Death to the Dorgeshuun (half)"],
+ ["Quests","cat","Gertrude's Cat + Plague City"], ["Quests","ctc3","Crack the Clue III"], ["Quests","shilo","Shilo Village"],
+ ["Quests","sg","Sleeping Giants"], ["Quests","toe","Temple of the Eye"], ["Quests","rogue_trader","Rogue Trader (rune shop)"],
+ ["Quests","pand","Pandemonium"], ["Quests","mfwma","Making Friends with My Arm"], ["Quests","akd","A Kingdom Divided"],
+ ["Quests","dt1","Desert Treasure I"], ["Quests","lunar","Lunar Diplomacy"], ["Quests","sotf","Sins of the Father"],
+ ["Quests","haunted","Haunted Mine"], ["Quests","sote","Song of the Elves"], ["Quests","ds2","Dragon Slayer II"],
+ ["Diaries","kar_med","Karamja medium"], ["Diaries","wild_med","Wilderness medium"], ["Diaries","kour_elite","Kourend & Kebos elite"],
+ ["Items","raiments","Raiments of the Eye"], ["Items","colossal","Colossal pouch"], ["Items","lance","Dragon hunter lance"],
+ ["Items","fang","Osmumten's fang"], ["Items","diarycape","Achievement diary cape"],
+];
+const UNLOCK_NAME = Object.fromEntries(UNLOCKS.map(u => [u[1], u[2]]));
+const ARDY = ["None", "Easy", "Medium", "Hard", "Elite"];
+
+/* Pickpocket targets. low/high are the wiki {{Skilling success chart}} control
+   values; stun = ticks lost to a stun; coins = average coins per success;
+   rogue = extra coins per success in the full rogue outfit (a second pouch pays
+   the bottom of its range); ardy = in Ardougne, so the medium diary's +10% applies. */
+const NPC = {
+ man:     { lvl:1,  low:180, high:240, stun:8,  coins:3,             rogue:3,             xp:8,     ardy:false },
+ warrior: { lvl:25, low:100, high:240, stun:8,  coins:18,            rogue:18,            xp:26,    ardy:false },
+ guard:   { lvl:40, low:50,  high:240, stun:8,  coins:30,            rogue:30,            xp:46.8,  ardy:true },
+ wealthy: { lvl:50, low:35,  high:200, stun:7,  coins:85*79/85,      rogue:85*79/85,      xp:96,    ardy:false },
+ knight:  { lvl:55, low:50,  high:240, stun:8,  coins:50,            rogue:50,            xp:84.3,  ardy:true },
+ paladin: { lvl:70, low:40,  high:170, stun:8,  coins:80,            rogue:80,            xp:131.8, ardy:true },
+ hero:    { lvl:80, low:39,  high:160, stun:10, coins:250*105/128,   rogue:200*105/128,   xp:163.3, ardy:true },
+ vyre:    { lvl:82, low:8,   high:128, stun:10, coins:272.5*109/132, rogue:230*109/132,   xp:306.9, ardy:false },
+ elf:     { lvl:85, low:6,   high:100, stun:10, coins:315*105/128,   rogue:280*105/128,   xp:353.3, ardy:false },
+};
+/** OSRS skilling success roll: chance out of 256 interpolated between the low (level 1) and high (level 99) values. */
+function chartSuccess(low, high, level){
+  const v = Math.floor(low*(99-level)/98 + high*(level-1)/98 + 0.5) + 1;
+  return Math.min(Math.max(v/256, 0), 1);
+}
+/** Coins/hr from spam-pickpocketing: 2 ticks an attempt, plus the stun on a failure the necklace or veil didn't stop. */
+function thieveRate(key, c){
+  const n = NPC[key];
+  let low = n.low, high = n.high;
+  const bump = f =>
+  {
+    low = Math.floor(low*f);
+    high = Math.floor(high*f);
+  };
+  if(c.gloves){ bump(1.05); }
+  if(c.opt.ardy >= 3 || (n.ardy && c.opt.ardy >= 2)){ bump(1.10); }
+  if(c.cape){ bump(1.10); }
+  const p = chartSuccess(low, high, c.lv("thieving"));
+  const avoid = 1 - (1 - (c.dodgy ? 0.25 : 0))*(1 - (c.veil ? 0.15 : 0));
+  const ticks = 2 + (1-p)*(1-avoid)*n.stun;
+  const succ = 6000/ticks*p*c.eff;
+  const each = n.coins + (c.rogue ? n.rogue : 0);
+  return { gp:succ*each, xp:succ*n.xp, xpSkill:"Thieving",
+    sub:`${Math.round(p*100)}% success · ${fmt(succ)} steals/hr · ${fmt(each)} gp each${c.rogue ? " with rogue" : ""}` };
+}
+
+/** Piecewise-linear lookup over [level, value] points, clamped at both ends. */
+function lerp(pts, x){
+  if(x <= pts[0][0]){ return pts[0][1]; }
+  for(let i = 1; i < pts.length; i++){
+    const [a, va] = pts[i-1], [b, vb] = pts[i];
+    if(x <= b){ return va + (vb-va)*(x-a)/(b-a); }
+  }
+  return pts[pts.length-1][1];
+}
+
+/* Shipwreck salvage, from each salvage's wiki drop table: summed high alch of the
+   drops worth alching (300+ gp), alch casts that takes, coins found; salvage/hr is
+   the wiki money making guide's rate for a sloop with two hooks and crew. */
+const SALVAGE = {
+ large:     { alch:477.6, casts:0.452, coins:0,     perHr:360 },
+ plundered: { alch:639.9, casts:0.610, coins:0,     perHr:360 },
+ martial:   { alch:955.6, casts:0.436, coins:0,     perHr:315 },
+ fremennik: { alch:572.6, casts:0.098, coins:0,     perHr:310 },
+ opulent:   { alch:192.8, casts:0.052, coins:141.5, perHr:280 },
+};
+function salvageRate(key, c){
+  const s = SALVAGE[key];
+  const per = s.alch - s.casts*c.nat + s.coins;
+  return { gp:per*s.perHr, sub:`${s.perHr} salvage/hr × ${fmt(per)} gp each after natures` };
+}
+
+/* [Smithing level, item, high alch, bars]: the best gp per bar at your level is used */
+const RUNE_ITEMS = [[85,"rune dagger",4800,1], [86,"rune axe",7680,1], [87,"rune mace",8640,1], [88,"rune med helm",11520,1], [89,"rune sword",12480,1], [99,"rune 2h sword",38400,3]];
+const ADDY_ITEMS = [[70,"adamant dagger",480,1], [71,"adamant axe",768,1], [72,"adamant mace",864,1], [73,"adamant med helm",1152,1], [74,"adamant sword",1248,1], [84,"adamant 2h sword",3840,3], [88,"adamant platebody",9984,5]];
+function oreRate(items, orePerHr, c){
+  let best = null;
+  items.forEach(([lvl, name, ha, bars]) =>
+  {
+    const per = (ha - c.nat)/bars;
+    if(c.lv("smithing") >= lvl && (!best || per > best.per)){
+      best = { name, per };
+    }
+  });
+  if(!best){
+    return { gp:0, sub:"" };
+  }
+  return { gp:best.per*orePerHr, sub:`${orePerHr} ore/hr → ${best.name}: ${fmt(best.per)} gp per ore after natures` };
+}
+
+/* Wilderness Agility Course dispenser: laps at each streak tier and the alch value of one lap's loot */
+const WAC_TIERS = [[15,5558], [15,10701], [30,15912], [Infinity,21823]];
+function wacRate(c){
+  const laps = 166;
+  let left = laps, loot = 0;
+  WAC_TIERS.forEach(([n, v]) =>
+  {
+    const k = Math.min(n, left);
+    loot += k*v;
+    left -= k;
+  });
+  return { gp:(loot - laps*c.nat - 150000)/2, xp:47400, xpSkill:"Agility",
+    sub:"2-hr session from a fresh streak at 83 laps/hr, 150k fee; ~1.76m/hr past a 61-lap streak" };
+}
+
+/* The methods. req gates (s: levels, u: unlock keys, ardy: diary tier); rec is advice only.
+   gp is the wiki ironman guide's hourly figure unless rate() computes it from your setup. */
+const M = [
+ { id:"man", name:"Pickpocket men & women", cat:"Thieving", thieve:"man", req:{ s:{ thieving:1 } }, int:"High", uim:"yes", wiki:"Man",
+   note:"Lumbridge or Ardougne. Starting cash only." },
+ { id:"warrior", name:"Pickpocket warriors", cat:"Thieving", thieve:"warrior", req:{ s:{ thieving:25 } }, int:"High", wiki:"Warrior_(Thieving)",
+   note:"Ardougne market, 18 coins a steal." },
+ { id:"guard", name:"Pickpocket guards", cat:"Thieving", thieve:"guard", req:{ s:{ thieving:40 } }, int:"High", wiki:"Guard",
+   note:"Ardougne guards, 30 coins a steal." },
+ { id:"wealthy", name:"Pickpocket wealthy citizens", cat:"Thieving", thieve:"wealthy", req:{ s:{ thieving:50 }, u:["cots"] }, int:"Moderate", uim:"yes", wiki:"Wealthy_citizen",
+   note:"Civitas illa Fortis, actively spam-clicking. Waiting for street urchins to distract them is AFK but slower." },
+ { id:"knight", name:"Pickpocket Knights of Ardougne", cat:"Thieving", thieve:"knight", req:{ s:{ thieving:55 } }, rec:{ ardy:2 }, int:"Moderate", uim:"yes", wiki:"Knight_of_Ardougne",
+   note:"Trap a knight in the market house and spam-click. Stops failing at 95 with the medium diary." },
+ { id:"paladin", name:"Pickpocket paladins", cat:"Thieving", thieve:"paladin", req:{ s:{ thieving:70 } }, rec:{ ardy:2 }, int:"Moderate", wiki:"Paladin",
+   note:"Ardougne castle grounds. 80 coins plus 2 chaos runes a steal." },
+ { id:"hero", name:"Pickpocket heroes", cat:"Thieving", thieve:"hero", req:{ s:{ thieving:80 } }, rec:{ ardy:2 }, int:"High", wiki:"Hero",
+   note:"Ardougne. 200–300 coin pouches, plus death/blood runes and gems." },
+ { id:"vyre", name:"Pickpocket vyres", cat:"Thieving", thieve:"vyre", req:{ s:{ thieving:82 }, u:["sotf"] }, rec:{ ardy:3 }, int:"High", wiki:"Vyre",
+   note:"Darkmeyer. Also death/blood runes and gems; 1/5,000 blood shard." },
+ { id:"elf", name:"Pickpocket elves", cat:"Thieving", thieve:"elf", req:{ s:{ thieving:85 }, u:["sote"] }, rec:{ ardy:3 }, int:"High", wiki:"Elf_(Thieving)",
+   note:"Prifddinas. Also crystal shards (1/35) and enhanced teleport seeds." },
+ { id:"blackjack", name:"Blackjacking bandits & thugs", cat:"Thieving", req:{ s:{ thieving:45 }, u:["feud"] }, int:"High", uim:"yes", wiki:"Blackjack",
+   note:"Pollnivneach. Knock out, pickpocket twice, repeat. Very click-intensive.",
+   rate:c => ({ gp:lerp([[50,127000], [99,220000]], c.lv("thieving"))*(c.rogue ? 1 : 0.5), xp:lerp([[50,103000], [99,265000]], c.lv("thieving")), xpSkill:"Thieving",
+     sub:c.rogue ? "wiki rate with the full rogue outfit" : "half the wiki rate: no rogue outfit" }) },
+ { id:"valuables", name:"Stealing valuables", cat:"Thieving", req:{ s:{ thieving:50 }, u:["cots"] }, int:"Low", wiki:"Stealing_valuables",
+   note:"Civitas illa Fortis: take house keys from wealthy citizens, burgle, hand valuables to Oriana. About 15% more with the Gladiator rank.",
+   rate:c => ({ gp:lerp([[50,90000], [99,125000]], c.lv("thieving")), xp:lerp([[50,70000], [99,105000]], c.lv("thieving")), xpSkill:"Thieving" }) },
+ { id:"ham", name:"H.A.M. store room chests", cat:"Thieving", req:{ s:{ thieving:20 }, u:["dttd"] }, gp:67000, int:"Moderate", uim:"yes", wiki:"H.A.M._Storerooms",
+   note:"Pickpocket H.A.M. guards for keys; chests give coins and jewellery to alch. ~200 chests/hr." },
+ { id:"silk", name:"Steal & sell silk", cat:"Thieving", req:{ s:{ thieving:20 } }, gp:24000, int:"Low", uim:"no", wiki:"Silk_stall",
+   note:"Ardougne silk stall; sell to the silk merchant for 60 gp each once he forgets you (20+ min)." },
+
+ { id:"pyramid", name:"Agility Pyramid", cat:"Agility", req:{ s:{ agility:30 } }, rec:{ s:{ agility:70 } }, int:"High", uim:"yes", wiki:"Agility_Pyramid",
+   note:"Grab the pyramid top each lap and sell it to Simon Templeton for 10,000. Falls hit for up to 10.",
+   rate:c =>
+   {
+     const laps = lerp([[30,5], [50,12], [60,17], [70,21], [75,24], [90,26]], c.lv("agility"));
+     return { gp:laps*10000, xp:laps*1650, xpSkill:"Agility", sub:`~${Math.round(laps)} laps/hr; no fails from 75` };
+   } },
+ { id:"sepulchre", name:"Hallowed Sepulchre", cat:"Agility", req:{ s:{ agility:72, thieving:66, prayer:54, ranged:62 }, u:["sotf"] }, int:"High", wiki:"Hallowed_Sepulchre",
+   note:"Darkmeyer. Floor 5's Grand Hallowed Coffin is where the money is.",
+   rate:c =>
+   {
+     const A = c.lv("agility"), T = c.lv("thieving"), C = c.lv("construction");
+     let floor = 3, gp = 94000, xp = 63700;
+     let sub = "floor 3";
+     if(A >= 77 && C >= 56){
+       floor = 4; gp = 181000; xp = 72900; sub = "floors 3–4";
+     }
+     if(floor === 4 && A >= 87){
+       if(T >= 84 || A >= 92){
+         gp = 990000; xp = 88200; sub = "floors 3–5";
+       }
+       else {
+         sub = "floor 5 pays at 84 Thieving or 92 Agility";
+       }
+     }
+     else if(A >= 77 && C < 56){
+       sub = "floor 4+ coffins need 56 Construction";
+     }
+     return { gp, xp, xpSkill:"Agility", sub };
+   } },
+ { id:"wac", name:"Wilderness Agility Course", cat:"Agility", req:{ s:{ agility:52 } }, int:"High", wild:true, wiki:"Wilderness_Agility_Course",
+   note:"Pay the dispenser 150k, tag it every lap, alch the rune and adamant armour. Deep Wilderness; the fee is lost on death.",
+   rate:wacRate },
+
+ { id:"gotr", name:"Guardians of the Rift → Ali Morrisane", cat:"Runecraft", req:{ s:{ runecrafting:27 }, u:["toe", "rogue_trader"] }, gp:60000, xp:"30k Runecraft", int:"Moderate", uim:"yes", wiki:"Guardians_of_the_Rift",
+   note:"Sell the runes to Ali Morrisane at a fixed half of value. Rises as you unlock higher runes." },
+ { id:"blood", name:"Blood runes (Kourend)", cat:"Runecraft", req:{ s:{ runecrafting:77, agility:73, mining:38, crafting:38 } }, gp:330000, xp:"38k Runecraft", int:"High", uim:"yes", wiki:"Blood_rune",
+   note:"Mine dense essence, venerate, run to the Blood Altar; sell to Ali Morrisane at 200 each. Up to ~460k optimised." },
+ { id:"zmi15", name:"ZMI runecrafting (1.5-tick Daeyalt)", cat:"Runecraft", req:{ s:{ runecrafting:70, magic:71 }, u:["lunar", "sotf", "raiments", "colossal"] }, gp:780000, xp:"120k Runecraft", int:"High", wiki:"Ourania_Altar",
+   note:"Mine Daeyalt essence, then Ourania Teleport to the altar. Rune mix improves with Runecraft level." },
+ { id:"zmiafk", name:"ZMI runecrafting (AFK Daeyalt)", cat:"Runecraft", req:{ s:{ runecrafting:70, magic:71 }, u:["lunar", "sotf", "raiments", "colossal"] }, gp:510000, xp:"90k Runecraft", int:"Low", wiki:"Daeyalt_essence",
+   note:"Same loop, mining Daeyalt AFK." },
+ { id:"zmibank", name:"ZMI runecrafting (banked essence)", cat:"Runecraft", req:{ s:{ runecrafting:70, magic:71 }, u:["lunar", "raiments", "colossal"] }, gp:1470000, xp:"80k Runecraft", int:"Moderate", banked:true, wiki:"Ourania_Altar",
+   note:"Needs a stockpile of pure essence, e.g. from PvM drops." },
+ { id:"natures", name:"Double nature runes (diary cape)", cat:"Runecraft", req:{ s:{ runecrafting:91 }, u:["diarycape", "raiments", "colossal"] }, xp:"65k Runecraft", int:"High", uim:"yes", wiki:"Money_making_guide/Crafting_double_nature_runes_(Achievement_Diary_Cape_teleport)",
+   note:"110 trips/hr via the diary cape teleport; sell to Ali Morrisane at 90 each (selling time not included).",
+   rate:() => ({ gp:110*132*1.7*90, sub:"24,684 natures/hr × 90 gp (Ali)" }) },
+
+ { id:"staves", name:"Craft & alch battlestaves (shop staves)", cat:"Skilling", req:{ s:{ magic:66, crafting:58 } }, rec:{ u:["dt1", "lunar"] }, xp:"96k Crafting", int:"Moderate", wild:true, wiki:"Money_making_guide/Making_elemental_battlestaves_(Ironman)",
+   note:"Buy 5 battlestaves per world at the Magic Guild store, charge orbs at an obelisk (low Wilderness), craft, alch.",
+   rate:c =>
+   {
+     const per = 9300 - 7000 - 3*50 - 60 - 240/25 - c.nat;
+     return { gp:488*per, sub:`~488 staves/hr × ${fmt(per)} gp after staff, orb, runes` };
+   } },
+ { id:"stavesbank", name:"Craft & alch battlestaves (dropped staves)", cat:"Skilling", req:{ s:{ magic:60, crafting:58 } }, gp:2057000, xp:"96k Crafting", int:"Moderate", wild:true, banked:true, wiki:"Battlestaff",
+   note:"Same as above using a bank of battlestaves from monster drops." },
+ { id:"gemshop", name:"Cut gems from a gem shop", cat:"Skilling", req:{ s:{ crafting:20 } }, rec:{ s:{ crafting:27 } }, gp:90000, int:"Moderate", uim:"yes", wiki:"Gem_shops",
+   note:"Buy uncut gems, cut them, sell back. Stock restocks slowly, so hop." },
+ { id:"willow", name:"Fletch & sell willow shortbows", cat:"Skilling", req:{ s:{ fletching:35, woodcutting:30, crafting:10 } }, gp:13000, int:"Low", uim:"yes", wiki:"Willow_shortbow",
+   note:"Cut, fletch, string, then alch or sell to a general store. Very low intensity." },
+ { id:"runite", name:"Mine, smith & alch runite", cat:"Skilling", req:{ s:{ mining:85, smithing:85, magic:55 } }, int:"Low", wiki:"Runite_ore",
+   note:"Smelt (8 coal a bar, 4 at the Blast Furnace), smith the best item per bar, alch. Banked ore earns the same per ore.",
+   rate:c => oreRate(RUNE_ITEMS, 70, c) },
+ { id:"addy", name:"Mine, smith & alch adamantite", cat:"Skilling", req:{ s:{ mining:70, smithing:70, magic:55 } }, int:"Low", wiki:"Adamantite_ore",
+   note:"Smelt (6 coal a bar, 3 at the Blast Furnace), smith, alch.",
+   rate:c => oreRate(ADDY_ITEMS, 120, c) },
+ { id:"blast", name:"Blast mining + smithing runite", cat:"Skilling", req:{ s:{ mining:75, smithing:89 } }, rec:{ u:["kour_elite"] }, gp:650000, xp:"86k Mining", int:"Moderate", uim:"maybe", wiki:"Blast_mine",
+   note:"Needs ~330 dynamite/hr (Kourend elite diary gives 80 a day, or Chambers of Xeric). Smith runite into swords and alch." },
+ { id:"gems", name:"3-tick gem mining (Shilo)", cat:"Skilling", req:{ s:{ mining:40 }, u:["shilo", "kar_med"] }, rec:{ s:{ mining:61 } }, gp:165000, xp:"110k Mining", int:"High", wiki:"Money_making_guide/Mining_gemstones",
+   note:"Shilo Village gem rocks with a charged glory. More if diamonds become amulets to alch." },
+ { id:"amethyst", name:"Amethyst javelin tips", cat:"Skilling", req:{ s:{ mining:92, crafting:87, magic:55 } }, xp:"22k Mining", int:"Low", uim:"yes", wiki:"Amethyst_javelin_tips",
+   note:"AFK mining. 700–900k/hr with 3-tick mining.",
+   rate:c => ({ gp:90*5*(912 - c.nat), sub:`90 amethyst/hr × 5 tips × ${fmt(912 - c.nat)} gp after natures` }) },
+
+ { id:"salv53", name:"Salvage large shipwrecks", cat:"Sailing", req:{ s:{ sailing:53, construction:30, magic:55 }, u:["pand"] }, int:"Low", wiki:"Large_shipwreck",
+   note:"Sort salvage on the boat; alch the rings, pearls and facility bottles.", rate:c => salvageRate("large", c) },
+ { id:"salv64", name:"Salvage pirate shipwrecks", cat:"Sailing", req:{ s:{ sailing:64, construction:52, magic:55 }, u:["pand"] }, int:"Low", wiki:"Pirate_shipwreck",
+   note:"Alch bracelets, rings, scimitars and pearls.", rate:c => salvageRate("plundered", c) },
+ { id:"salv73", name:"Salvage mercenary shipwrecks", cat:"Sailing", req:{ s:{ sailing:73, construction:59, magic:55 }, u:["pand"] }, int:"Low", wiki:"Mercenary_shipwreck",
+   note:"Best salvage for alching: longswords, 2h swords, d'hide bodies, amulets of power.", rate:c => salvageRate("martial", c) },
+ { id:"salv80", name:"Salvage Fremennik shipwrecks", cat:"Sailing", req:{ s:{ sailing:80, construction:72, magic:55 }, u:["pand", "mfwma"] }, int:"Low", wiki:"Fremennik_shipwreck",
+   note:"Ironmen need the eternal brazier (Making Friends with My Arm) for the icy seas.", rate:c => salvageRate("fremennik", c) },
+ { id:"salv87", name:"Salvage merchant shipwrecks", cat:"Sailing", req:{ s:{ sailing:87, construction:66, magic:55 }, u:["pand"] }, int:"Low", wiki:"Merchant_shipwreck",
+   note:"More coins and herbs/seeds than alchables.", rate:c => salvageRate("opulent", c) },
+
+ { id:"ruby", name:"Pick up & alch ruby rings", cat:"Collecting", req:{ s:{ magic:55 }, u:["ctc3"] }, xp:"22k Magic", int:"Moderate", wiki:"Money_making_guide/Collecting_ruby_rings",
+   note:"Varrock West Bank basement spawn; hop worlds. Depends on competition.",
+   rate:c => ({ gp:338*(1215 - c.nat), sub:`~338 rings/hr × ${fmt(1215 - c.nat)} gp after natures` }) },
+ { id:"eclipse", name:"Collect eclipse red", cat:"Collecting", req:{ u:["cots"] }, gp:280000, int:"Moderate", uim:"yes", wiki:"Eclipse_red",
+   note:"Hunter Guild top-floor spawn; hop for ~400/hr and sell to Moonrise Wines at 700 each (no price drop)." },
+ { id:"steel", name:"Collect steel platebodies (Lava Maze)", cat:"Collecting", req:{}, gp:128000, int:"Moderate", wild:true, uim:"maybe", wiki:"Lava_Maze",
+   note:"Deep Wilderness spawn, often camped by PKers. Sell to Horvik or alch for 1,200." },
+ { id:"cats", name:"Raise cats for death runes", cat:"Collecting", req:{ u:["cat"] }, rec:{ ardy:1 }, int:"Low", uim:"yes", wiki:"Kitten",
+   note:"Passive: feed and stroke a kitten every 20 min while doing something else.",
+   rate:c => ({ gp:c.opt.ardy >= 1 ? 13300 : 6650, sub:c.opt.ardy >= 1 ? "200 death runes per cat" : "100 death runes per cat (200 with easy Ardougne diary)" }) },
+
+ { id:"lms", name:"LMS rune arrows → alch", cat:"Minigame", req:{ s:{ magic:55 } }, rec:{ s:{ runecrafting:44 } }, xp:"39k Magic", int:"High", uim:"yes", wiki:"Last_Man_Standing",
+   note:"300 rune arrows per 3 points (~6 points/hr). Set nature cost to 0 if you craft your own.",
+   rate:c => ({ gp:600*(240 - c.nat), sub:`600 arrows/hr × ${fmt(240 - c.nat)} gp after natures` }) },
+ { id:"wt", name:"Wintertodt", cat:"Minigame", req:{ s:{ firemaking:50 } }, gp:30000, xp:"300k Firemaking", int:"Moderate", wiki:"Wintertodt",
+   note:"Mostly supplies, not coins. Stop at your Firemaking goal." },
+ { id:"foundry", name:"Giants' Foundry (shop gear)", cat:"Minigame", req:{ s:{ smithing:30 }, u:["sg"] }, gp:92000, xp:"95k Smithing", int:"Moderate", uim:"yes", wiki:"Giants'_Foundry",
+   note:"Buy iron + steel gear from shops, cast swords for coins. Better moulds pay more." },
+
+ { id:"vorkath", name:"Vorkath", cat:"Combat", req:{ s:{ attack:82 }, u:["ds2", "fang"] }, gp:1500000, xp:"26k Slayer", int:"Moderate", wiki:"Vorkath",
+   note:"Alch the dragon bolts, darts and rune drops; keep the scales and bones." },
+ { id:"runedrag", name:"Rune dragons", cat:"Combat", req:{ u:["ds2"] }, rec:{ s:{ hitpoints:90, magic:75 } }, gp:1000000, int:"Moderate", uim:"yes", wiki:"Rune_dragon",
+   note:"Runite bars and rune gear to alch. A dragon hunter lance helps a lot." },
+ { id:"cg", name:"Corrupted Gauntlet", cat:"Combat", req:{ u:["sote"] }, rec:{ s:{ attack:80, strength:85, ranged:85, magic:80, prayer:77 } }, gp:900000, xp:"24k combat", int:"High", wiki:"The_Gauntlet",
+   note:"Worth it mainly while chasing the Bow of Faerdhinen and armour seeds." },
+ { id:"greenlance", name:"Green dragons (lance)", cat:"Combat", req:{ s:{ attack:78 }, u:["lance"] }, gp:496000, xp:"96k melee", int:"Moderate", wild:true, wiki:"Money_making_guide/Killing_green_dragons_(Ironman)",
+   note:"Craft the hides into bodies and alch; bones for Prayer at the chaos altar." },
+ { id:"green", name:"Green dragons (budget)", cat:"Combat", req:{}, rec:{ s:{ attack:60, prayer:25 } }, gp:265000, xp:"54k melee", int:"Moderate", wild:true, wiki:"Money_making_guide/Killing_green_dragons_(Ironman)",
+   note:"Same loop with minimal gear and an anti-dragon shield." },
+ { id:"zombiediary", name:"Zombie pirates (diary)", cat:"Combat", req:{ s:{ prayer:37 }, u:["wild_med"] }, rec:{ s:{ attack:60 }, u:["haunted"] }, gp:650000, xp:"25k melee", int:"Moderate", wild:true, uim:"maybe", wiki:"Zombie_pirate",
+   note:"Low-Wilderness Chaos Temple. Runes, blighted supplies and alchables; ~200 kills/hr." },
+ { id:"zombie", name:"Zombie pirates (no diary)", cat:"Combat", req:{ s:{ prayer:37 } }, rec:{ s:{ attack:60 } }, gp:100000, int:"Moderate", wild:true, uim:"maybe", wiki:"Zombie_pirate",
+   note:"Without the medium Wilderness diary drops are cut by 70%." },
+];
+const CATS = ["All", ...new Set(M.map(m => m.cat))];
+
+const LS_KEY = "ironman-v1";
+const opt = { mode:"iron", show:"all", wild:"show", banked:"hide", sort:"gp", cat:"All", ardy:0, rogue:"off", gloves:"off", dodgy:"on", veil:"off", cape:"on" };
+let EFF = 95, NAT = 180, SEARCH = "";
+const LV = {};
+SKILLS.forEach(([k]) =>
+{
+  LV[k] = minLv(k);
+});
+const HAS = {};
+let lvSet = false, lvFrom = null, lvSig = null, lvEdited = false, stale = [], ptype = null;
+let ROWS = [];
+
+/* ---- requirements + rates ---- */
+/** Rate inputs at the given levels. Gear level checks only apply once levels are set. */
+function context(lvOf){
+  const gate = ok => !lvSet || ok;
+  return {
+    lv:lvOf, opt, nat:NAT, eff:EFF/100,
+    rogue: opt.rogue==="on" && gate(lvOf("thieving") >= 50 && lvOf("agility") >= 50),
+    gloves: opt.gloves==="on" && gate(lvOf("hunter") >= 54),
+    dodgy: opt.dodgy==="on",
+    veil: opt.veil==="on" && gate(lvOf("magic") >= 47 && !!HAS.akd),
+    cape: opt.cape==="on" && lvOf("thieving") >= 99,
+  };
+}
+/** Unmet requirements of a method, in display order. */
+function missingOf(m){
+  const out = [];
+  const r = m.req || {};
+  Object.entries(r.s || {}).forEach(([k, need]) =>
+  {
+    if(LV[k] < need){
+      out.push({ t:"s", k, need, have:LV[k] });
+    }
+  });
+  (r.u || []).forEach(k =>
+  {
+    if(!HAS[k]){
+      out.push({ t:"u", k });
+    }
+  });
+  if(r.ardy && opt.ardy < r.ardy){
+    out.push({ t:"ardy", need:r.ardy });
+  }
+  return out;
+}
+function rateOf(m, c){
+  if(m.thieve){
+    return thieveRate(m.thieve, c);
+  }
+  if(m.rate){
+    return m.rate(c);
+  }
+  return { gp:m.gp };
+}
+/** Prices every method at your levels, raised to its requirements, so locked rows show what they pay once unlocked. */
+function compute(){
+  ROWS = M.map(m =>
+  {
+    const miss = lvSet ? missingOf(m) : [];
+    const need = (m.req && m.req.s) || {};
+    const r = rateOf(m, context(k => Math.max(LV[k], need[k] || 0)));
+    const deficit = miss.reduce((a, x) => a + (x.t==="s" ? x.need - x.have : 0), 0);
+    return { m, r, gp:r.gp || 0, miss, locked:miss.length > 0, deficit };
+  });
+}
+function hiddenByFilter(row){
+  const m = row.m;
+  if(opt.wild==="hide" && m.wild){ return true; }
+  if(opt.banked==="hide" && m.banked){ return true; }
+  if(opt.mode==="uim" && m.uim==="no"){ return true; }
+  return false;
+}
+function visibleRows(){
+  const q = SEARCH.trim().toLowerCase();
+  let rows = ROWS.filter(row => !hiddenByFilter(row));
+  if(opt.show==="now" && lvSet){ rows = rows.filter(row => !row.locked); }
+  if(opt.cat!=="All"){ rows = rows.filter(row => row.m.cat===opt.cat); }
+  if(q){ rows = rows.filter(row => (row.m.name + " " + row.m.cat + " " + (row.m.note || "")).toLowerCase().includes(q)); }
+  const byGp = (a, b) => b.gp - a.gp;
+  if(opt.sort==="az"){ rows.sort((a, b) => a.m.name.localeCompare(b.m.name)); }
+  else if(opt.sort==="close"){ rows.sort((a, b) => a.miss.length - b.miss.length || a.deficit - b.deficit || byGp(a, b)); }
+  else { rows.sort((a, b) => (a.locked - b.locked) || byGp(a, b)); }
+  return rows;
+}
+
+/* ---- rendering ---- */
+function xpText(row){
+  if(row.r.xp != null && row.r.xpSkill){ return `${fmtK(row.r.xp)} ${row.r.xpSkill}`; }
+  return row.m.xp || "—";
+}
+function reqLabel(x){
+  if(x.t==="s"){ return `${SKILL_NAME[x.k]} ${x.need}`; }
+  if(x.t==="ardy"){ return `${ARDY[x.need]} Ardougne Diary`; }
+  return UNLOCK_NAME[x.k] || x.k;
+}
+function reqChips(m){
+  const r = m.req || {}, rec = m.rec || {};
+  const chips = [];
+  const chip = (cls, text) => chips.push(`<span class="im-rq${cls ? " " + cls : ""}">${esc(text)}</span>`);
+  Object.entries(r.s || {}).forEach(([k, need]) =>
+  {
+    if(need <= 1){ return; }
+    if(!lvSet){ chip("", `${SKILL_NAME[k]} ${need}`); }
+    else if(LV[k] >= need){ chip("ok", `${SKILL_NAME[k]} ${need}`); }
+    else { chip("miss", `${SKILL_NAME[k]} ${need} (+${need - LV[k]})`); }
+  });
+  (r.u || []).forEach(k => chip(!lvSet ? "" : HAS[k] ? "ok" : "miss", UNLOCK_NAME[k]));
+  if(r.ardy){ chip(!lvSet ? "" : opt.ardy >= r.ardy ? "ok" : "miss", `${ARDY[r.ardy]} Ardougne Diary`); }
+  Object.entries(rec.s || {}).forEach(([k, lvl]) => chip("rec", `rec. ${SKILL_NAME[k]} ${lvl}`));
+  (rec.u || []).forEach(k => chip("rec", `rec. ${UNLOCK_NAME[k]}`));
+  if(rec.ardy){ chip("rec", `rec. ${ARDY[rec.ardy]} Ardougne Diary`); }
+  return chips.length ? chips.join("") : `<span class="im-rq ok">None</span>`;
+}
+function tags(m){
+  let t = `<span class="im-tag">${esc(m.cat)}</span>`;
+  if(m.thieve || m.rate){ t += `<span class="im-tag calc" title="Recomputed from your levels and setup">calc</span>`; }
+  if(m.wild){ t += `<span class="im-tag wild">Wilderness</span>`; }
+  if(m.banked){ t += `<span class="im-tag bank">banked materials</span>`; }
+  if(opt.mode==="uim" && m.uim==="maybe"){ t += `<span class="im-tag uim">UIM: tricky</span>`; }
+  return t;
+}
+function nameLink(m){
+  return `<a class="im-name" href="${WIKI}${encodeURI(m.wiki)}" target="_blank" rel="noopener">${esc(m.name)}</a>`;
+}
+function renderTable(){
+  const rows = visibleRows();
+  el("im-tbl").querySelector("tbody").innerHTML = rows.map(row =>
+  {
+    const m = row.m;
+    const sub = row.r.sub || m.note || "";
+    const gpCell = `${fmtK(row.gp)}${row.locked ? `<span class="im-lock">once unlocked</span>` : ""}`;
+    return `<tr class="${row.locked ? "im-locked" : ""}">`+
+      `<td class="im-m">${nameLink(m)}${tags(m)}<span class="im-sub">${esc(sub)}</span></td>`+
+      `<td class="mono im-gp${row.locked ? "" : " pos"}">${gpCell}</td>`+
+      `<td class="mono im-xp">${esc(xpText(row))}</td>`+
+      `<td>${esc(m.int || "")}</td>`+
+      `<td class="im-r">${reqChips(m)}</td></tr>`;
+  }).join("") || `<tr><td colspan="5" class="na">No method matches these filters.</td></tr>`;
+  const all = ROWS.filter(row => !hiddenByFilter(row));
+  const now = all.filter(row => !row.locked).length;
+  const hidden = ROWS.length - all.length;
+  el("im-count").textContent = lvSet
+    ? `${rows.length} shown · ${now} you can do now · ${all.length - now} locked${hidden ? ` · ${hidden} hidden by mode/filters` : ""}`
+    : `${rows.length} shown · set levels to split them into can-do and locked`;
+}
+function bestRows(){
+  return ROWS.filter(row => !hiddenByFilter(row) && !row.locked).sort((a, b) => b.gp - a.gp);
+}
+function renderBest(){
+  const list = bestRows();
+  const best = list[0];
+  el("im-best-sub").textContent = lvSet ? "Highest gp/hr among the methods you can do with these levels and unlocks." : "No levels set yet, so this is the top method overall.";
+  if(!best){
+    el("im-best-head").textContent = "Nothing unlocked with these filters.";
+    el("im-best-hero").innerHTML = "";
+    el("im-best-note").textContent = "";
+    el("im-best-rank").innerHTML = "";
+    return;
+  }
+  el("im-best-head").innerHTML = nameLink(best.m);
+  el("im-best-hero").innerHTML =
+    `<div><div class="num">${fmtK(best.gp)}</div><div class="lab">gp / hr</div></div>`+
+    `<div><div class="num" style="color:var(--ink)">${esc(xpText(best))}</div><div class="lab">xp / hr</div></div>`+
+    `<div><div class="num" style="color:var(--ink)">${esc(best.m.int || "")}</div><div class="lab">effort</div></div>`;
+  el("im-best-note").textContent = [best.m.note, best.r.sub].filter(Boolean).join(" ");
+  el("im-best-rank").innerHTML = list.slice(1, 6).map((row, i) =>
+    `<li><span><span class="rk">${i+2}</span>${esc(row.m.name)}</span><span class="p pos">${fmtK(row.gp)}/hr</span></li>`).join("");
+  el("im-rank-h").hidden = list.length < 2;
+}
+function renderUpgrades(){
+  const box = el("im-ups");
+  if(!lvSet){
+    box.innerHTML = `<li><p class="im-empty">Look up an RSN in the Player bar or type levels in the sidebar, then tick quests. Upgrades show here once the tab knows what's locked.</p></li>`;
+    return;
+  }
+  const best = bestRows()[0];
+  const floor = best ? best.gp : 0;
+  const ups = ROWS.filter(row => !hiddenByFilter(row) && row.locked && row.gp > floor*1.05)
+    .sort((a, b) => a.miss.length - b.miss.length || a.deficit - b.deficit || b.gp - a.gp)
+    .slice(0, 4);
+  if(!ups.length){
+    box.innerHTML = `<li><p class="im-empty">Nothing locked beats your current best with these filters.</p></li>`;
+    return;
+  }
+  box.innerHTML = ups.map(row =>
+  {
+    const chips = row.miss.map(x =>
+      `<span class="im-rq miss">${esc(reqLabel(x))}${x.t==="s" ? ` (+${x.need - x.have})` : ""}</span>`).join("");
+    return `<li class="im-up"><div class="im-up-h"><span>${nameLink(row.m)}</span><b>${fmtK(row.gp)}/hr</b></div>`+
+      `<div class="im-up-s">+${fmtK(row.gp - floor)}/hr over your best · ${row.miss.length} to go</div>${chips}</li>`;
+  }).join("");
+}
+function combatLevel(){
+  const base = 0.25*(LV.defence + LV.hitpoints + Math.floor(LV.prayer/2));
+  const melee = 0.325*(LV.attack + LV.strength);
+  const range = 0.325*Math.floor(1.5*LV.ranged);
+  const mage = 0.325*Math.floor(1.5*LV.magic);
+  return Math.floor(base + Math.max(melee, range, mage));
+}
+const MODE_LABEL = { iron:"Ironman", hcim:"Hardcore ironman", uim:"Ultimate ironman" };
+const TYPE_MODE = { ironman:"iron", hardcore:"hcim", ultimate:"uim" };
+function renderChips(){
+  const all = ROWS.filter(row => !hiddenByFilter(row));
+  const now = all.filter(row => !row.locked).length;
+  const who = !lvSet ? "No levels set: every method shown, ungated"
+    : lvFrom ? `Gated by <b>${esc(lvFrom)}</b>${lvEdited ? " (edited)" : ""}` : "Gated by <b>typed levels</b>";
+  const typeChip = ptype && !TYPE_MODE[ptype] ? `<span class="chip warn">Looked-up account is <b>${esc(ptype)}</b>, not an ironman</span>` : "";
+  el("im-assumptions").innerHTML = [
+    `<span class="chip">${who}</span>`,
+    `<span class="chip"><b>${esc(MODE_LABEL[opt.mode])}</b></span>`,
+    lvSet ? `<span class="chip"><b>${now}</b> of ${all.length} methods unlocked</span>` : "",
+    `<span class="chip">Nature rune <b>${fmt(NAT)}</b> gp</span>`,
+    typeChip,
+  ].join("");
+}
+function renderLevelsNote(){
+  el("im-lv-src").textContent = !lvSet ? "Not set. Look up an RSN above, or type levels here."
+    : lvFrom ? `From ${lvFrom}'s lookup${lvEdited ? ", with your edits" : ""}. Edits stay until the next lookup.` : "Typed by hand.";
+  const parts = [`Combat level ${combatLevel()}`];
+  if(lvSet && stale.length){
+    parts.push(`${stale.map(k => SKILL_NAME[k]).join(", ")} weren't in the saved lookup. Press Look up again to fill them.`);
+  }
+  el("im-lv-note").textContent = parts.join(" · ");
+  el("im-lv-note").classList.toggle("warn", lvSet && stale.length > 0);
+  [...el("im-lv-grid").querySelectorAll(".im-lv")].forEach(box => box.classList.toggle("stale", lvSet && stale.includes(box.dataset.k)));
+}
+function syncNotes(){
+  el("im-note-mode").textContent = opt.mode==="hcim" ? "Hardcore: Wilderness methods start hidden." : opt.mode==="uim" ? "Ultimate: methods the wiki rules out for UIMs are hidden; tricky ones are tagged." : "";
+  el("im-note-wild").textContent = opt.wild==="hide" ? "Wilderness methods are hidden." : "Wilderness methods are tagged; PKers can take your loot.";
+  el("im-note-banked").textContent = opt.banked==="hide" ? "Hides methods that need a stockpile (pure essence, dropped staves)." : "Shown, tagged “banked materials”.";
+  el("im-note-ardy").textContent = opt.ardy >= 3 ? "+10% pickpocket success everywhere." : opt.ardy===2 ? "+10% pickpocket success on Ardougne NPCs." : "Medium: +10% success in Ardougne. Hard: everywhere.";
+  const c = context(k => LV[k]);
+  el("im-note-rogue").textContent = opt.rogue==="on" && !c.rogue ? "Needs 50 Thieving and 50 Agility (Rogues' Den); not applied." : opt.rogue==="on" ? "Every steal pays a second pouch (bottom of its coin range)." : "Full set pays a second pouch per steal: Rogues' Den, 50 Thieving + 50 Agility.";
+  el("im-note-gloves").textContent = opt.gloves==="on" && !c.gloves ? "Needs 54 Hunter to wear; not applied." : "";
+  el("im-note-veil").textContent = opt.veil==="on" && !c.veil ? "Needs 47 Magic and A Kingdom Divided; not applied." : "";
+  el("im-note-eff").textContent = "Covers opening pouches, eating and banking. The wiki's knight rates sit near 95%.";
+  el("im-note-nat").textContent = "Used by the alch, salvage and ore rows. 0 if you craft your own.";
+  [...new Set(UNLOCKS.map(u => u[0]))].forEach(g =>
+  {
+    const keys = UNLOCKS.filter(u => u[0]===g).map(u => u[1]);
+    el("im-ug-" + g).textContent = `${keys.filter(k => HAS[k]).length} of ${keys.length}`;
+  });
+}
+function syncControls(){
+  const tg = (id, v) => [...el(id).querySelectorAll("button")].forEach(b => b.classList.toggle("on", b.dataset.v===String(v)));
+  tg("im-tg-mode", opt.mode); tg("im-tg-show", opt.show); tg("im-tg-wild", opt.wild); tg("im-tg-banked", opt.banked);
+  tg("im-tg-sort", opt.sort); tg("im-tg-ardy", opt.ardy); tg("im-tg-rogue", opt.rogue); tg("im-tg-gloves", opt.gloves);
+  tg("im-tg-dodgy", opt.dodgy); tg("im-tg-veil", opt.veil); tg("im-tg-cape", opt.cape);
+  [...el("im-cats").querySelectorAll("button")].forEach(b =>
+  {
+    const on = b.dataset.v===opt.cat;
+    b.classList.toggle("on", on);
+    b.setAttribute("aria-pressed", on ? "true" : "false");
+  });
+  SKILLS.forEach(([k]) =>
+  {
+    const i = el("im-lv-" + k);
+    if(i && document.activeElement !== i){
+      i.value = LV[k];
+    }
+  });
+  UNLOCKS.forEach(([, k]) =>
+  {
+    const i = el("im-u-" + k);
+    if(i){
+      i.checked = !!HAS[k];
+    }
+  });
+  el("im-eff").value = EFF;
+  el("im-nat").value = NAT;
+  syncNotes();
+}
+function renderAll(){
+  compute();
+  renderChips();
+  renderLevelsNote();
+  renderBest();
+  renderUpgrades();
+  renderTable();
+  saveState();
+}
+
+/* ---- persistence ---- */
+function saveState(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify({ opt, EFF, NAT, LV, HAS, lvSet, lvFrom, lvSig, lvEdited, stale })); } catch(e){}
+}
+function loadState(){
+  let s;
+  try { s = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch(e){ return; }
+  if(!s){ return; }
+  const pick = (k, ok) =>
+  {
+    if(s.opt && ok.includes(s.opt[k])){
+      opt[k] = s.opt[k];
+    }
+  };
+  pick("mode", ["iron", "hcim", "uim"]); pick("show", ["all", "now"]); pick("wild", ["show", "hide"]); pick("banked", ["show", "hide"]);
+  pick("sort", ["gp", "close", "az"]); pick("cat", CATS); pick("ardy", [0, 1, 2, 3, 4]); pick("rogue", ["on", "off"]);
+  pick("gloves", ["on", "off"]); pick("dodgy", ["on", "off"]); pick("veil", ["on", "off"]); pick("cape", ["on", "off"]);
+  if(Number.isFinite(s.EFF)){ EFF = Math.min(100, Math.max(50, s.EFF)); }
+  if(Number.isFinite(s.NAT)){ NAT = Math.min(1000, Math.max(0, s.NAT)); }
+  if(s.LV){
+    SKILLS.forEach(([k]) =>
+    {
+      if(Number.isFinite(s.LV[k])){
+        LV[k] = Math.min(99, Math.max(minLv(k), s.LV[k]));
+      }
+    });
+  }
+  if(s.HAS){
+    UNLOCKS.forEach(([, k]) =>
+    {
+      if(s.HAS[k]){
+        HAS[k] = true;
+      }
+    });
+  }
+  lvSet = !!s.lvSet;
+  lvFrom = typeof s.lvFrom==="string" ? s.lvFrom : null;
+  lvSig = typeof s.lvSig==="string" ? s.lvSig : null;
+  lvEdited = !!s.lvEdited;
+  stale = Array.isArray(s.stale) ? s.stale.filter(k => SKILL_NAME[k]) : [];
+}
+
+/* ---- controls ---- */
+function buildControls(){
+  el("im-lv-grid").innerHTML = SKILLS.map(([k, name, short]) =>
+    `<label class="im-lv" data-k="${k}" title="${name}"><span>${short}</span>`+
+    `<input id="im-lv-${k}" type="number" min="${minLv(k)}" max="99" step="1" value="${LV[k]}" inputmode="numeric" data-stepped="1" aria-label="${name} level"></label>`).join("");
+  const groups = [...new Set(UNLOCKS.map(u => u[0]))];
+  el("im-unlocks").innerHTML = groups.map(g =>
+    `<details class="im-ug"><summary class="im-ul-h">${g}<span class="im-ug-n" id="im-ug-${g}"></span></summary><div class="im-ul">`+
+    UNLOCKS.filter(u => u[0]===g).map(([, k, label]) => `<label><input type="checkbox" id="im-u-${k}"> ${esc(label)}</label>`).join("")+
+    `</div></details>`).join("");
+  el("im-cats").innerHTML = CATS.map(c => `<button type="button" data-v="${c}">${c}</button>`).join("");
+}
+function onToggle(id, key, cast){
+  el(id).addEventListener("click", e =>
+  {
+    const b = e.target.closest("button");
+    if(!b){ return; }
+    opt[key] = cast ? cast(b.dataset.v) : b.dataset.v;
+    if(key==="mode" && opt.mode==="hcim"){ opt.wild = "hide"; }
+    syncControls();
+    renderAll();
+  });
+}
+function wire(){
+  onToggle("im-tg-mode", "mode"); onToggle("im-tg-show", "show"); onToggle("im-tg-wild", "wild"); onToggle("im-tg-banked", "banked");
+  onToggle("im-tg-sort", "sort"); onToggle("im-tg-ardy", "ardy", Number); onToggle("im-tg-rogue", "rogue"); onToggle("im-tg-gloves", "gloves");
+  onToggle("im-tg-dodgy", "dodgy"); onToggle("im-tg-veil", "veil"); onToggle("im-tg-cape", "cape");
+  el("im-cats").addEventListener("click", e =>
+  {
+    const b = e.target.closest("button");
+    if(!b){ return; }
+    opt.cat = b.dataset.v;
+    syncControls();
+    renderAll();
+  });
+  el("im-lv-grid").addEventListener("input", e =>
+  {
+    const k = e.target.id.replace("im-lv-", "");
+    if(!SKILL_NAME[k]){ return; }
+    const v = parseInt(e.target.value, 10);
+    if(!Number.isFinite(v)){ return; }
+    LV[k] = Math.min(99, Math.max(minLv(k), v));
+    lvSet = true;
+    lvEdited = true;
+    stale = stale.filter(s => s !== k);
+    syncNotes();
+    renderAll();
+  });
+  el("im-lv-grid").addEventListener("change", e =>
+  {
+    const k = e.target.id.replace("im-lv-", "");
+    if(SKILL_NAME[k]){ e.target.value = LV[k]; }
+  });
+  el("im-unlocks").addEventListener("change", e =>
+  {
+    const k = e.target.id.replace("im-u-", "");
+    if(!UNLOCK_NAME[k]){ return; }
+    HAS[k] = e.target.checked;
+    syncNotes();
+    renderAll();
+  });
+  const setAll = on =>
+  {
+    UNLOCKS.forEach(([, k]) =>
+    {
+      HAS[k] = on;
+    });
+    syncControls();
+    renderAll();
+  };
+  el("im-q-all").addEventListener("click", () => setAll(true));
+  el("im-q-none").addEventListener("click", () => setAll(false));
+  el("im-eff").addEventListener("input", e =>
+  {
+    const v = +e.target.value;
+    if(v >= 50 && v <= 100){ EFF = v; renderAll(); }
+  });
+  el("im-nat").addEventListener("input", e =>
+  {
+    const v = +e.target.value;
+    if(v >= 0 && v <= 1000){ NAT = Math.round(v); renderAll(); }
+  });
+  el("im-search").addEventListener("input", e =>
+  {
+    SEARCH = e.target.value;
+    renderTable();
+  });
+}
+
+/** A new lookup replaces the levels; the same saved lookup on reload keeps any edits made since. */
+function applyPlayer(p){
+  if(!p || !p.levels){
+    if(lvFrom){
+      lvSet = false;
+      lvFrom = null;
+      lvSig = null;
+      lvEdited = false;
+      stale = [];
+    }
+    ptype = null;
+    renderAll();
+    return;
+  }
+  ptype = p.type || null;
+  const sig = (p.name || "") + "|" + JSON.stringify(p.levels);
+  if(sig !== lvSig){
+    lvSig = sig;
+    lvFrom = p.name || null;
+    lvSet = true;
+    lvEdited = false;
+    stale = [];
+    SKILLS.forEach(([k]) =>
+    {
+      const v = p.levels[k];
+      if(Number.isFinite(v)){
+        LV[k] = Math.min(99, Math.max(minLv(k), v));
+      }
+      else {
+        stale.push(k);
+      }
+    });
+    if(TYPE_MODE[ptype]){
+      opt.mode = TYPE_MODE[ptype];
+      if(opt.mode==="hcim"){ opt.wild = "hide"; }
+    }
+    syncControls();
+  }
+  renderAll();
+}
+
+el("im-footer").innerHTML =
+  `Sources: the OSRS Wiki <a href="${WIKI}Ironman_money_making_guide" target="_blank" rel="noopener">Ironman money making guide</a> and money making guide pages for the fixed hourly figures, and each NPC's skilling success chart for pickpocketing. `+
+  `Rows tagged <b>calc</b> recompute from your levels and setup: pickpocketing (success chance from the chart, 2 ticks a steal, the stun on a failure your dodgy necklace or Shadow Veil didn't stop, coins only; the full rogue outfit adds a second pouch at the bottom of its coin range), shipwreck salvage (each salvage's drop table, alching everything worth 300+ gp), mining and smithing ore (best item per bar at your Smithing level), and the alch rows (your nature rune cost). `+
+  `Every value is a high alch, shop or fixed NPC price, never the GE, so this tab ignores the price bar. Untagged rows are the wiki's community estimates at the levels it lists; locked rows show what they pay once you meet the requirements. `+
+  `Ali Morrisane buys runes at half their value with no overstock drop (blood 200, nature 90) after the rune section of Rogue Trader. Requirements cover what gates each method; dashed chips are recommendations. A lookup reads levels and account type from Wise Old Man; quests and diaries have to be ticked by hand.`;
+
+buildControls();
+loadState();
+syncControls();
+wire();
+renderAll();
+window.Player.subscribe(applyPlayer);
+})();
+</script>
 </main>
 <div class="tip" id="rn-tip"></div>
 <script>
@@ -9311,8 +10365,8 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   "use strict";
   try { if(('ontouchstart' in window) || (navigator.maxTouchPoints > 0)){ document.documentElement.classList.add("is-touch"); } } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
