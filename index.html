@@ -1136,7 +1136,9 @@
         <span class="lb-label">GE prices</span>
         <div class="src-toggle" id="hub-src" role="group" aria-label="Price source">
           <button data-v="latest" class="on">Latest</button>
-          <button data-v="m5">5-min avg</button>
+          <button data-v="m5" title="Average of the last 5 minutes of trades">5-min</button>
+          <button data-v="day" title="Volume-weighted average of the last full day (UTC) of trades">Day</button>
+          <button data-v="month" title="Volume-weighted average of the last 30 days of trades — the market's normal price, ignoring short spikes">Month</button>
           <button data-v="safe" title="Buys pay the higher, sells get the lower, of the live price and its 24h average — a price spike can only make a method look worse">Safe</button>
         </div>
         <button class="refresh-btn auto-btn on" id="hubRisk" aria-pressed="true" title="Rank by risk-adjusted profit: replays each top method over the last 30 days of prices and counts the median minus one swing, so spiking or volatile methods drop"><span class="spin"></span> Risk rank</button>
@@ -1159,8 +1161,9 @@
 <script>
 /* ============================================================
    Shared price feed for all three calculators. Fetches the wiki
-   real-time API once, holds the Latest/5-min-avg source, and pushes
-   {latest, m5, h1, h24} + the chosen source to every subscribed view.
+   real-time API once, holds the chosen source (Latest / 5-min / Day / Month / Safe), and pushes
+   {latest, m5, h1, h24} + that source to every subscribed view. Day and Month reach views through the
+   5-min slot (raw.m5 swapped for the 24h or 30-day averages, source "m5"), so every tab's picker works as-is.
    ============================================================ */
 (function(){
   "use strict";
@@ -1173,8 +1176,69 @@
 
   function setStatus(t, cls){ const s = el("hubStatus"); if(s){ s.textContent = t; s.className = "lb-status" + (cls?" "+cls:""); } }
   function stamp(){ return fetchedTs ? fetchedTs.toLocaleTimeString("en-GB", {hour:"2-digit",minute:"2-digit",second:"2-digit"}) : ""; }
-  function srcLabel(){ return SOURCE==="m5" ? "5-min avg" : SOURCE==="safe" ? "Safe (live vs 24h)" : "Latest"; }
-  function broadcast(){ subs.forEach(fn => { try { fn(raw, SOURCE); } catch(e){ console.error(e); } }); }
+  const SRC_LABEL = { latest:"Latest", m5:"5-min avg", day:"Day avg", month:"30-day avg", safe:"Safe (live vs 24h)" };
+  function srcLabel(){ return SRC_LABEL[SOURCE] || "Latest"; }
+  /** What views see: Day and Month ride in the 5-min slot, falling back to Latest for items they lack. */
+  function view(){
+    if(SOURCE === "day"){ return [Object.assign({}, raw, { m5:raw.h24 }), "m5"]; }
+    if(SOURCE === "month"){ return [Object.assign({}, raw, { m5:month.data || {} }), "m5"]; }
+    return [raw, SOURCE];
+  }
+  function broadcast(){ const [r, s] = view(); subs.forEach(fn => { try { fn(r, s); } catch(e){ console.error(e); } }); }
+
+  /* ---- 30-day average: the /24h snapshot for each of the last 30 days, volume-weighted per side.
+     Fetched only when Month is picked; the result is cached until the next day's snapshot exists. ---- */
+  const MONTH_LS = "month-avg-v1", MONTH_DAYS = 30;
+  const month = { data:null, key:0, loading:null };
+  function monthEnd(){ return slowTs.h24 || (Math.floor(Date.now()/86400000) - 1)*86400; }
+  function loadMonth(){
+    const end = monthEnd();
+    if(month.data && month.key === end){ return Promise.resolve(); }
+    try {
+      const c = JSON.parse(localStorage.getItem(MONTH_LS) || "null");
+      if(c && c.key === end && c.data){ month.data = c.data; month.key = end; return Promise.resolve(); }
+    } catch(e){}
+    if(month.loading){ return month.loading; }
+    const acc = {};
+    const add = d =>
+    {
+      for(const id in d){
+        const e = d[id], a = acc[id] || (acc[id] = { h:0, hv:0, l:0, lv:0 });
+        if(e.avgHighPrice && e.highPriceVolume){ a.h += e.avgHighPrice*e.highPriceVolume; a.hv += e.highPriceVolume; }
+        if(e.avgLowPrice && e.lowPriceVolume){ a.l += e.avgLowPrice*e.lowPriceVolume; a.lv += e.lowPriceVolume; }
+      }
+    };
+    const days = [];
+    for(let k = 1; k < MONTH_DAYS; k++){ days.push(end - k*86400); }
+    let next = 0, done = 1, got = 1;
+    add(raw.h24);
+    setStatus(`loading 30-day average\u2026 1/${MONTH_DAYS}`);
+    const worker = async () =>
+    {
+      while(next < days.length){
+        const t = days[next++];
+        try {
+          const r = await fetch(`${API}/24h?timestamp=${t}`);
+          if(r.ok){ add((await r.json()).data || {}); got++; }
+        } catch(e){}
+        done++;
+        setStatus(`loading 30-day average\u2026 ${done}/${MONTH_DAYS}`);
+      }
+    };
+    month.loading = Promise.all([worker(), worker(), worker(), worker()]).then(() =>
+    {
+      const out = {};
+      for(const id in acc){
+        const a = acc[id], o = {};
+        if(a.hv){ o.avgHighPrice = Math.round(a.h/a.hv); }
+        if(a.lv){ o.avgLowPrice = Math.round(a.l/a.lv); }
+        if(o.avgHighPrice || o.avgLowPrice){ out[id] = o; }
+      }
+      month.data = out; month.key = end; month.days = got;
+      if(got === MONTH_DAYS){ try { localStorage.setItem(MONTH_LS, JSON.stringify({ key:end, data:out })); } catch(e){} }
+    }).finally(() => { month.loading = null; });
+    return month.loading;
+  }
 
   const AUTO_MS = 5*60*1000;
   let AUTO = false, autoTimer = null, autoTick = null, autoNextTs = null;
@@ -1189,6 +1253,7 @@
       const [lj, mj] = await Promise.all([lr.json(), mr.json()]);
       raw.latest = lj.data || {}; raw.m5 = mj.data || {};
       await Promise.all([ getSlow("h1", "/1h"), getSlow("h24", "/24h") ]);
+      if(SOURCE === "month"){ await loadMonth(); }
       fetchedTs = new Date();
       broadcast();
       setStatus(`${srcLabel()} \u00b7 updated ${stamp()}`, "ok");
@@ -1202,13 +1267,15 @@
   /* The hourly and daily averages only change when the API's Expires time passes (top of the hour /
      midnight UTC), so skip them until then. The browser cache can't do this for /24h: Cloudflare's Age
      header outruns its Expires after noon UTC, which made every refresh re-check it. */
-  const slowExp = { h1:0, h24:0 };
+  const slowExp = { h1:0, h24:0 }, slowTs = { h1:0, h24:0 };
   async function getSlow(key, path){
     if(Date.now() < slowExp[key] && Object.keys(raw[key]).length){ return; }
     try {
       const r = await fetch(API+path);
       if(!r.ok){ return; }
-      raw[key] = (await r.json()).data || {};
+      const j = await r.json();
+      raw[key] = j.data || {};
+      slowTs[key] = j.timestamp || 0;
       const exp = Date.parse(r.headers.get("expires") || "");
       slowExp[key] = Math.min(Number.isFinite(exp) ? exp : 0, Date.now() + 24*3600*1000);
     } catch(e){}
@@ -1230,11 +1297,13 @@
     if(wait <= 0){ refresh(); } else { autoTimer = setTimeout(refresh, wait); }
   });
   function setSource(v){
-    if(v!=="latest" && v!=="m5" && v!=="safe"){ return; }
+    if(!SRC_LABEL[v]){ return; }
     SOURCE = v;
     [...el("hub-src").children].forEach(b => b.classList.toggle("on", b.dataset.v===SOURCE));
-    if(fetchedTs){ broadcast(); setStatus(`${srcLabel()} \u00b7 updated ${stamp()}`, "ok"); }
     save();
+    if(!fetchedTs){ return; }
+    const show = () => { if(SOURCE !== v){ return; } broadcast(); setStatus(`${srcLabel()} \u00b7 updated ${stamp()}`, "ok"); };
+    if(v === "month"){ loadMonth().then(show); } else { show(); }
   }
   function setAuto(on){
     AUTO = on; const b = el("hubAuto"); if(b){ b.classList.toggle("on", AUTO); }
@@ -1245,11 +1314,11 @@
     save();
   }
   function save(){ try { localStorage.setItem(LS, JSON.stringify({SOURCE, AUTO})); } catch(e){} }
-  function load(){ try { const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ if(s.SOURCE==="latest"||s.SOURCE==="m5"||s.SOURCE==="safe"){ SOURCE=s.SOURCE; } if(typeof s.AUTO==="boolean"){ AUTO=s.AUTO; } } } catch(e){} }
+  function load(){ try { const s = JSON.parse(localStorage.getItem(LS)||"null"); if(s){ if(SRC_LABEL[s.SOURCE]){ SOURCE=s.SOURCE; } if(typeof s.AUTO==="boolean"){ AUTO=s.AUTO; } } } catch(e){} }
 
   /* public: views register a callback (raw, source) => void */
   window.PriceHub = {
-    subscribe(fn){ subs.push(fn); if(fetchedTs){ try { fn(raw, SOURCE); } catch(e){} } },
+    subscribe(fn){ subs.push(fn); if(fetchedTs){ try { const [r, s] = view(); fn(r, s); } catch(e){} } },
     refresh, getSource(){ return SOURCE; }, get raw(){ return raw; },
   };
 
