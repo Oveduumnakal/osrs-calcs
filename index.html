@@ -236,7 +236,7 @@
   .bar.bs-clip::after { content: ""; position: absolute; top: -3px; bottom: -3px; width: 4px; background: var(--surface); transform: skewX(-25deg); }
   .bar.bs-lo::after { left: 6px; }
   .bar.bs-hi::after { right: 6px; }
-  .bval.bs-in { color: var(--surface) !important; }
+  .bval.bs-in, .bval.bs-fit { color: var(--surface) !important; }
   .bs-note { margin: 8px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--muted); }
   .bs-btn { font: inherit; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   /* spike guard: risk grade badge, break-even cushion, "passed over" note */
@@ -1400,6 +1400,33 @@
       if(r[i].right > edge - 6){ ticks[i].style.visibility = "hidden"; } else { edge = r[i].left; }
     }
   }
+  /** Moves a value label inside its bar when it would spill past the chart's edge (a long bar that
+      nearly reaches the edge without being cut). Re-runs on resize, restoring each label first. */
+  function bsFit(chart){
+    const labs = [...chart.querySelectorAll(".track > .bval")].filter(l => !l.classList.contains("bs-in"));
+    labs.forEach(l =>
+    {
+      if(l.dataset.bsOrig == null){ l.dataset.bsOrig = l.style.cssText; } else { l.style.cssText = l.dataset.bsOrig; }
+      l.classList.remove("bs-fit");
+    });
+    const moves = labs.map(l =>
+    {
+      const bar = l.previousElementSibling;
+      if(!bar || !bar.classList.contains("bar")){ return null; }
+      const tr = l.parentElement.getBoundingClientRect(), r = l.getBoundingClientRect(), b = bar.getBoundingClientRect();
+      if(!tr.width || !r.width){ return null; }
+      const inside = b.width >= r.width + 12;   // too short a bar: flip the label to the zero side instead
+      if(r.left < tr.left){ return { l, inside, at:inside ? { left:b.left - tr.left } : { left:b.right - tr.left } }; }
+      if(r.right > tr.right){ return { l, inside, at:inside ? { right:tr.right - b.right } : { right:tr.right - b.left } }; }
+      return null;
+    }).filter(Boolean);
+    moves.forEach(({ l, inside, at }) =>
+    {
+      l.classList.toggle("bs-fit", inside);
+      l.style.left = at.left != null ? at.left + "px" : ""; l.style.marginLeft = at.left != null ? "6px" : "";
+      l.style.right = at.right != null ? at.right + "px" : ""; l.style.marginRight = at.right != null ? "6px" : "";
+    });
+  }
   window.BarScale = {
     /** Axis for a bar chart over `vals`: {lo, hi, step} plus how many values are outliers / cut off.
         opts.int forces a whole-number step (charts whose tick loop adds the step and tests t===0). */
@@ -1430,13 +1457,15 @@
       lab.style.left = low ? "0%" : ""; lab.style.right = low ? "" : "0%";
       lab.style.marginLeft = low ? "14px" : ""; lab.style.marginRight = low ? "" : "14px";
     },
-    /** The note + Capped/Full switch under a chart's axis; `rerender` redraws that chart. */
-    note(axisEl, sc, rerender){
+    /** The note + Capped/Full switch under a chart's axis; `rerender` redraws that chart. Also thins the
+        axis labels and fits `chart`'s value labels inside the track. */
+    note(axisEl, sc, rerender, chart){
       bsFns.add(rerender);
       bsThin(axisEl);
+      if(chart){ bsFit(chart); }
       if(!bsWatched.has(axisEl) && typeof ResizeObserver === "function"){
         bsWatched.add(axisEl);
-        new ResizeObserver(() => bsThin(axisEl)).observe(axisEl);
+        new ResizeObserver(() => { bsThin(axisEl); if(chart){ bsFit(chart); } }).observe(axisEl);
       }
       const host = axisEl.parentElement && axisEl.parentElement.classList.contains("axis-row") ? axisEl.parentElement : axisEl;
       let n = host.nextElementSibling;
@@ -3917,7 +3946,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
-  BarScale.note(axisEl, SC, renderChart);
+  BarScale.note(axisEl, SC, renderChart, chart);
 }
 
 /* ---- rates card ---- */
@@ -4663,7 +4692,7 @@ function render(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
-  BarScale.note(axisEl, SC, render);
+  BarScale.note(axisEl, SC, render, chart);
 }
 
 /* ---- rates card ---- */
@@ -5411,7 +5440,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
-  BarScale.note(axisEl, SC, renderChart);
+  BarScale.note(axisEl, SC, renderChart, chart);
 }
 
 /* ---- rates ---- */
@@ -7182,7 +7211,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
-  BarScale.note(axisEl, SC, renderChart);
+  BarScale.note(axisEl, SC, renderChart, chart);
 }
 
 /* rates */
@@ -9142,7 +9171,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
-  BarScale.note(axisEl, SC, renderChart);
+  BarScale.note(axisEl, SC, renderChart, chart);
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
 
@@ -11204,7 +11233,7 @@ function renderChart(){
   });
   axisEl.innerHTML = "";
   for(let k=0; DMIN+k*step<=DMAX+step*1e-6; k++){ const t=DMIN+k*step; const t2=document.createElement("div"); t2.className="tick"+(Math.abs(t)<step*1e-6?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(Math.abs(t)<step*1e-6?0:t); axisEl.appendChild(t2); }
-  BarScale.note(axisEl, SC, renderChart);
+  BarScale.note(axisEl, SC, renderChart, chart);
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
 
