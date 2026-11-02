@@ -703,8 +703,9 @@
     th, td { padding: 5px 7px; }
   }
   /* touch devices: the mouse-follow tooltips can get stuck, and the data is already in the tables/cards */
-  .is-touch .tip { display: none !important; }
-  .is-touch #rn-tip { display: block !important; }
+  .touching .tip:not(#rn-tip):not(#hu-tip) { display: none !important; }
+  #hu-tip { max-width: 290px; }
+  #hu-tip .t-drop { display: flex; justify-content: space-between; gap: 12px; }
 
   /* ---- new-tab themes: tanning (leather brown), grinding (slate), planks (oak), smithing (steel) ---- */
   body[data-tab="tanning"] {
@@ -1051,6 +1052,37 @@
   #view-iron .im-up-s { font:500 11px "IBM Plex Mono", monospace; color:var(--muted); margin:3px 0 5px; }
   #view-iron .im-empty { font-size:12.5px; line-height:1.5; color:var(--muted); margin:0; }
   #view-iron .im-note { font-size:12.5px; line-height:1.55; color:var(--ink-2); margin:0 0 14px; }
+  /* ---- hunter (moss & khaki) ---- */
+  body[data-tab="hunter"] {
+    --bg:#eef0e4; --surface:#f8f9f0; --surface-2:#e1e5cf; --ink:#1d2414; --ink-2:#4a5636; --muted:#7d8766;
+    --line:#d6dcc0; --line-strong:#b8c197; --accent:#55701a;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="hunter"] {
+        --bg:#0f120b; --surface:#161a10; --surface-2:#1f2516; --ink:#e6ebd9; --ink-2:#b5c09a; --muted:#858f6d;
+        --line:#2a3220; --line-strong:#3c4730; --accent:#9cc23e;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="hunter"] {
+    --bg:#0f120b; --surface:#161a10; --surface-2:#1f2516; --ink:#e6ebd9; --ink-2:#b5c09a; --muted:#858f6d;
+    --line:#2a3220; --line-strong:#3c4730; --accent:#9cc23e;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
+  /* hunter chart: one accent bar per creature; locked creatures faded */
+  #view-hunter .row, #view-hunter .axis-row { grid-template-columns: clamp(96px, 27vw, 136px) 1fr; }
+  #view-hunter .row.locked { opacity: 0.42; }
+  #view-hunter .row.locked .rlabel small { color: var(--neg); }
+  .sw.hunt { background: var(--accent); }
+  .bar.hunt { top: 13px; background: var(--accent); }
+  .bar.hunt.neg { background: var(--neg); }
+  .bval.hunt { top: 13px; line-height: 14px; color: var(--accent); }
+  .bval.hunt.neg { color: var(--neg); }
+  #view-hunter tr.locked td { opacity: 0.5; }
+  #view-hunter .est { font-size: 10px; color: var(--muted); margin-left: 4px; }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -1073,6 +1105,7 @@
         <button data-view="smithing" role="tab">Smithing</button>
         <button data-view="foundry" role="tab">Giants' Foundry</button>
         <button data-view="cooking" role="tab">Cooking</button>
+        <button data-view="hunter" role="tab">Hunter</button>
         <button data-view="sailing" role="tab">Sailing</button>
         <button data-view="rune" role="tab">Rune Calculator</button>
         <button data-view="iron" role="tab">Ironman Money</button>
@@ -10154,6 +10187,567 @@ renderAll();
 window.Player.subscribe(applyPlayer);
 })();
 </script>
+<section id="view-hunter" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">OSRS &middot; Hunter &middot; xp &amp; gp per catch</p>
+    <h1>Hunter Creatures</h1>
+    <p class="lede">Every trappable creature, from crimson swifts to moonlight antelopes, with the <b>xp</b> and the <b>gp</b> each catch is worth. Drops are priced live after the 2% GE tax, minus anything a catch uses up (bait, crab offcuts, butterfly jars, logs). Catch rates come from the wiki's Hunter training and money making guides and scale with your <b>Hunter level</b>. Rates tagged <span class="est">est</span> are estimates.</p>
+    <div class="assumptions" id="hu-assumptions"></div>
+  </header>
+
+  <div class="layout">
+  <aside class="sidebar">
+
+    <section class="card">
+      <h2 class="card-title">Your setup</h2>
+      <p class="card-sub">Prices are live from the header bar. Look up an RSN above to auto-fill your Hunter level.</p>
+      <div class="opts">
+        <div>
+          <p class="opt-label">Hunter level</p>
+          <div class="timing-in" style="margin:0">
+            <label for="hu-lvl">level <input id="hu-lvl" type="number" min="1" max="99" step="1" value="99" inputmode="numeric"></label>
+          </div>
+          <p class="opt-note" id="hu-note-lvl"></p>
+        </div>
+        <div>
+          <p class="opt-label">Efficiency</p>
+          <div class="timing-in" style="margin:0">
+            <label for="hu-eff">% of wiki rate <input id="hu-eff" type="number" min="10" max="150" step="5" value="100" inputmode="numeric"></label>
+          </div>
+          <p class="opt-note" id="hu-note-eff"></p>
+        </div>
+        <div>
+          <p class="opt-label">Method</p>
+          <div class="toggle" id="hu-tg-kind" role="group" aria-label="Method">
+            <button data-v="all" class="on">All</button>
+            <button data-v="traps">Traps</button>
+            <button data-v="dp">Dead/pitfall</button>
+            <button data-v="other">Other</button>
+          </div>
+          <p class="opt-note" id="hu-note-kind"></p>
+        </div>
+        <div>
+          <p class="opt-label">Butterflies &amp; moths</p>
+          <div class="toggle" id="hu-tg-jar" role="group" aria-label="Butterflies and moths">
+            <button data-v="on" class="on">Jar &amp; sell</button>
+            <button data-v="off">Barehanded</button>
+          </div>
+          <p class="opt-note" id="hu-note-jar"></p>
+        </div>
+        <div>
+          <p class="opt-label">Chinchompa trapping</p>
+          <div class="toggle" id="hu-tg-tick" role="group" aria-label="Chinchompa trapping">
+            <button data-v="on" class="on">Tick manip</button>
+            <button data-v="off">Casual</button>
+          </div>
+          <p class="opt-note" id="hu-note-tick"></p>
+        </div>
+        <div>
+          <p class="opt-label">Wilderness</p>
+          <div class="toggle" id="hu-tg-wild" role="group" aria-label="Wilderness">
+            <button data-v="on" class="on">Include</button>
+            <button data-v="off">Skip</button>
+          </div>
+          <p class="opt-note" id="hu-note-wild"></p>
+        </div>
+        <div>
+          <p class="opt-label">Bones</p>
+          <div class="toggle" id="hu-tg-bones" role="group" aria-label="Bones">
+            <button data-v="on" class="on">Sell</button>
+            <button data-v="off">Bury / drop</button>
+          </div>
+          <p class="opt-note" id="hu-note-bones"></p>
+        </div>
+        <div>
+          <p class="opt-label">Raw meat</p>
+          <div class="toggle" id="hu-tg-meat" role="group" aria-label="Raw meat">
+            <button data-v="on" class="on">Sell</button>
+            <button data-v="off">Drop</button>
+          </div>
+          <p class="opt-note" id="hu-note-meat"></p>
+        </div>
+        <div>
+          <p class="opt-label">Sell drops at</p>
+          <div class="toggle" id="hu-tg-sellspeed" role="group" aria-label="Sell speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="hu-note-sellspeed"></p>
+        </div>
+        <div>
+          <p class="opt-label">Buy supplies at</p>
+          <div class="toggle" id="hu-tg-buyspeed" role="group" aria-label="Buy speed">
+            <button data-v="instant" class="on">Instant</button>
+            <button data-v="patient">Patient</button>
+          </div>
+          <p class="opt-note" id="hu-note-buyspeed"></p>
+        </div>
+        <div>
+          <p class="opt-label">Sort table by</p>
+          <div class="toggle" id="hu-tg-sort" role="group" aria-label="Sort">
+            <button data-v="xphr" class="on">xp/hr</button>
+            <button data-v="gphr">gp/hr</button>
+            <button data-v="gpxp">gp/xp</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+
+  <div class="main">
+
+    <div class="two-col">
+      <div class="col">
+        <section class="card best-card" id="hu-xpCard">
+          <h2 class="card-title">Best xp/hour</h2>
+          <p class="card-sub">Fastest Hunter xp you can catch at your level.</p>
+          <p class="best-headline" id="hu-xpHeadline"></p>
+          <div class="best-hero" id="hu-xpHero"></div>
+        </section>
+      </div>
+      <div class="col">
+        <section class="card xp-card" id="hu-gpCard">
+          <h2 class="card-title">Best gp/hour</h2>
+          <p class="card-sub">Most profit per hour after tax and supplies.</p>
+          <p class="best-headline" id="hu-gpHeadline"></p>
+          <div class="best-hero" id="hu-gpHero"></div>
+        </section>
+      </div>
+    </div>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title" id="hu-cardTitle">XP per catch</h2>
+          <div class="legend">
+            <span><i class="sw hunt"></i> <span id="hu-legend"></span></span>
+          </div>
+        </div>
+        <div class="toggle" id="hu-toggle" role="tablist" aria-label="Chart metric">
+          <button data-mode="xp" class="on" role="tab" aria-selected="true">xp / catch</button>
+          <button data-mode="gp" role="tab" aria-selected="false">gp / catch</button>
+          <button data-mode="gpxp" role="tab" aria-selected="false">gp / xp</button>
+          <button data-mode="xphr" role="tab" aria-selected="false">xp / hr</button>
+          <button data-mode="gphr" role="tab" aria-selected="false">gp / hr</button>
+        </div>
+      </div>
+      <p class="card-note" id="hu-cardNote"></p>
+      <div class="chart" id="hu-chart"></div>
+      <div class="axis-row"><div></div><div class="axis" id="hu-axis"></div></div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <h2 class="card-title">All creatures</h2>
+          <p class="card-note" id="hu-count"></p>
+        </div>
+      </div>
+      <div class="tbl-wrap">
+        <table id="hu-tbl">
+          <thead><tr><th>Creature</th><th>Method</th><th>Lvl</th><th>xp/catch</th><th>gp/catch</th><th>gp/xp</th><th>catch/hr</th><th>xp/hr</th><th>gp/hr</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="opt-note" id="hu-tblNote"></p>
+    </section>
+
+    <footer id="hu-footer"></footer>
+  </div>
+  </div>
+</div>
+</section>
+<div class="tip" id="hu-tip"></div>
+
+<script>
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const root = el("view-hunter");
+const fmt = n => (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const fmtK = v => { const a=Math.abs(v); return a>=1e6 ? (v<0?"-":"")+(a/1e6).toFixed(a>=1e7?0:1).replace(/\.0$/,"")+"m" : a>=1000 ? (v<0?"-":"")+(a/1000).toFixed(a>=1e5?0:1).replace(/\.0$/,"")+"k" : fmt(v); };
+const fmtX = v => Math.abs(v-Math.round(v))<0.05 ? fmt(v) : v.toFixed(1);
+const net = (p, id) => p - window.GETax.of(p, id);
+
+/* ------------------------------------------------------------------
+   Creature table (OSRS Wiki, November 2026). Fields:
+     n   name           m   method key (see METHOD)     lv  Hunter level
+     xp  Hunter xp per catch (herbiboar: xr instead, level-scaled)
+     d   drops per catch  [[itemId, qty], ...]  (rumour-only rare parts left out)
+     i   supplies used per catch [[itemId, qty], ...]
+     Catch rate, one of:
+       k   flat catches/hr
+       t   [refLevel, catches/hr] scaled by trap count (2/3/4/5 at 1/40/60/80)
+       r   [[level, catches/hr], ...] interpolated from wiki xp/hr tables
+       rc  casual (no tick manipulation) table for chinchompas
+     kj  butterflies: catches/hr when jarring (bank trips); k is the barehanded xp rate
+     est rate is an estimate, not a wiki figure    wild  Wilderness only
+     note one-line caveat shown in the tooltip
+   ------------------------------------------------------------------ */
+const BONES = 526, BIG = 532, BIRD = 9978, MAPLE = 1517, JAR = 10012;
+const METHOD = { snare:"Bird snare", box:"Box trap", net:"Net trap", crab:"Crab trap", deadfall:"Deadfall", pitfall:"Pitfall",
+  falconry:"Falconry", tracking:"Tracking", butterfly:"Butterfly net", herbiboar:"Herbiboar", stymphike:"Stymphike" };
+const GROUP = { snare:"traps", box:"traps", net:"traps", crab:"traps", deadfall:"dp", pitfall:"dp",
+  falconry:"other", tracking:"other", butterfly:"other", herbiboar:"other", stymphike:"other" };
+/** Bones: left out of gp when the player buries or drops them. */
+const BONE = new Set([BONES, BIG]);
+/** Raw meat: left out of gp when the player drops it. */
+const MEAT = new Set([BIRD, 9986, 29104, 29101, 29110, 29122, 29119, 29125, 29116, 29113, 29107]);
+/** True when this drop is set to bury or drop instead of sell. */
+const skipped = id => (opt.bones==="off" && BONE.has(id)) || (opt.meat==="off" && MEAT.has(id));
+const scale = (pts, f) => pts.map(([l, v]) => [l, v / f]);
+const C = [
+  { n:"Crimson swift",       m:"snare",    lv:1,  xp:34,    d:[[BONES,1],[BIRD,1],[10088,7.5]], t:[1,250], est:1 },
+  { n:"Polar kebbit",        m:"tracking", lv:1,  xp:30,    d:[[BONES,1],[10117,1]], k:250, est:1 },
+  { n:"Common kebbit",       m:"tracking", lv:3,  xp:36,    d:[[BONES,1],[10121,1]], k:250, est:1 },
+  { n:"Golden warbler",      m:"snare",    lv:5,  xp:47,    d:[[BONES,1],[BIRD,1],[10090,7.5]], t:[5,250], est:1 },
+  { n:"Feldip weasel",       m:"tracking", lv:7,  xp:48,    d:[[BONES,1],[10119,1]], k:270 },
+  { n:"Copper longtail",     m:"snare",    lv:9,  xp:61.2,  d:[[BONES,1],[BIRD,1],[10091,7.5]], t:[9,250], est:1 },
+  { n:"Cerulean twitch",     m:"snare",    lv:11, xp:64.6,  d:[[BONES,1],[BIRD,1],[10089,7.5]], t:[11,250], est:1 },
+  { n:"Desert devil",        m:"tracking", lv:13, xp:66,    d:[[BONES,1],[10123,1]], k:250, est:1 },
+  { n:"Ruby harvest",        m:"butterfly",lv:15, xp:24,    d:[[10020,1]], i:[[JAR,1]], k:800, kj:500, est:1 },
+  { n:"Tropical wagtail",    m:"snare",    lv:19, xp:95.2,  d:[[BONES,1],[BIRD,1],[10087,7.5]], t:[19,250], est:1 },
+  { n:"Red crab",            m:"crab",     lv:21, xp:64,    d:[[31671,1]], i:[[11334,1]], t:[21,484], note:"Pandemonium. Baited with fish offcuts." },
+  { n:"Wild kebbit",         m:"deadfall", lv:23, xp:102.4, d:[[BONES,1],[10113,1],[29104,1]], i:[[MAPLE,1]], k:350, est:1 },
+  { n:"Sapphire glacialis",  m:"butterfly",lv:25, xp:34,    d:[[10018,1]], i:[[JAR,1]], k:838, kj:500, est:1 },
+  { n:"Ferret",              m:"box",      lv:27, xp:115.2, d:[], t:[27,200], est:1, note:"Ferrets don't trade on the GE." },
+  { n:"Swamp lizard",        m:"net",      lv:29, xp:152,   d:[[10149,1]], t:[40,280] },
+  { n:"Spined larupia",      m:"pitfall",  lv:31, xp:180,   d:[[BIG,1],[29122,1],[10095,0.5],[10093,0.5]], i:[[MAPLE,1]], k:200, est:1, note:"Fur vs tatty fur assumed 50/50." },
+  { n:"Barb-tailed kebbit",  m:"deadfall", lv:33, xp:134.4, d:[[BONES,1],[10129,1],[29101,1]], i:[[MAPLE,1]], k:350, est:1 },
+  { n:"Snowy knight",        m:"butterfly",lv:35, xp:44,    d:[[10016,1]], i:[[JAR,1]], k:700, kj:504, est:1 },
+  { n:"Prickly kebbit",      m:"deadfall", lv:37, xp:147.2, d:[[BONES,1],[10105,1]], i:[[MAPLE,1]], k:350, est:1 },
+  { n:"Embertailed jerboa",  m:"box",      lv:39, xp:137,   d:[[29166,1]], t:[40,365] },
+  { n:"Horned graahk",       m:"pitfall",  lv:41, xp:240,   d:[[BIG,1],[29119,1],[10099,0.5],[10097,0.5]], i:[[MAPLE,1]], k:200, est:1, note:"Fur vs tatty fur assumed 50/50." },
+  { n:"Spotted kebbit",      m:"falconry", lv:43, xp:104,   d:[[BONES,1],[10125,1]], k:625 },
+  { n:"Black warlock",       m:"butterfly",lv:45, xp:54,    d:[[10014,1]], i:[[JAR,1]], k:650, kj:450, est:1 },
+  { n:"Orange salamander",   m:"net",      lv:47, xp:224,   d:[[10146,1]], r:[[47,250],[60,424],[80,647]] },
+  { n:"Blue crab",           m:"crab",     lv:48, xp:136,   d:[[31674,1]], i:[[11334,1]], t:[48,540], est:1, note:"The Great Conch (45 Sailing)." },
+  { n:"Razor-backed kebbit", m:"tracking", lv:49, xp:348,   d:[[BONES,1],[10107,1],[9986,1]], k:373, note:"Wiki rate needs stamina potions and rings of pursuit." },
+  { n:"Sabre-toothed kebbit",m:"deadfall", lv:51, xp:160,   d:[[BONES,1],[10109,1]], i:[[MAPLE,1]], k:350, est:1 },
+  { n:"Chinchompa",          m:"box",      lv:53, xp:198.4, d:[[10033,1]], t:[53,225] },
+  { n:"Sabre-toothed kyatt", m:"pitfall",  lv:55, xp:300,   d:[[BIG,1],[29125,1],[10103,0.5],[10101,0.5]], i:[[MAPLE,1]], k:200, est:1, note:"Fur vs tatty fur assumed 50/50." },
+  { n:"Dark kebbit",         m:"falconry", lv:57, xp:132,   d:[[BONES,1],[10115,1]], k:587 },
+  { n:"Pyre fox",            m:"deadfall", lv:57, xp:177.6, d:[[BONES,1],[29163,1],[29110,1]], i:[[MAPLE,1]], k:350 },
+  { n:"Red salamander",      m:"net",      lv:59, xp:272,   d:[[10147,1]], r:[[59,210],[60,303],[67,377],[80,471]] },
+  { n:"Maniacal monkey",     m:"deadfall", lv:60, xp:1000,  d:[[19665,1]], i:[[1963,1]], r:[[60,51],[65,59],[70,66],[75,74],[80,82],[85,89],[90,96],[95,104],[99,110]], note:"Needs Monkey Madness II. Banana bait." },
+  { n:"Red chinchompa",      m:"box",      lv:63, xp:265,   d:[[10034,1]], r:scale([[63,85000],[70,100000],[80,163000],[90,193000],[99,220000]],265), rc:scale([[63,61000],[70,72000],[80,115000],[90,136000],[99,155000]],265), note:"Tlati Rainforest spot." },
+  { n:"Sunlight moth",       m:"butterfly",lv:65, xp:74,    d:[[28890,1]], i:[[JAR,1]], k:1000, kj:450, est:1 },
+  { n:"Black salamander",    m:"net",      lv:67, xp:319.2, d:[[10148,1]], r:[[67,320],[73,350],[79,439],[80,470]] },
+  { n:"Dashing kebbit",      m:"falconry", lv:69, xp:156,   d:[[BONES,1],[10127,1],[29107,1]], k:577 },
+  { n:"Sunlight antelope",   m:"pitfall",  lv:72, xp:380,   d:[[BIG,1],[29168,1],[29177,1],[29116,1],[28924,4]], i:[[MAPLE,1]], k:220 },
+  { n:"Black chinchompa",    m:"box",      lv:73, xp:315,   d:[[11959,1]], i:[[808,0.125]], wild:1, r:scale([[73,145000],[75,151000],[80,167000],[85,182000],[90,197000],[95,213000],[99,225000]],315), rc:scale([[73,103000],[75,107000],[80,119000],[85,129000],[90,140000],[95,151000],[99,160000]],315), note:"Wilderness: expect player killers. Solo rates, no shooting alt." },
+  { n:"Moonlight moth",      m:"butterfly",lv:75, xp:84,    d:[[28893,1]], i:[[JAR,1]], k:1190, kj:500, est:1 },
+  { n:"Letvek",              m:"box",      lv:76, xp:208.5, d:[[33625,1]], t:[76,450], est:1, note:"Vampyrium (The Blood Moon Rises)." },
+  { n:"Rainbow crab",        m:"crab",     lv:77, xp:216,   d:[[31710,1]], i:[[32307,1]], r:[[77,565],[80,718]], note:"Crown Jewel (64 Sailing). Priced as ground paste." },
+  { n:"Tecu salamander",     m:"net",      lv:79, xp:344,   d:[[28831,0.999],[28834,0.001]], i:[[28837,1]], r:[[79,350],[80,436]], est:1, note:"1/1,000 catches is an adult tecu salamander." },
+  { n:"Herbiboar",           m:"herbiboar",lv:80, xr:[[80,137000],[85,147000],[90,157000],[95,166000],[99,171000]], k:66,
+    d:[[199,0.575],[207,0.246],[209,0.221],[211,0.249],[213,0.327],[3051,0.207],[215,0.341],[2485,0.327],[217,0.281],[219,0.226],[21555,5.2]], i:[[12625,0.125]], note:"Herbs assume 99 Herblore and magic secateurs. Xp per catch grows with level." },
+  { n:"Stymphike",           m:"stymphike",lv:82, xp:1725,  d:[[BONES,1],[33651,15]], i:[[33625,2]], k:75, est:1, note:"Baited with about 2 letvek per catch, priced at GE cost." },
+  { n:"Moonlight antelope",  m:"pitfall",  lv:91, xp:450,   d:[[BIG,1],[29171,1],[29174,1],[29113,1]], i:[[MAPLE,1]], k:200 },
+];
+const NAMES = {
+  526:"Bones", 532:"Big bones", 9978:"Raw bird meat", 10088:"Red feather", 10090:"Yellow feather", 10091:"Orange feather", 10089:"Blue feather", 10087:"Stripy feather",
+  10117:"Polar kebbit fur", 10121:"Common kebbit fur", 10119:"Feldip weasel fur", 10123:"Desert devil fur", 10020:"Ruby harvest", 10018:"Sapphire glacialis", 10016:"Snowy knight",
+  10014:"Black warlock", 28890:"Sunlight moth", 28893:"Moonlight moth", 31671:"Red crab", 31674:"Blue crab", 31710:"Rainbow crab paste", 11334:"Fish offcuts", 32307:"Fine fish offcuts",
+  10113:"Kebbit claws", 29104:"Raw wild kebbit", 10129:"Barb-tail harpoon", 29101:"Raw barb-tailed kebbit", 10105:"Kebbit spike", 10109:"Kebbit teeth", 29163:"Fox fur", 29110:"Raw pyre fox",
+  10149:"Swamp lizard", 10146:"Orange salamander", 10147:"Red salamander", 10148:"Black salamander", 28831:"Immature tecu salamander", 28834:"Tecu salamander", 28837:"Irit tar",
+  29122:"Raw larupia", 10095:"Larupia fur", 10093:"Tatty larupia fur", 29119:"Raw graahk", 10099:"Graahk fur", 10097:"Tatty graahk fur", 29125:"Raw kyatt", 10103:"Kyatt fur", 10101:"Tatty kyatt fur",
+  29168:"Sunlight antelope antler", 29177:"Sunlight antelope fur", 29116:"Raw sunlight antelope", 28924:"Sunfire splinters", 29171:"Moonlight antelope antler", 29174:"Moonlight antelope fur", 29113:"Raw moonlight antelope",
+  10125:"Spotted kebbit fur", 10115:"Dark kebbit fur", 10127:"Dashing kebbit fur", 29107:"Raw dashing kebbit", 10107:"Long kebbit spike", 9986:"Raw beast meat",
+  29166:"Jerboa tail", 10033:"Chinchompa", 10034:"Red chinchompa", 11959:"Black chinchompa", 808:"Steel dart", 33625:"Letvek", 33651:"Stymphike feather", 19665:"Damaged monkey tail", 1963:"Banana",
+  199:"Grimy guam", 207:"Grimy ranarr", 209:"Grimy irit", 211:"Grimy avantoe", 213:"Grimy kwuarm", 3051:"Grimy snapdragon", 215:"Grimy cadantine", 2485:"Grimy lantadyme", 217:"Grimy dwarf weed", 219:"Grimy torstol",
+  21555:"Numulite", 12625:"Stamina potion(4)", 1517:"Maple logs", 10012:"Butterfly jar",
+};
+
+let LAT = {}, H24 = {}, ROWS = [], PNAME = null, PLVL = null;
+const opt = { jar:"on", kind:"all", tick:"on", wild:"on", bones:"on", meat:"on", sellSpeed:"instant", buySpeed:"instant", sort:"xphr" };
+let LVL = 99, EFF = 100, MODE = "xp";
+const LS_KEY = "hunter-v1";
+const chart = el("hu-chart"), axisEl = el("hu-axis"), tip = el("hu-tip");
+const hi = id => (LAT[id]||{}).high || 0;
+const lo = id => (LAT[id]||{}).low  || 0;
+const buyPrice  = id => opt.buySpeed==="patient"  ? (lo(id)||hi(id)) : (hi(id)||lo(id));
+const sellPrice = id => opt.sellSpeed==="patient" ? (hi(id)||lo(id)) : (lo(id)||hi(id));
+/** 24h average sell price for an item, used to cap one-off spikes in the latest trade. */
+const SPIKE = 1.5;
+function avgSell(id){
+  const h = H24[id];
+  if(!h){ return 0; }
+  return opt.sellSpeed==="patient" ? (h.avgHighPrice||h.avgLowPrice||0) : (h.avgLowPrice||h.avgHighPrice||0);
+}
+const traps = L => L>=80 ? 5 : L>=60 ? 4 : L>=40 ? 3 : 2;
+const short = n => n.replace(/^Grimy /, "");
+
+/** Linear interpolation over [[level, value], ...], clamped at both ends. */
+function interp(pts, L){
+  if(L <= pts[0][0]){ return pts[0][1]; }
+  for(let k=1; k<pts.length; k++){
+    if(L <= pts[k][0]){
+      const [l0, v0] = pts[k-1], [l1, v1] = pts[k];
+      return v0 + (v1 - v0) * (L - l0) / (l1 - l0);
+    }
+  }
+  return pts[pts.length-1][1];
+}
+/** Catches per hour at level L before the efficiency multiplier. */
+function baseRate(c, L){
+  if(c.r){ return interp(opt.tick==="off" && c.rc ? c.rc : c.r, L); }
+  if(c.kj && opt.jar==="on"){ return c.kj; }
+  if(c.t){ return c.t[1] * traps(L) / traps(c.t[0]); }
+  return c.k;
+}
+
+function compute(){
+  const out = [];
+  for(const c of C){
+    if(opt.kind!=="all" && GROUP[c.m]!==opt.kind){ continue; }
+    if(c.wild && opt.wild==="off"){ continue; }
+    const locked = LVL < c.lv;
+    const L = Math.max(LVL, c.lv);
+    const kph = baseRate(c, L) * EFF / 100;
+    const xpC = c.xr ? interp(c.xr, L) / c.k : c.xp;
+    let gross = 0, cost = 0, missing = 0, top = null, topV = -1;
+    const parts = [], spikes = [];
+    const bare = c.m==="butterfly" && opt.jar==="off";
+    for(const [id, q] of (bare ? [] : c.d)){
+      if(skipped(id)){ continue; }
+      let p = sellPrice(id);
+      if(!p){ missing++; continue; }
+      const avg = avgSell(id);
+      if(avg && p > avg * SPIKE){ p = Math.round(avg * SPIKE); spikes.push(id); }
+      const v = net(p, id) * q;
+      gross += v;
+      parts.push([id, q, v]);
+      if(v > topV){ topV = v; top = [id, q]; }
+    }
+    for(const [id, q] of (bare ? [] : (c.i||[]))){ cost += buyPrice(id) * q; }
+    const gpC = gross - cost;
+    let thin = false;
+    if(top && H24[top[0]]){
+      const h = H24[top[0]], vol = (h.highPriceVolume||0) + (h.lowPriceVolume||0);
+      thin = vol < kph * top[1];
+    }
+    out.push({ c, n:c.n, m:c.m, lv:c.lv, locked, kph, xpC, gross, cost, gpC, parts, spikes, missing, thin,
+      xpHr: xpC * kph, gpHr: gpC * kph, gpXp: xpC > 0 ? gpC / xpC : 0 });
+  }
+  ROWS = out;
+}
+
+function updateChips(){
+  el("hu-assumptions").innerHTML = [
+    PLVL!=null ? `<span class="chip">Level from <b>${PNAME}</b> &middot; Hunter ${PLVL}</span>` : "",
+    `<span class="chip">Hunter <b>${LVL}</b> &middot; ${traps(LVL)} traps</span>`,
+    EFF!==100 ? `<span class="chip">Rates at <b>${EFF}%</b></span>` : "",
+    `<span class="chip"><b>2%</b> GE sell tax</span>`,
+    opt.bones==="off" ? `<span class="chip">Bones <b>not sold</b></span>` : "",
+    opt.meat==="off" ? `<span class="chip">Raw meat <b>not sold</b></span>` : "",
+  ].filter(Boolean).join("");
+}
+
+function hero(cells){
+  return cells.map(([n,l])=>`<div><div class="num ${String(n).startsWith("-")?"loss":""}">${n}</div><div class="lab">${l}</div></div>`).join("");
+}
+const sgn = v => v<0 ? "" : "+";
+function estTag(r){ return r.c.est ? `<span class="est">est</span>` : ""; }
+function renderBest(){
+  const pool = ROWS.filter(r=>!r.locked);
+  if(!pool.length){
+    el("hu-xpHeadline").innerHTML = `Nothing unlocked in this filter at Hunter ${LVL}.`;
+    el("hu-gpHeadline").innerHTML = ""; el("hu-xpHero").innerHTML = ""; el("hu-gpHero").innerHTML = ""; return;
+  }
+  const bx = pool.slice().sort((a,b)=>b.xpHr-a.xpHr)[0];
+  const bg = pool.slice().sort((a,b)=>b.gpHr-a.gpHr)[0];
+  el("hu-xpHeadline").innerHTML = `<b>${bx.n}</b>${estTag(bx)} &mdash; ${METHOD[bx.m]}, ${fmtX(bx.xpC)} xp each.`;
+  el("hu-xpHero").innerHTML = hero([[fmtK(bx.xpHr), "xp / hr"], [sgn(bx.gpHr)+fmtK(bx.gpHr), "gp / hr"], [fmt(bx.kph), "catches / hr"]]);
+  el("hu-gpHeadline").innerHTML = `<b>${bg.n}</b>${estTag(bg)} &mdash; ${sgn(bg.gpC)}${fmt(bg.gpC)} gp per catch${bg.thin?` <span class="best-tag unf">&#9888; thin market</span>`:""}.`;
+  el("hu-gpHero").innerHTML = hero([[sgn(bg.gpHr)+fmtK(bg.gpHr), "gp / hr"], [fmtK(bg.xpHr), "xp / hr"], [fmt(bg.kph), "catches / hr"]]);
+}
+
+const tb = root.querySelector("#hu-tbl tbody");
+function renderTable(){
+  const key = opt.sort==="gphr" ? (r=>r.gpHr) : opt.sort==="gpxp" ? (r=>r.gpXp) : (r=>r.xpHr);
+  const rows = ROWS.slice().sort((a,b)=>(a.locked-b.locked) || (key(b)-key(a)));
+  tb.innerHTML = rows.map(r=>{
+    const pc = r.gpC<0 ? "negv" : "pos";
+    const lock = r.locked ? ` <span class="best-tag unf">&#9888; Hunter ${r.lv}</span>` : "";
+    const thin = r.thin ? ` <span class="best-tag unf" title="The GE trades fewer per day than you catch in an hour">thin</span>` : "";
+    return `<tr class="${r.locked?"locked":""}"><td>${r.n}${lock}${thin}</td>`+
+      `<td>${METHOD[r.m]}</td><td class="mono">${r.lv}</td>`+
+      `<td class="mono">${fmtX(r.xpC)}</td>`+
+      `<td class="mono ${pc}">${sgn(r.gpC)}${fmt(r.gpC)}</td>`+
+      `<td class="mono ${pc}">${sgn(r.gpXp)}${r.gpXp.toFixed(2)}</td>`+
+      `<td class="mono">${fmt(r.kph)}${estTag(r)}</td>`+
+      `<td class="mono">${fmtK(r.xpHr)}</td>`+
+      `<td class="mono ${r.gpHr<0?"negv":"pos"}">${sgn(r.gpHr)}${fmtK(r.gpHr)}</td></tr>`;
+  }).join("");
+  const open = ROWS.filter(r=>!r.locked).length;
+  el("hu-count").textContent = `${ROWS.length} creatures · ${open} unlocked at Hunter ${LVL}`;
+  el("hu-tblNote").innerHTML = `Locked rows (faded) are priced at their own level. A latest price more than 1.5&times; the item's 24h average is capped there, so a single odd trade can't top the list. <b>thin</b> = the GE trades fewer of the main drop per day than you catch in an hour, so selling a session's haul takes days.`;
+}
+
+const MODES = {
+  xp:   { title:"XP per catch", legend:"Hunter xp each catch",
+          note:"Hunter xp for one catch. Herbiboar xp rises with your level; everything else is fixed.",
+          val:r=>r.xpC, fmt:v=>fmtX(v), tick:v=>fmtK(v) },
+  gp:   { title:"Profit per catch", legend:"drops after tax, minus supplies",
+          note:"Every drop sold at your sell speed after the 2% GE tax, minus supplies used per catch (bait, offcuts, jars, logs). Bars left of the line lose money.",
+          val:r=>r.gpC, fmt:v=>sgn(v)+fmt(v), tick:v=>(v>0?"+":"")+fmtK(v) },
+  gpxp: { title:"Profit per XP", legend:"gp earned per Hunter xp",
+          note:"Profit per catch divided by xp per catch: what each Hunter xp pays you. Negative means you pay to train.",
+          val:r=>r.gpXp, fmt:v=>sgn(v)+(Math.abs(v)>=100?fmt(v):v.toFixed(2)), tick:v=>(v>0?"+":"")+(Math.abs(v)>=10?fmt(v):+v.toFixed(2)) },
+  xphr: { title:"XP per hour", legend:"xp/catch × catches/hr",
+          note:"", val:r=>r.xpHr, fmt:v=>fmtK(v), tick:v=>fmtK(v) },
+  gphr: { title:"Profit per hour", legend:"gp/catch × catches/hr",
+          note:"", val:r=>r.gpHr, fmt:v=>sgn(v)+fmtK(v), tick:v=>(v>0?"+":"")+fmtK(v) },
+};
+const rateNote = () => `Catches/hr come from the wiki's Hunter training tables and money making guides at your level (locked creatures at their own level), times your ${EFF}% efficiency. Trap methods without a wiki table scale with your trap count (${traps(LVL)} at Hunter ${LVL}). Rows tagged est are estimates.`;
+
+/** Gridline step that gives roughly 5-8 lines across the span. */
+function niceStep(span){
+  const raw = span / 6, p = Math.pow(10, Math.floor(Math.log10(raw || 1))), f = raw / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+}
+
+function showTip(e, r){
+  const val = new Map(r.parts.map(([id,,v])=>[id,v]));
+  const bare = r.c.m==="butterfly" && opt.jar==="off";
+  const drops = bare ? [] : r.c.d.slice().sort((a,b)=>(val.get(b[0])??-1)-(val.get(a[0])??-1));
+  const lines = drops.map(([id,q])=>{
+    const v = val.get(id);
+    const right = v!=null ? fmt(v) : skipped(id) ? (BONE.has(id) ? "bury/drop" : "drop") : "unpriced";
+    return `<span class="t-drop"><span>${q===1?"":(+q.toFixed(3))+"&times; "}${NAMES[id]||id}</span>`+
+      `<span${v!=null?"":` class="t-sub"`}>${right}</span></span>`;
+  }).join("");
+  const sup = (r.c.i||[]).map(([id,q])=>`${q===1?"":(+q.toFixed(3))+"&times; "}${NAMES[id]||id}`).join(", ");
+  tip.innerHTML = `<span class="t-h">${r.n}</span>`+
+    `${METHOD[r.m]} &middot; Hunter ${r.lv}${r.locked?" (locked)":""}<br>`+
+    `<span class="t-sub">drops per catch (gp after tax)</span>`+
+    (lines || `<span class="t-sub">${bare?"released barehanded, no drops":"no tradeable drops"}</span><br>`)+
+    (sup ? `<span class="t-sub">uses ${sup} (${fmt(r.cost)})</span><br>` : "")+
+    `<span class="${r.gpC<0?'t-neg':'t-pos'}">${sgn(r.gpC)}${fmt(r.gpC)}</span> gp &middot; ${fmtX(r.xpC)} xp per catch<br>`+
+    `${fmt(r.kph)}/hr${r.c.est?" (est)":""} &rarr; ${fmtK(r.xpHr)} xp, ${sgn(r.gpHr)}${fmtK(r.gpHr)} gp`+
+    (r.c.note ? `<br><span class="t-sub">${r.c.note}</span>` : "")+
+    (r.spikes.length ? `<br><span class="t-sub">${r.spikes.map(id=>short(NAMES[id]||id)).join(", ")} capped at 1.5&times; its 24h average</span>` : "")+
+    (r.missing ? `<br><span class="t-sub">${r.missing} drop(s) unpriced right now</span>` : "");
+  tip.style.opacity = 1; moveTip(e);
+}
+function moveTip(e){ const pad=14; let x=e.clientX+pad,y=e.clientY+pad; const w=tip.offsetWidth,h=tip.offsetHeight; if(x+w>innerWidth){ x=e.clientX-w-pad; } if(y+h>innerHeight){ y=e.clientY-h-pad; } tip.style.left=x+"px"; tip.style.top=y+"px"; }
+function hideTip(){ tip.style.opacity = 0; }
+
+function renderChart(){
+  const M = MODES[MODE];
+  el("hu-cardTitle").textContent = M.title;
+  el("hu-legend").textContent = M.legend;
+  el("hu-cardNote").innerHTML = (MODE==="xphr" || MODE==="gphr") ? rateNote() : M.note;
+  const data = ROWS.slice().sort((a,b)=>M.val(b)-M.val(a));
+  if(!data.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No creatures in this filter.</p>`; axisEl.innerHTML=""; return; }
+  const allv = data.map(M.val);
+  const lo0 = Math.min(0, ...allv), hi0 = Math.max(0, ...allv);
+  const step = niceStep((hi0 - lo0) || 1);
+  const DMIN = Math.floor(lo0/step)*step, DMAX = Math.max(step, Math.ceil(hi0/step)*step);
+  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  chart.innerHTML = "";
+  data.forEach(r=>{
+    const row = document.createElement("div"); row.className = "row" + (r.locked ? " locked" : "");
+    row.innerHTML = `<div class="rlabel">${r.n}<small>lvl ${r.lv}${r.locked?" · locked":""}${r.thin?" · thin":""}</small></div>`;
+    const track = document.createElement("div"); track.className = "track";
+    for(let k=0; DMIN+k*step<=DMAX+step*1e-6; k++){ const t=DMIN+k*step; const g=document.createElement("div"); g.className=Math.abs(t)<step*1e-6?"zero":"grid-t"; g.style.left=pct(t)+"%"; track.appendChild(g); }
+    const v = M.val(r), neg = v<0, p = pct(v);
+    const bar = document.createElement("div"); bar.className = `bar hunt${neg?" neg":""}`;
+    if(neg){ bar.style.left=p+"%"; bar.style.width=(zeroPct-p)+"%"; }
+    else { bar.style.left=zeroPct+"%"; bar.style.width=(p-zeroPct)+"%"; }
+    track.appendChild(bar);
+    const lab = document.createElement("div"); lab.className = `bval hunt${neg?" neg":""}`; lab.textContent = M.fmt(v);
+    if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; }
+    else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
+    track.appendChild(lab);
+    track.addEventListener("mousemove", moveTip);
+    track.addEventListener("mouseenter", e=>showTip(e, r));
+    track.addEventListener("mouseleave", hideTip);
+    row.appendChild(track); chart.appendChild(row);
+  });
+  axisEl.innerHTML = "";
+  for(let k=0; DMIN+k*step<=DMAX+step*1e-6; k++){ const t=DMIN+k*step; const t2=document.createElement("div"); t2.className="tick"+(Math.abs(t)<step*1e-6?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(Math.abs(t)<step*1e-6?0:t); axisEl.appendChild(t2); }
+}
+function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
+
+const TOGGLES = { "hu-tg-jar":"jar", "hu-tg-kind":"kind", "hu-tg-tick":"tick", "hu-tg-wild":"wild", "hu-tg-bones":"bones", "hu-tg-meat":"meat", "hu-tg-sellspeed":"sellSpeed", "hu-tg-buyspeed":"buySpeed", "hu-tg-sort":"sort" };
+function syncToggle(id){ [...el(id).querySelectorAll("button")].forEach(b=>b.classList.toggle("on", b.dataset.v===opt[TOGGLES[id]])); }
+Object.keys(TOGGLES).forEach(id=>
+{
+  el(id).addEventListener("click", e=>
+  {
+    const b = e.target.closest("button");
+    if(!b){ return; }
+    opt[TOGGLES[id]] = b.dataset.v; syncToggle(id); syncNotes(); renderAll();
+  });
+});
+function syncNotes(){
+  el("hu-note-lvl").textContent = PLVL!=null ? `Auto-filled from ${PNAME}. Edit to model a different level.` : `Unlocks creatures and sets your trap count. Look up an RSN in the header to auto-fill.`;
+  el("hu-note-eff").textContent = `100% = the wiki's rates (good practice). Drop it if you're learning or AFK.`;
+  el("hu-note-kind").textContent = opt.kind==="traps" ? `Box, net, bird snare and crab traps.` : opt.kind==="dp" ? `Deadfalls and pitfalls (logs used per set).` : opt.kind==="other" ? `Tracking, falconry, butterfly net, herbiboar, stymphikes.` : `Every creature.`;
+  el("hu-note-jar").textContent = opt.jar==="on" ? `Jarred to sell: slower, bank every inventory.` : `Barehanded or released: full xp rate, no gp.`;
+  el("hu-note-tick").textContent = opt.tick==="on" ? `Red & black chinchompa rates assume tick manipulation (wiki tables).` : `No tick manipulation: red chins use the wiki's casual table; black chins scaled down the same ~30%.`;
+  el("hu-note-wild").textContent = opt.wild==="on" ? `Black chinchompas are Wilderness-only.` : `Black chinchompas hidden.`;
+  el("hu-note-bones").textContent = opt.bones==="on" ? `Bones count toward gp.` : `Bones are left out (burying, bonecrusher or dropping).`;
+  el("hu-note-meat").textContent = opt.meat==="on" ? `Raw meat counts toward gp.` : `Raw meat is left out (dropped).`;
+  el("hu-note-sellspeed").textContent = opt.sellSpeed==="patient" ? `Sell at the ask: more gp, waits to fill.` : `Insta-sell at the bid.`;
+  el("hu-note-buyspeed").textContent = opt.buySpeed==="patient" ? `Buy supplies at the bid: cheaper, waits.` : `Insta-buy supplies at the ask.`;
+}
+function bindNum(id, min, max, set){
+  const inp = el(id);
+  const read = () => { const v = Math.round(+inp.value); return Number.isFinite(v) && inp.value!=="" ? Math.max(min, Math.min(max, v)) : null; };
+  inp.addEventListener("input", ()=>{ const v = read(); if(v!=null && +inp.value>=min && +inp.value<=max){ set(v); syncNotes(); renderAll(); } });
+  inp.addEventListener("change", ()=>{ const v = read(); if(v!=null){ set(v); inp.value = v; syncNotes(); renderAll(); } });
+}
+bindNum("hu-lvl", 1, 99, v=>{ LVL = v; });
+bindNum("hu-eff", 10, 150, v=>{ EFF = v; });
+el("hu-toggle").addEventListener("click", e=>
+{
+  const b = e.target.closest("button");
+  if(!b){ return; }
+  MODE = b.dataset.mode; syncMode(); renderChart(); saveState();
+});
+function syncMode(){ [...el("hu-toggle").children].forEach(x=>{ const on = x.dataset.mode===MODE; x.classList.toggle("on", on); x.setAttribute("aria-selected", on); }); }
+
+el("hu-footer").innerHTML =
+  `Xp per catch, drops and supplies come from each creature's OSRS Wiki page (rumour-only rare parts like kebbity tufts and salamander claws are left out: they only drop on a Hunters' Rumour and can't be traded). `+
+  `Drops are sold at your sell speed after the 2% GE tax; supplies (fish offcuts, butterfly jars, bananas, irit tar, letvek bait, a maple log per deadfall or pitfall, 1 stamina per 8 herbiboars, 1 steel dart per 8 black chins) are bought at your buy speed. Butterflies and moths are priced jarred at a slower jarring rate (bank every inventory); switch to Barehanded for the faster xp-only rate. A latest price more than 1.5&times; its 24h average is capped at that, so one odd trade on a thin item can't top the list. `+
+  `Catch rates: red and black chinchompas, maniacal monkeys, herbiboar (66/hr), salamanders, rainbow crabs, falconry and razor-backed kebbits use the wiki's Hunter training tables; grey chinchompas (225/hr), pyre foxes (350), antelopes (220 / 200) and snowy knights (504) use the wiki money making guides. Rows tagged <b>est</b> are estimates. Bird houses, implings, aerial fishing and Hunters' Rumours are not modeled.`;
+
+function pickLAT(raw, source){
+  if(source!=="m5"){ return raw.latest||{}; }
+  const out={}, m5=raw.m5||{}, lat=raw.latest||{};
+  const ids=new Set([...Object.keys(m5),...Object.keys(lat)]);
+  ids.forEach(id=>{ const a=m5[id]||{}, l=lat[id]||{}; out[id]={ high:(a.avgHighPrice ?? l.high ?? l.low), low:(a.avgLowPrice ?? l.low ?? l.high) }; });
+  return out;
+}
+function applyPrices(raw, source){ LAT = pickLAT(raw, source); H24 = raw.h24 || {}; renderAll(); }
+function saveState(){ try{ localStorage.setItem(LS_KEY, JSON.stringify({opt, LVL, EFF, MODE})); }catch(e){} }
+function loadState(){
+  let s;
+  try{ s = JSON.parse(localStorage.getItem(LS_KEY)||"null"); }catch(e){ return; }
+  if(!s){ return; }
+  if(s.opt){ Object.keys(opt).forEach(k=>{ if(typeof s.opt[k]==="string"){ opt[k] = s.opt[k]; } }); }
+  if(s.opt && s.opt.meat===undefined && s.opt.bones==="off"){ opt.meat = "off"; }
+  if(Number.isFinite(s.LVL)){ LVL = Math.max(1, Math.min(99, s.LVL)); }
+  if(Number.isFinite(s.EFF)){ EFF = Math.max(10, Math.min(150, s.EFF)); }
+  if(s.MODE && MODES[s.MODE]){ MODE = s.MODE; }
+}
+function syncControls(){ Object.keys(TOGGLES).forEach(syncToggle); syncMode(); el("hu-lvl").value = LVL; el("hu-eff").value = EFF; syncNotes(); }
+
+loadState(); syncControls(); renderAll();
+window.PriceHub.subscribe(applyPrices);
+window.Player.subscribe(function(p){
+  const lv = p.levels && Number.isFinite(p.levels.hunter) ? p.levels.hunter : null;
+  PNAME = p.name || null; PLVL = lv;
+  if(lv!=null){ LVL = Math.max(1, Math.min(99, lv)); el("hu-lvl").value = LVL; }
+  syncNotes(); renderAll();
+});
+})();
+</script>
 </main>
 <div class="tip" id="rn-tip"></div>
 <script>
@@ -10435,10 +11029,19 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
 <script>
 (function(){
   "use strict";
-  try { if(('ontouchstart' in window) || (navigator.maxTouchPoints > 0)){ document.documentElement.classList.add("is-touch"); } } catch(e){}
+  /** Tracks the last input type: tooltips hide after a finger tap and come back on mouse or trackpad movement. */
+  try
+  {
+    const html = document.documentElement;
+    addEventListener("pointerdown", e => html.classList.toggle("touching", e.pointerType === "touch"), true);
+    addEventListener("pointermove", e =>
+    {
+      if(e.pointerType === "mouse"){ html.classList.remove("touching"); }
+    }, true);
+  } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), hunter: document.getElementById("view-hunter"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", hunter: "xp & gp per catch, every creature", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
