@@ -232,6 +232,13 @@
   .best-rank li .p { font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .best-rank li .p.pos { color: var(--profit); }
   .best-rank li .p.negv { color: var(--neg); }
+  /* bar-chart outlier cap: break mark on a cut bar, its value inside, note under the axis */
+  .bar.bs-clip::after { content: ""; position: absolute; top: -3px; bottom: -3px; width: 4px; background: var(--surface); transform: skewX(-25deg); }
+  .bar.bs-lo::after { left: 6px; }
+  .bar.bs-hi::after { right: 6px; }
+  .bval.bs-in { color: var(--surface) !important; }
+  .bs-note { margin: 8px 0 0; font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+  .bs-btn { font: inherit; font-weight: 600; color: var(--accent); background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
   /* spike guard: risk grade badge, break-even cushion, "passed over" note */
   #hubRisk:not(.loading) .spin { display: none; }
   .rk-cell { white-space: nowrap; }
@@ -1362,6 +1369,97 @@
     /** Tax on selling one item at `price`; pass the item id so exempt items pay nothing. */
     of(price, id){ return (price < 50 || TAX_FREE_IDS.has(+id)) ? 0 : Math.min(Math.floor(price*0.02), 5000000); },
     free(id){ return TAX_FREE_IDS.has(+id); },
+  };
+
+  /* ---- shared bar-chart axis: caps outliers so one extreme bar can't squash the rest ----
+     Outliers are values more than 3×IQR past the quartiles (same rule as the Sanfew history chart).
+     Capped (default): the axis fits the other bars; an outlier's bar runs to the edge with a break mark and
+     its real value printed inside it. Full: everything to scale. One setting for every chart. */
+  const BS_LS = "bar-scale-v1", bsFns = new Set();
+  let BS_MODE = "cap";
+  try { const m = localStorage.getItem(BS_LS); if(m === "cap" || m === "full"){ BS_MODE = m; } } catch(e){}
+  function bsStep(range){
+    if(!(range > 0)){ return 1; }
+    const raw = range/(innerWidth < 640 ? 3 : 6), mag = Math.pow(10, Math.floor(Math.log10(raw))), n = raw/mag;
+    return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10)*mag;
+  }
+  /** Hides axis labels that would overlap, keeping 0 and walking outward; re-runs whenever the axis resizes
+      (a chart drawn while its tab was hidden gets thinned once the tab shows). */
+  const bsWatched = new WeakSet();
+  function bsThin(axisEl){
+    const ticks = [...axisEl.querySelectorAll(".tick")];
+    ticks.forEach(t => { t.style.visibility = ""; });
+    const r = ticks.map(t => t.getBoundingClientRect());
+    if(!r.length || !r.some(x => x.width > 0)){ return; }
+    let z = ticks.findIndex(t => t.classList.contains("zero"));
+    if(z < 0){ z = 0; }
+    for(let i = z+1, edge = r[z].right; i < ticks.length; i++){
+      if(r[i].left < edge + 6){ ticks[i].style.visibility = "hidden"; } else { edge = r[i].right; }
+    }
+    for(let i = z-1, edge = r[z].left; i >= 0; i--){
+      if(r[i].right > edge - 6){ ticks[i].style.visibility = "hidden"; } else { edge = r[i].left; }
+    }
+  }
+  window.BarScale = {
+    /** Axis for a bar chart over `vals`: {lo, hi, step} plus how many values are outliers / cut off.
+        opts.int forces a whole-number step (charts whose tick loop adds the step and tests t===0). */
+    domain(vals, opts){
+      const v = vals.filter(x => Number.isFinite(x));
+      const ext = a => [Math.min(0, ...a), Math.max(0, ...a)];
+      let inl = v;
+      if(v.length >= 5){
+        const srt = v.slice().sort((a,b) => a-b);
+        const q = f => { const i = (srt.length-1)*f, k = Math.floor(i); return srt[k] + (srt[Math.ceil(i)]-srt[k])*(i-k); };
+        const q1 = q(0.25), q3 = q(0.75), iqr = q3 - q1;
+        if(iqr > 0){ inl = v.filter(x => x >= q1 - 3*iqr && x <= q3 + 3*iqr); }
+      }
+      const outliers = v.length - inl.length;
+      const [lo, hi] = ext(BS_MODE === "cap" && outliers && inl.length ? inl : (v.length ? v : [0]));
+      let step = bsStep(hi - lo);
+      if(opts && opts.int && step < 1){ step = 1; }
+      const L = Math.floor(lo/step)*step, H = Math.max(step, Math.ceil(hi/step)*step);
+      return { lo:L, hi:H, step, outliers, clipped:v.filter(x => x < L || x > H).length };
+    },
+    /** Marks a bar cut off at the axis edge: break mark, value label moved inside the bar. */
+    mark(bar, lab, v, lo, hi){
+      if(!(v < lo || v > hi)){ return; }
+      const low = v < lo;
+      bar.classList.add("bs-clip", low ? "bs-lo" : "bs-hi");
+      if(!lab){ return; }
+      lab.classList.add("bs-in");
+      lab.style.left = low ? "0%" : ""; lab.style.right = low ? "" : "0%";
+      lab.style.marginLeft = low ? "14px" : ""; lab.style.marginRight = low ? "" : "14px";
+    },
+    /** The note + Capped/Full switch under a chart's axis; `rerender` redraws that chart. */
+    note(axisEl, sc, rerender){
+      bsFns.add(rerender);
+      bsThin(axisEl);
+      if(!bsWatched.has(axisEl) && typeof ResizeObserver === "function"){
+        bsWatched.add(axisEl);
+        new ResizeObserver(() => bsThin(axisEl)).observe(axisEl);
+      }
+      const host = axisEl.parentElement && axisEl.parentElement.classList.contains("axis-row") ? axisEl.parentElement : axisEl;
+      let n = host.nextElementSibling;
+      if(!n || !n.classList.contains("bs-note")){
+        n = document.createElement("p");
+        n.className = "bs-note";
+        host.after(n);
+        n.addEventListener("click", e =>
+        {
+          if(!e.target.closest("button")){ return; }
+          BS_MODE = BS_MODE === "cap" ? "full" : "cap";
+          try { localStorage.setItem(BS_LS, BS_MODE); } catch(err){}
+          bsFns.forEach(fn => { try { fn(); } catch(err){ console.error(err); } });
+        });
+      }
+      const pl = k => k === 1 ? "" : "s";
+      n.innerHTML = BS_MODE === "cap" && sc.clipped
+        ? `${sc.clipped} outlier bar${pl(sc.clipped)} cut at the edge (real value inside) so the rest stay readable. <button type="button" class="bs-btn">Show full scale</button>`
+        : BS_MODE === "full" && sc.outliers
+          ? `Full scale: ${sc.outliers} outlier${pl(sc.outliers)} squash the other bars. <button type="button" class="bs-btn">Cap outliers</button>`
+          : "";
+      n.hidden = !n.innerHTML;
+    },
   };
 
   /* ---- spike guard, shared by every GE tab ----
@@ -3792,11 +3890,9 @@ function renderChart(){
     axisEl.innerHTML = ""; return;
   }
   const allv = data.flatMap(M.vals).filter(v=>v!=null);
-  let step = M.step;
-  let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
-  let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
-  while((DMAX-DMIN)/step>40){ step*=2; DMIN=Math.floor(DMIN/step)*step; DMAX=Math.ceil(DMAX/step)*step; }
-  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  const SC = BarScale.domain(allv, { int:true });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi;
+  const span = DMAX-DMIN || 1, pct = v=>((Math.max(DMIN, Math.min(DMAX, v))-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
     const row=document.createElement("div"); row.className="row";
@@ -3812,7 +3908,7 @@ function renderChart(){
       track.appendChild(bar);
       const lab=document.createElement("div"); lab.className=`bval ${k}${neg?" neg":""}`; lab.textContent=M.fmt(v);
       if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; } else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
-      track.appendChild(lab);
+      track.appendChild(lab); BarScale.mark(bar, lab, v, DMIN, DMAX);
     });
     track.addEventListener("mousemove",moveTip);
     track.addEventListener("mouseenter",e=>showTip(e,r));
@@ -3821,6 +3917,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, renderChart);
 }
 
 /* ---- rates card ---- */
@@ -4539,12 +4636,9 @@ function render(){
     axisEl.innerHTML = ""; return;
   }
   const allv = data.flatMap(M.vals).filter(v=>v!=null);
-  const rawMin = Math.min(0, ...allv), rawMax = Math.max(0, ...allv);
-  let step = niceStep((rawMax-rawMin)||1, 7);
-  const DMIN = Math.floor(rawMin/step)*step;
-  const DMAX = Math.max(step, Math.ceil(rawMax/step)*step);
-  while((DMAX-DMIN)/step>40){ step*=2; }
-  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  const SC = BarScale.domain(allv, { int:true });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi;
+  const span = DMAX-DMIN || 1, pct = v=>((Math.max(DMIN, Math.min(DMAX, v))-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
     const row=document.createElement("div"); row.className="row";
@@ -4560,7 +4654,7 @@ function render(){
       track.appendChild(bar);
       const lab=document.createElement("div"); lab.className=`bval ${k}${neg?" neg":""}`; lab.textContent=M.fmt(v);
       if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; } else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
-      track.appendChild(lab);
+      track.appendChild(lab); BarScale.mark(bar, lab, v, DMIN, DMAX);
     });
     track.addEventListener("mousemove",moveTip);
     track.addEventListener("mouseenter",e=>showTip(e,r));
@@ -4569,6 +4663,7 @@ function render(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, render);
 }
 
 /* ---- rates card ---- */
@@ -5289,11 +5384,9 @@ function renderChart(){
   const data = ROWS.filter(allowed).slice().sort((a,b)=>{ const bv=M.vals(b).filter(v=>v!=null), av=M.vals(a).filter(v=>v!=null); return Math.max(...bv)-Math.max(...av); });
   if(!data.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No potion matches your Herblore level${PNAME?` (${PNAME})`:""}. Clear the player or level up.</p>`; axisEl.innerHTML=""; return; }
   const allv = data.flatMap(M.vals).filter(v=>v!=null);
-  let step = M.step;
-  let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
-  let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
-  while((DMAX-DMIN)/step>40){ step*=2; DMIN=Math.floor(DMIN/step)*step; DMAX=Math.ceil(DMAX/step)*step; }
-  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  const SC = BarScale.domain(allv, { int:true });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi;
+  const span = DMAX-DMIN || 1, pct = v=>((Math.max(DMIN, Math.min(DMAX, v))-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
     const row=document.createElement("div"); row.className="row";
@@ -5309,7 +5402,7 @@ function renderChart(){
       track.appendChild(bar);
       const lab=document.createElement("div"); lab.className=`bval ${k}${neg?" neg":""}`; lab.textContent=M.fmt(v);
       if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; } else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
-      track.appendChild(lab);
+      track.appendChild(lab); BarScale.mark(bar, lab, v, DMIN, DMAX);
     });
     track.addEventListener("mousemove",moveTip);
     track.addEventListener("mouseenter",e=>showTip(e,r));
@@ -5318,6 +5411,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, renderChart);
 }
 
 /* ---- rates ---- */
@@ -7061,10 +7155,9 @@ function renderChart(){
   const data = ROWS.filter(r=>r.allowed).slice().sort((a,b)=>{ const bv=M.vals(b).filter(v=>v!=null), av=M.vals(a).filter(v=>v!=null); return Math.max(...bv)-Math.max(...av); });
   if(!data.length){ chart.innerHTML=`<p class="opt-note" style="padding:8px 2px">No bolt matches your Magic level${PNAME?` (${PNAME})`:""}. Level up or clear the player.</p>`; axisEl.innerHTML=""; return; }
   const allv = data.flatMap(M.vals).filter(v=>v!=null);
-  const rawMin=Math.min(0,...allv), rawMax=Math.max(0,...allv);
-  let step=niceStep((rawMax-rawMin)||1,7);
-  const DMIN=Math.floor(rawMin/step)*step, DMAX=Math.max(step,Math.ceil(rawMax/step)*step);
-  const span=DMAX-DMIN||1, pct=v=>((v-DMIN)/span)*100, zeroPct=pct(0);
+  const SC = BarScale.domain(allv, { int:true });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi;
+  const span=DMAX-DMIN||1, pct=v=>((Math.max(DMIN, Math.min(DMAX, v))-DMIN)/span)*100, zeroPct=pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
     const row=document.createElement("div"); row.className="row";
@@ -7080,7 +7173,7 @@ function renderChart(){
       track.appendChild(bar);
       const lab=document.createElement("div"); lab.className=`bval ${k}${neg?" neg":""}`; lab.textContent=M.fmt(v);
       if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; } else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
-      track.appendChild(lab);
+      track.appendChild(lab); BarScale.mark(bar, lab, v, DMIN, DMAX);
     });
     track.addEventListener("mousemove",moveTip);
     track.addEventListener("mouseenter",e=>showTip(e,r));
@@ -7089,6 +7182,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, renderChart);
 }
 
 /* rates */
@@ -9023,11 +9117,9 @@ function renderChart(){
   const data = ROWS.filter(r=>LVL>=r.cook).slice().sort((a,b)=>M.val(b)-M.val(a));
   if(!data.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No food is cookable at Cooking ${LVL}. Raise the level or wait for prices.</p>`; axisEl.innerHTML=""; return; }
   const allv = data.map(M.val);
-  let step = M.step;
-  let DMIN = Math.min(0, Math.floor(Math.min(...allv)/step)*step);
-  let DMAX = Math.max(step, Math.ceil(Math.max(...allv)/step)*step);
-  while((DMAX-DMIN)/step>40){ step*=2; DMIN=Math.floor(DMIN/step)*step; DMAX=Math.ceil(DMAX/step)*step; }
-  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  const SC = BarScale.domain(allv, { int:true });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi;
+  const span = DMAX-DMIN || 1, pct = v=>((Math.max(DMIN, Math.min(DMAX, v))-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML="";
   data.forEach(r=>{
     const row=document.createElement("div"); row.className="row";
@@ -9042,7 +9134,7 @@ function renderChart(){
     const lab=document.createElement("div"); lab.className=`bval cook${neg?" neg":""}`; lab.textContent=M.fmt(v);
     if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; }
     else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
-    track.appendChild(lab);
+    track.appendChild(lab); BarScale.mark(bar, lab, v, DMIN, DMAX);
     track.addEventListener("mousemove",moveTip);
     track.addEventListener("mouseenter",e=>showTip(e,r));
     track.addEventListener("mouseleave",hideTip);
@@ -9050,6 +9142,7 @@ function renderChart(){
   });
   axisEl.innerHTML="";
   for(let t=DMIN;t<=DMAX+0.5;t+=step){ const t2=document.createElement("div"); t2.className="tick"+(t===0?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, renderChart);
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
 
@@ -11086,10 +11179,9 @@ function renderChart(){
   const data = ROWS.slice().sort((a,b)=>M.val(b)-M.val(a));
   if(!data.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">No creatures in this filter.</p>`; axisEl.innerHTML=""; return; }
   const allv = data.map(M.val);
-  const lo0 = Math.min(0, ...allv), hi0 = Math.max(0, ...allv);
-  const step = niceStep((hi0 - lo0) || 1);
-  const DMIN = Math.floor(lo0/step)*step, DMAX = Math.max(step, Math.ceil(hi0/step)*step);
-  const span = DMAX-DMIN || 1, pct = v=>((v-DMIN)/span)*100, zeroPct = pct(0);
+  const SC = BarScale.domain(allv, { int:false });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi;
+  const span = DMAX-DMIN || 1, pct = v=>((Math.max(DMIN, Math.min(DMAX, v))-DMIN)/span)*100, zeroPct = pct(0);
   chart.innerHTML = "";
   data.forEach(r=>{
     const row = document.createElement("div"); row.className = "row" + (r.locked ? " locked" : "");
@@ -11104,7 +11196,7 @@ function renderChart(){
     const lab = document.createElement("div"); lab.className = `bval hunt${neg?" neg":""}`; lab.textContent = M.fmt(v);
     if(neg){ lab.style.right=(100-p)+"%"; lab.style.marginRight="6px"; }
     else { lab.style.left=p+"%"; lab.style.marginLeft="6px"; }
-    track.appendChild(lab);
+    track.appendChild(lab); BarScale.mark(bar, lab, v, DMIN, DMAX);
     track.addEventListener("mousemove", moveTip);
     track.addEventListener("mouseenter", e=>showTip(e, r));
     track.addEventListener("mouseleave", hideTip);
@@ -11112,6 +11204,7 @@ function renderChart(){
   });
   axisEl.innerHTML = "";
   for(let k=0; DMIN+k*step<=DMAX+step*1e-6; k++){ const t=DMIN+k*step; const t2=document.createElement("div"); t2.className="tick"+(Math.abs(t)<step*1e-6?" zero":""); t2.style.left=pct(t)+"%"; t2.textContent=M.tick(Math.abs(t)<step*1e-6?0:t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, renderChart);
 }
 function renderAll(){ compute(); updateChips(); renderBest(); renderChart(); renderTable(); saveState(); }
 
