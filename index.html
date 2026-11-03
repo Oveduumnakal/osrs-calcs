@@ -1201,6 +1201,10 @@
   #view-plugins th.pg-bh { text-align: center; }
   #view-plugins .pg-ban img { display: block; width: 200px; max-width: 200px; height: 56px; object-fit: contain; border-radius: 6px; margin: 0 auto; }
   #view-plugins .pg-ban a { display: block; }
+  #view-plugins td.pg-gh { cursor: default; }
+  #view-plugins .pg-ghn { color: var(--ink); font-weight: 600; text-decoration: none; padding: 2px 6px; border-radius: 5px; }
+  #view-plugins .pg-ghn:hover { color: var(--accent); background: var(--surface-2); }
+  #view-plugins .pg-ghn.zero { color: var(--muted); font-weight: 400; }
   #view-plugins .pg-top { display: inline-flex; align-items: center; gap: 8px; }
   .tip .pg-th { display: flex; align-items: center; gap: 8px; }
   @media (max-width: 640px) { #view-plugins .pg-desc, #view-plugins .pg-ban, #view-plugins .pg-bh { display: none; } #view-plugins td.pg-name { min-width: 130px; } }
@@ -12035,7 +12039,7 @@ if(window.PriceHub){ window.PriceHub.subscribe((raw, source) => { LAT = pickLAT(
     <h2 class="card-title">All plugins</h2>
     <div class="tbl-wrap">
       <table id="pg-tbl">
-        <thead><tr><th>Plugin</th><th class="pg-bh">Banner</th><th>Active installs</th><th title="Position among every Plugin Hub plugin by active installs">Hub rank</th><th id="pg-chgHead">Change</th><th>Version</th><th>Updated</th><th>Added</th></tr></thead>
+        <thead><tr><th>Plugin</th><th class="pg-bh">Banner</th><th>Active installs</th><th title="Position among every Plugin Hub plugin by active installs">Hub rank</th><th id="pg-chgHead">Change</th><th>Version</th><th>Updated</th><th>Added</th><th title="Open pull requests on GitHub — hover a number for the authors">PRs</th><th title="Open issues on GitHub — hover a number for Feature / Bug / Maintenance">Issues</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -12111,7 +12115,88 @@ async function loadBanners(){
     }));
     try { localStorage.setItem(BANNER_KEY, JSON.stringify(BANNERS)); } catch(e){}
   } finally { bannersBusy = false; }
+  loadGitHub();
 }
+
+/* ---- open PRs & issues: one GitHub search across every repo of the author (unauthenticated search allows
+   10 calls a minute, so cache it for 5 minutes). Repos come from the plugin-hub entries found above.
+   Issue kind is read from its labels: enhancement = Feature, bug = Bug, maintenance/architecture = Maintenance. ---- */
+const GH_KEY = "plugins-github-v1", GH_TTL = 5*60*1000;
+let GH = null, GH_ERR = "";
+const repoOf = n => { const b = BANNERS[n]; const m = b && /github\.com\/([^/]+\/[^/]+)/.exec(b.repo || ""); return m ? m[1] : ""; };
+function issueKind(labels){
+  const l = labels.map(x => x.toLowerCase());
+  if(l.some(x => x === "bug" || x.includes("bug"))){ return "Bug"; }
+  if(l.some(x => x === "enhancement" || x.includes("feature"))){ return "Feature"; }
+  if(l.some(x => x.startsWith("maintenance") || x.includes("chore") || x.includes("refactor"))){ return "Maintenance"; }
+  return "Other";
+}
+async function loadGitHub(force){
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem(GH_KEY) || "null"); } catch(e){}
+  let items = c && !force && Date.now() - c.t < GH_TTL ? c.items : null;
+  if(!items){
+    try {
+      items = [];
+      for(let page = 1; page <= 5; page++){
+        const q = encodeURIComponent(`user:${AUTHOR} is:open`);
+        const r = await fetch(`https://api.github.com/search/issues?q=${q}&per_page=100&page=${page}`, { headers:{ Accept:"application/vnd.github+json" } });
+        if(!r.ok){ throw new Error(r.status === 403 || r.status === 429 ? "GitHub rate limit hit — try again in a minute" : "GitHub HTTP " + r.status); }
+        const j = await r.json();
+        (j.items || []).forEach(it => items.push({
+          repo:String(it.repository_url || "").split("/repos/")[1] || "", pr:!!it.pull_request,
+          user:(it.user && it.user.login) || "?", labels:(it.labels || []).map(x => x.name),
+        }));
+        if(items.length >= (j.total_count || 0) || !(j.items || []).length){ break; }
+      }
+      try { localStorage.setItem(GH_KEY, JSON.stringify({ t:Date.now(), items })); } catch(e){}
+      GH_ERR = "";
+    } catch(e){
+      GH_ERR = e.message || "GitHub unavailable";
+      items = c ? c.items : null;   // stale beats nothing
+    }
+  }
+  GH = {};
+  (items || []).forEach(it => {
+    const k = it.repo.toLowerCase(), g = GH[k] || (GH[k] = { prs:[], issues:[] });
+    (it.pr ? g.prs : g.issues).push(it);
+  });
+  if(!items){ GH = null; }
+  document.querySelectorAll("#pg-tbl td.pg-gh").forEach(td => { td.innerHTML = ghCell(td.dataset.n, td.dataset.k); });
+}
+function ghData(n, k){
+  const repo = repoOf(n);
+  if(!GH || !repo){ return null; }
+  const g = GH[repo.toLowerCase()] || { prs:[], issues:[] };
+  return { repo, list:k === "pr" ? g.prs : g.issues };
+}
+function ghCell(n, k){
+  const d = ghData(n, k);
+  if(!d){ return `<span class="na" title="${esc(GH_ERR || "loading from GitHub…")}">—</span>`; }
+  const url = `https://github.com/${d.repo}/${k === "pr" ? "pulls" : "issues"}`;
+  return `<a class="pg-ghn${d.list.length ? "" : " zero"}" href="${url}" target="_blank" rel="noopener">${d.list.length}</a>`;
+}
+function ghTip(e, n, k){
+  const d = ghData(n, k);
+  if(!d){ return; }
+  const counts = {};
+  if(k === "pr"){ d.list.forEach(it => { counts[it.user] = (counts[it.user] || 0) + 1; }); }
+  else { ["Feature", "Bug", "Maintenance"].forEach(x => { counts[x] = 0; }); d.list.forEach(it => { const x = issueKind(it.labels); counts[x] = (counts[x] || 0) + 1; }); }
+  let rows = Object.entries(counts);
+  if(k === "pr"){ rows.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])); }
+  else { rows = rows.filter(([x, v]) => x !== "Other" || v > 0); }
+  tip.innerHTML = `<span class="t-h">${k === "pr" ? "Open PRs" : "Open issues"} · ${d.list.length}</span>` +
+    (k === "pr" && !rows.length ? `<span class="t-sub">No open pull requests</span>` :
+      `<span class="t-sub">${k === "pr" ? "by author" : "by type"}</span><br>` + rows.map(([x, v]) => `${esc(x)}: <b>${v}</b>`).join("<br>")) +
+    (GH_ERR ? `<br><span class="t-sub">${esc(GH_ERR)} — showing the last saved counts</span>` : "");
+  tip.style.opacity = 1; moveTip(e);
+}
+(function wireGhTips(){
+  const tb = el("pg-tbl").tBodies[0];
+  tb.addEventListener("mouseover", e => { const td = e.target.closest("td.pg-gh"); if(td){ ghTip(e, td.dataset.n, td.dataset.k); } });
+  tb.addEventListener("mousemove", e => { if(e.target.closest("td.pg-gh")){ moveTip(e); } });
+  tb.addEventListener("mouseout", e => { const td = e.target.closest("td.pg-gh"); if(td && !td.contains(e.relatedTarget)){ hideTip(); } });
+})();
 
 const AUTHOR = "Oveduumnakal";
 let DISPLAY = null, COUNT = null, VERSION = "", loading = null, fetchedTs = null;
@@ -12250,7 +12335,10 @@ function renderTable(total, base){
       `<td class="mono">${fmt(r.count)}</td>` +
       `<td class="mono">${r.rank ? "#" + fmt(r.rank) : "—"}</td>` +
       `<td class="mono ${chg > 0 ? "pos" : chg < 0 ? "negv" : "na"}">${chg == null ? "—" : (chg > 0 ? "+" : "") + fmt(chg)}</td>` +
-      `<td class="mono">${esc(r.version)}</td><td class="mono">${day(r.updated)}</td><td class="mono">${day(r.created)}</td></tr>`;
+      `<td class="mono">${esc(r.version)}</td><td class="mono">${day(r.updated)}</td><td class="mono">${day(r.created)}</td>` +
+      `<td class="mono pg-gh" data-n="${esc(r.name)}" data-k="pr">${ghCell(r.name, "pr")}</td>` +
+      `<td class="mono pg-gh" data-n="${esc(r.name)}" data-k="issue">${ghCell(r.name, "issue")}</td>` +
+      `</tr>`;
   }).join("");
   el("pg-tblNote").textContent = base
     ? `Change compares today's counts with the snapshot this browser saved on ${day(Date.parse(base.date)/1000)}. RuneLite doesn't publish history, so it only covers days you've opened this tab.`
@@ -12298,6 +12386,12 @@ onShow();
       views[v].setAttribute("tabindex", "0");
     }
   });
+  function norm(t){ return String(t).toLowerCase().replace(/[^a-z0-9]/g, ""); }
+  /** The ?tab= value for a view: its button label, e.g. "Sailing", "Shopping-List", "Giants-Foundry". */
+  function tabSlug(name){
+    const b = [...tabs.children].find(x => x.dataset.view === name);
+    return b ? b.textContent.replace(/[^A-Za-z0-9 ]/g, "").trim().replace(/ +/g, "-") : name;
+  }
   function show(name){
     if(document.body){ document.body.dataset.tab = name; }   // drives the per-tab color theme
     Object.keys(views).forEach(k => { if(views[k]){ views[k].classList.toggle("active", k===name); } });
@@ -12311,6 +12405,11 @@ onShow();
     if(sel){ sel.value = name; }
     if(navSub && subs[name]){ navSub.textContent = subs[name]; }
     try { localStorage.setItem("unified-active-view", name); } catch(e){}
+    /* keep ?tab= in the address bar so the current URL opens this tab when shared */
+    try {
+      const u = new URL(location.href);
+      if(u.searchParams.get("tab") !== tabSlug(name)){ u.searchParams.set("tab", tabSlug(name)); history.replaceState(history.state, "", u.href); }
+    } catch(e){}
     if(window.scrollTo){ window.scrollTo(0, 0); }
   }
   tabs.addEventListener("click", e => { const b = e.target.closest("button"); if(b){ show(b.dataset.view); } });
@@ -12352,6 +12451,15 @@ onShow();
   if(document.fonts && document.fonts.ready){ document.fonts.ready.then(fitNav); }
   let start = "sanfew";
   try { const s = localStorage.getItem("unified-active-view"); if(s && views[s]){ start = s; } } catch(e){}
+  /* ?tab= wins over the remembered tab: matches the tab's label ("Sailing", "Shopping-List", "giants foundry")
+     or its internal key ("ha", "list"), ignoring case, spaces, dashes and punctuation */
+  try {
+    const want = norm(new URLSearchParams(location.search).get("tab") || "");
+    if(want){
+      const hit = [...tabs.children].find(b => norm(b.dataset.view) === want || norm(b.textContent) === want);
+      if(hit && views[hit.dataset.view]){ start = hit.dataset.view; }
+    }
+  } catch(e){}
   show(start);
   fitNav();
 })();
