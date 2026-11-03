@@ -1162,6 +1162,48 @@
     #view-list .sl-p { width: 90px; }
     #view-list .sl-q { width: 70px; }
   }
+  /* ---- Plugins (RuneLite amber) ---- */
+  body[data-tab="plugins"] {
+    --bg:#f5f1ea; --surface:#fdfbf7; --surface-2:#ece5d9; --ink:#231d14; --ink-2:#54493a; --muted:#8a7d6a;
+    --line:#e3dbcd; --line-strong:#cbbea8; --accent:#b8650a;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="plugins"] {
+        --bg:#14110d; --surface:#1d1914; --surface-2:#28221b; --ink:#f4ede2; --ink-2:#d2c4ae; --muted:#a19280;
+        --line:#352d24; --line-strong:#4d4234; --accent:#f0a347;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="plugins"] {
+    --bg:#14110d; --surface:#1d1914; --surface-2:#28221b; --ink:#f4ede2; --ink-2:#d2c4ae; --muted:#a19280;
+    --line:#352d24; --line-strong:#4d4234; --accent:#f0a347;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
+  #view-plugins .pg-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 18px; }
+  #view-plugins .pg-bar .lb-status { margin-left: 0; }
+  #view-plugins .card + .card { margin-top: 18px; }
+  #view-plugins .row, #view-plugins .axis-row { grid-template-columns: clamp(110px, 30vw, 190px) 1fr; }
+  #view-plugins .tile .v.pg-small { font-size: clamp(15px, 2.2vw, 19px); line-height: 1.15; }
+  .bar.pg { top: 13px; background: var(--accent); }
+  .bval.pg { top: 13px; line-height: 14px; color: var(--ink-2); }
+  #view-plugins td.pg-name { white-space: normal; min-width: 200px; max-width: 420px; }
+  #view-plugins td.pg-name a { color: var(--ink); font-weight: 600; text-decoration: none; }
+  #view-plugins td.pg-name a:hover { color: var(--accent); text-decoration: underline; }
+  #view-plugins .pg-desc { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  #view-plugins #pg-footer { min-height: 8px; }
+  #view-plugins .pg-ico, .tip .pg-ico { width: 24px; height: 24px; object-fit: contain; flex: none; display: inline-block; }
+  #view-plugins .pg-rl { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  #view-plugins .pg-nm { display: flex; align-items: center; gap: 10px; }
+  #view-plugins td.pg-ban { text-align: center; vertical-align: middle; width: 1%; }
+  #view-plugins th.pg-bh { text-align: center; }
+  #view-plugins .pg-ban img { display: block; width: 200px; max-width: 200px; height: 56px; object-fit: contain; border-radius: 6px; margin: 0 auto; }
+  #view-plugins .pg-ban a { display: block; }
+  #view-plugins .pg-top { display: inline-flex; align-items: center; gap: 8px; }
+  .tip .pg-th { display: flex; align-items: center; gap: 8px; }
+  @media (max-width: 640px) { #view-plugins .pg-desc, #view-plugins .pg-ban, #view-plugins .pg-bh { display: none; } #view-plugins td.pg-name { min-width: 130px; } }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -1189,6 +1231,7 @@
         <button data-view="rune" role="tab">Rune Calculator</button>
         <button data-view="iron" role="tab">Ironman Money</button>
         <button data-view="list" role="tab">Shopping List</button>
+        <button data-view="plugins" role="tab">Plugins</button>
       </div>
       <select id="navSelect" class="nav-select" hidden aria-label="Calculator"></select>
       <span class="nav-sub" id="navSub">live GE margins</span>
@@ -11962,6 +12005,267 @@ loadMapping();
 if(window.PriceHub){ window.PriceHub.subscribe((raw, source) => { LAT = pickLAT(raw, source); update(); }); }
 })();
 </script>
+<section id="view-plugins" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">RuneLite &middot; Plugin Hub &middot; active installs</p>
+    <h1>Plugins</h1>
+    <p class="lede">Every Plugin Hub plugin by <b>Oveduumnakal</b>, ranked by <b>active installs</b> &mdash; the number of RuneLite users who currently have it installed, as RuneLite reports it. Counts come live from RuneLite; the change column compares against snapshots this browser has saved on earlier visits.</p>
+  </header>
+
+  <div class="pg-bar">
+    <button class="refresh-btn" id="pg-refresh" type="button"><span class="spin"></span> Refresh</button>
+    <span class="lb-status" id="pg-status">loads when you open this tab</span>
+  </div>
+
+  <div class="tiles" id="pg-tiles"></div>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">Active installs by plugin</h2>
+        <p class="card-sub" id="pg-chartSub">Hover a bar for details.</p>
+      </div>
+    </div>
+    <div class="chart" id="pg-chart"></div>
+    <div class="axis-row"><div></div><div class="axis" id="pg-axis"></div></div>
+  </section>
+
+  <section class="card">
+    <h2 class="card-title">All plugins</h2>
+    <div class="tbl-wrap">
+      <table id="pg-tbl">
+        <thead><tr><th>Plugin</th><th class="pg-bh">Banner</th><th>Active installs</th><th title="Position among every Plugin Hub plugin by active installs">Hub rank</th><th id="pg-chgHead">Change</th><th>Version</th><th>Updated</th><th>Added</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <p class="opt-note" id="pg-tblNote"></p>
+  </section>
+
+  <footer id="pg-footer"></footer>
+</div>
+<div class="tip" id="pg-tip"></div>
+</section>
+
+<script>
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const root = el("view-plugins");
+const fmt = n => n==null || !isFinite(n) ? "—" : (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const day = ts => ts ? new Date(ts*1000).toLocaleDateString("en-GB", { day:"numeric", month:"short", year:"numeric" }) : "—";
+const BOOT = "https://static.runelite.net/bootstrap.json";
+const MANIFEST = v => `https://repo.runelite.net/plugins/manifest/${v}_full.js`;
+const COUNTS = v => `https://api.runelite.net/runelite-${v}/pluginhub`;
+const PAGE = n => `https://runelite.net/plugin-hub/show/${encodeURIComponent(n)}`;
+/* same URL the RuneLite client loads a hub plugin's icon from (ExternalPluginClient.downloadIcon) */
+const ICON = (n, h) => h ? `https://repo.runelite.net/plugins/icon/${encodeURIComponent(n)}_${encodeURIComponent(h)}.png` : "";
+const iconImg = (r, cls) => r.icon ? `<img class="${cls}" src="${r.icon}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="${cls}"></span>`;
+const HIST_KEY = "plugins-history-v1", BANNER_KEY = "plugins-banners-v1";
+/* ---- banners: not in the hub manifest, so follow each plugin's plugin-hub entry (repo + published commit)
+   to its README at that commit and take the first image whose path or alt text says "banner".
+   Cached per commit, so it only re-checks after an update is published. ---- */
+const HUB_RAW = n => `https://raw.githubusercontent.com/runelite/plugin-hub/master/plugins/${encodeURIComponent(n)}`;
+let BANNERS = {};
+try { BANNERS = JSON.parse(localStorage.getItem(BANNER_KEY) || "null") || {}; } catch(e){}
+function bannerHtml(n){
+  const b = BANNERS[n];
+  return b && b.url ? `<a href="${esc(b.repo)}" target="_blank" rel="noopener" title="Open the GitHub repo"><img src="${esc(b.url)}" alt="" loading="lazy" onerror="this.style.display='none'"></a>` : "";
+}
+async function findBanner(n){
+  const r = await fetch(HUB_RAW(n));
+  if(!r.ok){ return null; }
+  const props = {};
+  (await r.text()).split(/\r?\n/).forEach(l => { const i = l.indexOf("="); if(i > 0){ props[l.slice(0, i).trim()] = l.slice(i + 1).trim(); } });
+  const m = /github\.com\/([^/]+)\/([^/]+?)(?:\.git)?\/?$/.exec(props.repository || "");
+  if(!m || !props.commit){ return null; }
+  const cached = BANNERS[n];
+  if(cached && cached.commit === props.commit && cached.url){ return cached; }   // no banner found: look again next time
+  const base = `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${props.commit}/`;
+  const out = { commit:props.commit, repo:`https://github.com/${m[1]}/${m[2]}`, url:"" };
+  const rr = await fetch(base + "README.md");
+  if(rr.ok){
+    const md = await rr.text();
+    const imgs = [];
+    md.replace(/<img\b[^>]*>/gi, tag => { const src = /\bsrc\s*=\s*["']([^"']+)["']/i.exec(tag), alt = /\balt\s*=\s*["']([^"']*)["']/i.exec(tag); if(src){ imgs.push({ src:src[1], alt:alt ? alt[1] : "" }); } return tag; });
+    md.replace(/!\[([^\]]*)\]\(\s*<?([^)\s>]+)>?[^)]*\)/g, (x, alt, src) => { imgs.push({ src, alt }); return x; });
+    const hit = imgs.find(i => /banner/i.test(i.src) || /banner/i.test(i.alt));
+    if(hit){ out.url = /^https?:/i.test(hit.src) ? hit.src : new URL(hit.src.replace(/^\.\//, ""), base).href; }
+  }
+  return out;
+}
+let bannersBusy = false;
+async function loadBanners(){
+  if(bannersBusy){ return; }
+  bannersBusy = true;
+  try {
+    await Promise.all(ROWS.map(async r => {
+      try {
+        const b = await findBanner(r.name);
+        if(!b){ return; }
+        BANNERS[r.name] = b;
+        const td = [...document.querySelectorAll("#pg-tbl td.pg-ban")].find(c => c.dataset.n === r.name);
+        if(td){ td.innerHTML = bannerHtml(r.name); }
+      } catch(e){}
+    }));
+    try { localStorage.setItem(BANNER_KEY, JSON.stringify(BANNERS)); } catch(e){}
+  } finally { bannersBusy = false; }
+}
+
+const AUTHOR = "Oveduumnakal";
+let DISPLAY = null, COUNT = null, VERSION = "", loading = null, fetchedTs = null;
+let ROWS = [];
+const chart = el("pg-chart"), axisEl = el("pg-axis"), tip = el("pg-tip");
+
+function setStatus(t, cls){ const s = el("pg-status"); s.textContent = t; s.className = "lb-status" + (cls ? " " + cls : ""); }
+
+/* ---- local history: one snapshot of every plugin's count per UTC day ---- */
+function loadHist(){ try { return JSON.parse(localStorage.getItem(HIST_KEY) || "null") || {}; } catch(e){ return {}; } }
+function recordHist(rows){
+  const h = loadHist(), today = new Date().toISOString().slice(0, 10);
+  const snap = h[today] || {};
+  rows.forEach(r => { snap[r.name] = r.count; });
+  h[today] = snap;
+  const keys = Object.keys(h).sort();
+  while(keys.length > 400){ delete h[keys.shift()]; }   // ~13 months is plenty
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(h)); } catch(e){}
+  return h;
+}
+/* the most recent snapshot from an earlier day, for the change column */
+function baseline(h){
+  const today = new Date().toISOString().slice(0, 10);
+  const keys = Object.keys(h).filter(k => k < today).sort();
+  return keys.length ? { date:keys[keys.length - 1], snap:h[keys[keys.length - 1]] } : null;
+}
+
+/* ---- data ---- */
+async function fetchAll(){
+  setStatus("fetching RuneLite version…");
+  const b = await fetch(BOOT);
+  if(!b.ok){ throw new Error("bootstrap HTTP " + b.status); }
+  VERSION = (await b.json()).version;
+  setStatus("fetching Plugin Hub…");
+  const [mr, cr] = await Promise.all([ fetch(MANIFEST(VERSION)), fetch(COUNTS(VERSION)) ]);
+  if(!mr.ok || !cr.ok){ throw new Error("HTTP " + mr.status + "/" + cr.status); }
+  /* manifest = 4-byte big-endian signature length, the signature, then JSON */
+  const buf = await mr.arrayBuffer();
+  const sigLen = new DataView(buf).getUint32(0);
+  const man = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 4 + sigLen)));
+  DISPLAY = man.display || [];
+  COUNT = await cr.json();
+  fetchedTs = new Date();
+}
+function load(force){
+  if(loading){ return loading; }
+  if(DISPLAY && !force){ build(); return Promise.resolve(); }
+  const btn = el("pg-refresh"); btn.disabled = true; btn.classList.add("loading");
+  loading = fetchAll().then(build).catch(e => {
+    setStatus("couldn't reach RuneLite — " + (e.message || "error") + " (open this file locally, not inside a sandbox)", "err");
+  }).finally(() => { loading = null; btn.disabled = false; btn.classList.remove("loading"); });
+  return loading;
+}
+function matches(p){
+  const a = AUTHOR.toLowerCase();
+  return String(p.author || "").split(/\s*,\s*/).some(x => x.toLowerCase() === a);
+}
+function build(){
+  if(!DISPLAY){ return; }
+  const ranked = Object.entries(COUNT).sort((x, y) => y[1] - x[1]);
+  const rankOf = {}; ranked.forEach(([n], i) => { rankOf[n] = i + 1; });
+  ROWS = DISPLAY.filter(matches).map(p => ({
+    name:p.internalName, title:p.displayName || p.internalName, icon:ICON(p.internalName, p.iconHash), desc:p.description || "", version:p.version || "",
+    created:p.createdAt, updated:p.lastUpdatedAt, count:COUNT[p.internalName] || 0, rank:rankOf[p.internalName] || null,
+  })).sort((a, b) => b.count - a.count || a.title.localeCompare(b.title));
+  const hist = ROWS.length ? recordHist(ROWS) : loadHist();
+  const base = baseline(hist);
+  ROWS.forEach(r => { r.prev = base && base.snap[r.name] != null ? base.snap[r.name] : null; });
+  render(base, ranked.length);
+  loadBanners();
+  setStatus(ROWS.length
+    ? `RuneLite ${VERSION} · ${fmt(ranked.length)} hub plugins · updated ${fetchedTs.toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit", second:"2-digit" })}`
+    : `no plugins by ${AUTHOR} found on the Plugin Hub`, ROWS.length ? "ok" : "err");
+}
+
+/* ---- render ---- */
+function render(base, hubSize){
+  const total = ROWS.reduce((s, r) => s + r.count, 0);
+  const top = ROWS[0];
+  const delta = base ? ROWS.reduce((s, r) => s + (r.prev != null ? r.count - r.prev : 0), 0) : null;
+  el("pg-tiles").innerHTML = [
+    { k:"Active installs", v:fmt(total), u:`across ${ROWS.length} plugin${ROWS.length === 1 ? "" : "s"}`, cls:"hero" },
+    { k:"Top plugin", v:top ? `<span class="pg-top">${iconImg(top, "pg-ico")}${esc(top.title)}</span>` : "—", u:top ? `${fmt(top.count)} installs` : "", small:true },
+    { k:"Best hub rank", v:top && top.rank ? "#" + fmt(top.rank) : "—", u:top && top.rank ? `of ${fmt(hubSize)} · top ${(top.rank/hubSize*100).toFixed(1)}%` : "" },
+    { k:"Change", v:delta == null ? "—" : (delta >= 0 ? "+" : "") + fmt(delta), u:base ? `since ${day(Date.parse(base.date)/1000)}` : "first visit — check back later" },
+  ].map(t => `<div class="tile ${t.cls || ""}"><p class="k">${t.k}</p><div class="v${t.small ? " pg-small" : ""}">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
+  el("pg-chartSub").textContent = ROWS.length ? `${AUTHOR} · ${fmt(total)} active installs in total. Hover a bar for details.` : "No plugins to chart.";
+  renderChart(total);
+  renderTable(total, base);
+}
+function showTip(e, r, total){
+  const chg = r.prev != null ? r.count - r.prev : null;
+  tip.innerHTML = `<span class="t-h pg-th">${iconImg(r, "pg-ico")}${esc(r.title)}</span>` +
+    `Active installs: <b>${fmt(r.count)}</b> (${total ? (r.count/total*100).toFixed(1) : 0}% of yours)<br>` +
+    `Hub rank: <b>${r.rank ? "#" + fmt(r.rank) : "—"}</b>` +
+    (chg != null ? `<br>Change: <b class="${chg > 0 ? "t-pos" : chg < 0 ? "t-neg" : ""}">${chg >= 0 ? "+" : ""}${fmt(chg)}</b>` : "") +
+    `<br><span class="t-sub">v${esc(r.version)} · updated ${day(r.updated)}</span>` +
+    (r.desc ? `<br><span class="t-sub">${esc(r.desc)}</span>` : "");
+  tip.style.opacity = 1; moveTip(e);
+}
+function moveTip(e){ const pad = 14; let x = e.clientX + pad, y = e.clientY + pad; const w = tip.offsetWidth, h = tip.offsetHeight; if(x + w > innerWidth){ x = e.clientX - w - pad; } if(y + h > innerHeight){ y = e.clientY - h - pad; } tip.style.left = x + "px"; tip.style.top = y + "px"; }
+function hideTip(){ tip.style.opacity = 0; }
+function renderChart(total){
+  if(total === undefined){ total = ROWS.reduce((s, r) => s + r.count, 0); }
+  if(!ROWS.length){ chart.innerHTML = `<p class="opt-note" style="padding:8px 2px">Nothing to chart.</p>`; axisEl.innerHTML = ""; return; }
+  const SC = BarScale.domain(ROWS.map(r => r.count), { int:true });
+  const step = SC.step, DMIN = SC.lo, DMAX = SC.hi, span = DMAX - DMIN || 1;
+  const pct = v => ((Math.max(DMIN, Math.min(DMAX, v)) - DMIN)/span)*100, zeroPct = pct(0);
+  chart.innerHTML = "";
+  ROWS.forEach(r => {
+    const row = document.createElement("div"); row.className = "row";
+    row.innerHTML = `<div class="rlabel pg-rl">${iconImg(r, "pg-ico")}<span>${esc(r.title)}<small>${r.rank ? "#" + fmt(r.rank) + " on hub" : "unranked"}</small></span></div>`;
+    const track = document.createElement("div"); track.className = "track";
+    for(let k = 0; DMIN + k*step <= DMAX + step*1e-6; k++){ const t = DMIN + k*step; const g = document.createElement("div"); g.className = Math.abs(t) < step*1e-6 ? "zero" : "grid-t"; g.style.left = pct(t) + "%"; track.appendChild(g); }
+    const p = pct(r.count);
+    const bar = document.createElement("div"); bar.className = "bar pg"; bar.style.left = zeroPct + "%"; bar.style.width = (p - zeroPct) + "%";
+    track.appendChild(bar);
+    const lab = document.createElement("div"); lab.className = "bval pg"; lab.textContent = fmt(r.count); lab.style.left = p + "%"; lab.style.marginLeft = "6px";
+    track.appendChild(lab); BarScale.mark(bar, lab, r.count, DMIN, DMAX);
+    track.addEventListener("mousemove", moveTip);
+    track.addEventListener("mouseenter", e => showTip(e, r, total));
+    track.addEventListener("mouseleave", hideTip);
+    row.appendChild(track); chart.appendChild(row);
+  });
+  axisEl.innerHTML = "";
+  for(let k = 0; DMIN + k*step <= DMAX + step*1e-6; k++){ const t = DMIN + k*step; const t2 = document.createElement("div"); t2.className = "tick" + (Math.abs(t) < step*1e-6 ? " zero" : ""); t2.style.left = pct(t) + "%"; t2.textContent = fmt(Math.abs(t) < step*1e-6 ? 0 : t); axisEl.appendChild(t2); }
+  BarScale.note(axisEl, SC, () => renderChart(), chart);
+}
+function renderTable(total, base){
+  el("pg-chgHead").textContent = base ? `Since ${day(Date.parse(base.date)/1000)}` : "Change";
+  el("pg-tbl").tBodies[0].innerHTML = ROWS.map(r => {
+    const chg = r.prev != null ? r.count - r.prev : null;
+    return `<tr>` +
+      `<td class="pg-name"><div class="pg-nm">${iconImg(r, "pg-ico")}<div><a href="${PAGE(r.name)}" target="_blank" rel="noopener">${esc(r.title)}</a><span class="pg-desc">${esc(r.desc)}</span></div></div></td>` +
+      `<td class="pg-ban" data-n="${esc(r.name)}">${bannerHtml(r.name)}</td>` +
+      `<td class="mono">${fmt(r.count)}</td>` +
+      `<td class="mono">${r.rank ? "#" + fmt(r.rank) : "—"}</td>` +
+      `<td class="mono ${chg > 0 ? "pos" : chg < 0 ? "negv" : "na"}">${chg == null ? "—" : (chg > 0 ? "+" : "") + fmt(chg)}</td>` +
+      `<td class="mono">${esc(r.version)}</td><td class="mono">${day(r.updated)}</td><td class="mono">${day(r.created)}</td></tr>`;
+  }).join("");
+  el("pg-tblNote").textContent = base
+    ? `Change compares today's counts with the snapshot this browser saved on ${day(Date.parse(base.date)/1000)}. RuneLite doesn't publish history, so it only covers days you've opened this tab.`
+    : "The change column fills in from your next visit on a later day — RuneLite doesn't publish history, so this browser saves one snapshot a day while you use this tab.";
+}
+
+/* ---- controls ---- */
+el("pg-refresh").addEventListener("click", () => load(true));
+
+/* the manifest is ~1.5 MB, so only fetch it once this tab is actually opened */
+function onShow(){ if(root.classList.contains("active") && !DISPLAY && !loading){ load(false); } }
+new MutationObserver(onShow).observe(root, { attributes:true, attributeFilter:["class"] });
+onShow();
+})();
+</script>
 <script>
 (function(){
   "use strict";
@@ -11976,8 +12280,8 @@ if(window.PriceHub){ window.PriceHub.subscribe((raw, source) => { LAT = pickLAT(
     }, true);
   } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), hunter: document.getElementById("view-hunter"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron"), list: document.getElementById("view-list") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", hunter: "xp & gp per catch, every creature", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops", list: "your own buy list \u2192 profit" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), hunter: document.getElementById("view-hunter"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron"), list: document.getElementById("view-list"), plugins: document.getElementById("view-plugins") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", hunter: "xp & gp per catch, every creature", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops", list: "your own buy list \u2192 profit", plugins: "my RuneLite plugins \u00b7 active installs" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
