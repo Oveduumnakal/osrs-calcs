@@ -12025,17 +12025,6 @@ if(window.PriceHub){ window.PriceHub.subscribe((raw, source) => { LAT = pickLAT(
   <div class="tiles" id="pg-tiles"></div>
 
   <section class="card">
-    <div class="card-head">
-      <div>
-        <h2 class="card-title">Active installs by plugin</h2>
-        <p class="card-sub" id="pg-chartSub">Hover a bar for details.</p>
-      </div>
-    </div>
-    <div class="chart" id="pg-chart"></div>
-    <div class="axis-row"><div></div><div class="axis" id="pg-axis"></div></div>
-  </section>
-
-  <section class="card">
     <h2 class="card-title">All plugins</h2>
     <div class="tbl-wrap">
       <table id="pg-tbl">
@@ -12044,6 +12033,17 @@ if(window.PriceHub){ window.PriceHub.subscribe((raw, source) => { LAT = pickLAT(
       </table>
     </div>
     <p class="opt-note" id="pg-tblNote"></p>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">Active installs by plugin</h2>
+        <p class="card-sub" id="pg-chartSub">Hover a bar for details.</p>
+      </div>
+    </div>
+    <div class="chart" id="pg-chart"></div>
+    <div class="axis-row"><div></div><div class="axis" id="pg-axis"></div></div>
   </section>
 
   <footer id="pg-footer"></footer>
