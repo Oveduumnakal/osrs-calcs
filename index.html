@@ -1103,6 +1103,65 @@
   .bval.hunt.neg { color: var(--neg); }
   #view-hunter tr.locked td { opacity: 0.5; }
   #view-hunter .est { font-size: 10px; color: var(--muted); margin-left: 4px; }
+  /* ---- Shopping List (ledger teal) ---- */
+  body[data-tab="list"] {
+    --bg:#edf4f3; --surface:#f9fdfc; --surface-2:#deebe9; --ink:#132423; --ink-2:#3a5552; --muted:#6f8a87;
+    --line:#d3e3e0; --line-strong:#adc8c4; --accent:#1e7f78;
+    --profit:#1f8a5a; --profit-soft:rgba(31,138,90,0.12); --neg:#b0473a; --neg-soft:rgba(176,71,58,0.12);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      body[data-tab="list"] {
+        --bg:#0b1514; --surface:#121f1e; --surface-2:#1a2b29; --ink:#e4f3f1; --ink-2:#b0cdc9; --muted:#829f9b;
+        --line:#263937; --line-strong:#38524f; --accent:#5cc8bd;
+        --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+      }
+    }
+  }
+  :root[data-theme="dark"] body[data-tab="list"] {
+    --bg:#0b1514; --surface:#121f1e; --surface-2:#1a2b29; --ink:#e4f3f1; --ink-2:#b0cdc9; --muted:#829f9b;
+    --line:#263937; --line-strong:#38524f; --accent:#5cc8bd;
+    --profit:#26b277; --profit-soft:rgba(38,178,119,0.16); --neg:#e0705f; --neg-soft:rgba(224,112,95,0.16);
+  }
+  #view-list .card + .card { margin-top: 18px; }
+  #view-list .sl-opt { font: 500 10.5px "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); border: 1px solid var(--line-strong); border-radius: 5px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+  #view-list .sl-add { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  #view-list .sl-add label { font: 600 12px "Inter", sans-serif; color: var(--ink-2); display: inline-flex; align-items: center; gap: 6px; }
+  #view-list .sl-search-wrap { position: relative; flex: 1 1 260px; max-width: 420px; min-width: 0; }
+  #view-list .sl-search, #view-list .sl-qty, #view-list .sl-addp, #view-list .sl-in { font: 500 13px "IBM Plex Mono", monospace; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 10px; }
+  #view-list .sl-search { width: 100%; box-sizing: border-box; }
+  #view-list .sl-qty { width: 90px; }
+  #view-list input.sl-addp[data-num] { min-width: 11ch; }   /* auto-sized number fields grow with the value, not the live-price placeholder */
+  #view-list .sl-in { padding: 4px 7px; text-align: right; border-radius: 6px; }
+  #view-list .sl-q { width: 84px; }
+  #view-list .sl-p { width: 110px; }
+  #view-list .sl-p.over { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  #view-list input:focus-visible, #view-list button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  #view-list .sl-sugg { position: absolute; z-index: 30; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; box-shadow: var(--shadow); max-height: 320px; overflow-y: auto; }
+  #view-list .sl-sugg li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 7px; cursor: pointer; font-size: 13px; }
+  #view-list .sl-sugg li.on, #view-list .sl-sugg li[data-i]:hover { background: var(--surface-2); }
+  #view-list .sl-sugg li.sl-msg { color: var(--muted); cursor: default; }
+  #view-list .sl-sn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #view-list .sl-sp { font: 500 11.5px "IBM Plex Mono", monospace; color: var(--muted); }
+  #view-list .sl-ico { width: 22px; height: 22px; object-fit: contain; flex: none; display: inline-block; }
+  #view-list .sl-name { display: inline-flex; align-items: center; gap: 8px; }
+  #view-list .sl-name a { color: var(--ink); text-decoration: none; }
+  #view-list .sl-name a:hover { color: var(--accent); text-decoration: underline; }
+  #view-list .sl-pwrap { display: inline-flex; align-items: center; gap: 4px; }
+  #view-list .sl-reset, #view-list .sl-del { font: 600 12px "Inter", sans-serif; color: var(--muted); background: none; border: 1px solid transparent; border-radius: 6px; padding: 3px 6px; cursor: pointer; }
+  #view-list .sl-reset:hover { color: var(--accent); border-color: var(--line-strong); }
+  #view-list .sl-del:hover { color: var(--neg); border-color: var(--neg-soft); }
+  #view-list .sl-reset[hidden] { display: inline-block; visibility: hidden; }
+  #view-list .sl-tbl tfoot td { background: var(--surface-2); font-weight: 700; border-top: 1px solid var(--line-strong); }
+  #view-list .sl-empty { font-size: 12.5px; color: var(--muted); margin: 12px 2px 0; }
+  #view-list .sl-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  #view-list .sl-clear:hover { border-color: var(--neg); color: var(--neg); }
+  #view-list #sl-footer { font-size: 12px; color: var(--muted); margin-top: 14px; min-height: 16px; }
+  @media (max-width: 640px) {
+    #view-list .sl-search-wrap { flex-basis: 100%; max-width: none; }
+    #view-list .sl-p { width: 90px; }
+    #view-list .sl-q { width: 70px; }
+  }
 </style>
 </head>
 <body data-tab="sanfew">
@@ -1129,6 +1188,7 @@
         <button data-view="sailing" role="tab">Sailing</button>
         <button data-view="rune" role="tab">Rune Calculator</button>
         <button data-view="iron" role="tab">Ironman Money</button>
+        <button data-view="list" role="tab">Shopping List</button>
       </div>
       <select id="navSelect" class="nav-select" hidden aria-label="Calculator"></select>
       <span class="nav-sub" id="navSub">live GE margins</span>
@@ -11590,6 +11650,318 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
   ready = true;
 })();
 </script>
+<section id="view-list" class="view">
+<div class="wrap">
+  <header>
+    <p class="eyebrow">OSRS &middot; Grand Exchange &middot; your own list</p>
+    <h1>Shopping List</h1>
+    <p class="lede">Add any tradeable item and how many you need &mdash; each is priced at the live GE buy price, which you can overwrite with what you actually paid. Optionally add the <b>products</b> you'll make and sell to track your profit after GE tax. Your list is saved in this browser.</p>
+  </header>
+
+  <div class="tiles" id="sl-tiles"></div>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">Items to buy</h2>
+        <p class="card-sub">Priced at the instant-buy (high) price of the header source. Type a price to override it; clear it to go back to live.</p>
+      </div>
+    </div>
+    <div class="sl-add" data-list="buy">
+      <div class="sl-search-wrap">
+        <input class="sl-search" type="text" placeholder="Search items…" autocomplete="off" spellcheck="false" aria-label="Item to buy" role="combobox" aria-expanded="false" aria-autocomplete="list">
+        <ul class="sl-sugg" role="listbox" hidden></ul>
+      </div>
+      <label>Qty <input class="sl-qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+      <label>Price ea <input class="sl-addp" type="number" min="0" step="1" placeholder="live" inputmode="numeric" title="Leave blank to use the live price"></label>
+      <button class="refresh-btn sl-addbtn" type="button">Add</button>
+    </div>
+    <div class="tbl-wrap">
+      <table class="sl-tbl" id="sl-buyTbl">
+        <thead><tr><th>Item</th><th>Qty</th><th>Price ea</th><th>Live</th><th>Total</th><th title="GE buy limit per 4 hours">Limit /4h</th><th></th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td>Total to buy</td><td></td><td></td><td></td><td class="mono" id="sl-buyTotal">0</td><td></td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <p class="sl-empty" id="sl-buyEmpty">Nothing on your list yet — search for an item above.</p>
+    <div class="sl-actions">
+      <button class="stkpl-btn" id="sl-copyStkpl" type="button">📋 Copy for Stockpile tracker</button>
+      <button class="stkpl-btn sl-clear" data-list="buy" type="button">Clear items</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2 class="card-title">Products <span class="sl-opt">optional</span></h2>
+        <p class="card-sub">What you'll make from the list and sell. Priced at the instant-sell (low) price, less the 2% GE tax. Override the price with your actual sale.</p>
+      </div>
+    </div>
+    <div class="sl-add" data-list="make">
+      <div class="sl-search-wrap">
+        <input class="sl-search" type="text" placeholder="Search products…" autocomplete="off" spellcheck="false" aria-label="Product to sell" role="combobox" aria-expanded="false" aria-autocomplete="list">
+        <ul class="sl-sugg" role="listbox" hidden></ul>
+      </div>
+      <label>Qty <input class="sl-qty" type="number" min="1" step="1" value="1" inputmode="numeric"></label>
+      <label>Price ea <input class="sl-addp" type="number" min="0" step="1" placeholder="live" inputmode="numeric" title="Leave blank to use the live price"></label>
+      <button class="refresh-btn sl-addbtn" type="button">Add</button>
+    </div>
+    <div class="tbl-wrap">
+      <table class="sl-tbl" id="sl-makeTbl">
+        <thead><tr><th>Product</th><th>Qty</th><th>Price ea</th><th>Live</th><th>GE tax</th><th>Revenue</th><th></th></tr></thead>
+        <tbody></tbody>
+        <tfoot><tr><td>Revenue after tax</td><td></td><td></td><td></td><td class="mono" id="sl-taxTotal">0</td><td class="mono" id="sl-revTotal">0</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <p class="sl-empty" id="sl-makeEmpty">No products — add what you'll sell to see your profit.</p>
+    <div class="sl-actions">
+      <button class="stkpl-btn sl-clear" data-list="make" type="button">Clear products</button>
+    </div>
+  </section>
+
+  <footer id="sl-footer"></footer>
+</div>
+</section>
+
+<script>
+(function(){
+"use strict";
+const el = id => document.getElementById(id);
+const root = el("view-list");
+const fmt = n => n==null || !isFinite(n) ? "—" : (n<0?"-":"")+Math.abs(Math.round(n)).toLocaleString("en-US");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const MAP_API = "https://prices.runescape.wiki/api/v1/osrs/mapping";
+const ICON = "https://oldschool.runescape.wiki/images/";
+const LS_KEY = "shopping-list-v1";
+
+/* state: buy / make = [{ id, name, q, p }] — p is the user's price override, null = live */
+let S = { buy:[], make:[] };
+let MAP = null, BY_ID = {};
+let LAT = {};
+
+/* ---- persistence ---- */
+function saveState(){ try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch(e){} }
+function loadState(){
+  let s; try { s = JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch(e){ return; }
+  if(!s){ return; }
+  const clean = a => Array.isArray(a) ? a.filter(x => x && Number.isFinite(+x.id)).map(x => ({
+    id:+x.id, name:String(x.name || ("Item " + x.id)), q:Math.max(1, Math.round(+x.q) || 1),
+    p:(x.p == null || !Number.isFinite(+x.p)) ? null : Math.max(0, Math.round(+x.p)),
+  })) : [];
+  S = { buy:clean(s.buy), make:clean(s.make) };
+}
+
+/* ---- prices: buy at instant-buy (high), sell at instant-sell (low); Safe source applied via Risk ---- */
+function pickLAT(raw, source){
+  if(source !== "m5"){ return raw.latest || {}; }
+  const out = {}, m5 = raw.m5 || {}, lat = raw.latest || {};
+  new Set([...Object.keys(m5), ...Object.keys(lat)]).forEach(id => {
+    const a = m5[id] || {}, l = lat[id] || {};
+    out[id] = { high:(a.avgHighPrice ?? l.high ?? l.low), low:(a.avgLowPrice ?? l.low ?? l.high) };
+  });
+  return out;
+}
+function liveBuy(id){
+  const e = LAT[id]; if(!e){ return null; }
+  const p = e.high ?? e.low; if(!p){ return null; }
+  return window.Risk ? window.Risk.buy(id, p) : p;
+}
+function liveSell(id){
+  const e = LAT[id]; if(!e){ return null; }
+  const p = e.low ?? e.high; if(!p){ return null; }
+  return window.Risk ? window.Risk.sell(id, p) : p;
+}
+const live = (list, id) => list === "buy" ? liveBuy(id) : liveSell(id);
+const unit = (list, r) => r.p != null ? r.p : live(list, r.id);
+const tax = (id, p) => window.GETax ? window.GETax.of(p, id) : Math.min(Math.floor(p*0.02), 5000000);
+
+/* ---- tables ---- */
+function iconHtml(id){
+  const m = BY_ID[id];
+  return m && m.icon ? `<img class="sl-ico" src="${ICON}${encodeURIComponent(m.icon.replace(/ /g, "_"))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="sl-ico"></span>`;
+}
+function rowHtml(list, r, i){
+  const extra = list === "buy" ? "" : `<td class="mono" data-k="tax"></td>`;
+  const lim = list === "buy" ? `<td class="mono" data-k="lim"></td>` : "";
+  return `<tr data-i="${i}">` +
+    `<td><span class="sl-name">${iconHtml(r.id)}<a href="https://prices.runescape.wiki/osrs/item/${r.id}" target="_blank" rel="noopener">${esc(r.name)}</a></span></td>` +
+    `<td><input class="sl-in sl-q" type="number" min="1" step="1" value="${r.q}" inputmode="numeric" aria-label="Quantity of ${esc(r.name)}"></td>` +
+    `<td><span class="sl-pwrap"><input class="sl-in sl-p" type="number" min="0" step="1" inputmode="numeric" aria-label="Price each of ${esc(r.name)}"><button class="sl-reset" type="button" title="Back to live price" aria-label="Reset ${esc(r.name)} to live price">↺</button></span></td>` +
+    `<td class="mono na" data-k="live"></td>` + extra +
+    `<td class="mono" data-k="tot"></td>` + lim +
+    `<td><button class="sl-del" type="button" title="Remove" aria-label="Remove ${esc(r.name)}">✕</button></td></tr>`;
+}
+function renderTables(){
+  ["buy", "make"].forEach(list => {
+    const tbl = el(list === "buy" ? "sl-buyTbl" : "sl-makeTbl");
+    tbl.tBodies[0].innerHTML = S[list].map((r, i) => rowHtml(list, r, i)).join("");
+    tbl.closest(".tbl-wrap").hidden = !S[list].length;
+    el(list === "buy" ? "sl-buyEmpty" : "sl-makeEmpty").hidden = !!S[list].length;
+  });
+  update();
+}
+/* refresh numbers in place, so typing in an input never loses focus */
+function update(){
+  let cost = 0, rev = 0, taxSum = 0, missing = 0;
+  ["buy", "make"].forEach(list => {
+    const tbl = el(list === "buy" ? "sl-buyTbl" : "sl-makeTbl");
+    [...tbl.tBodies[0].rows].forEach(tr => {
+      const r = S[list][+tr.dataset.i]; if(!r){ return; }
+      const lv = live(list, r.id), u = unit(list, r);
+      const pin = tr.querySelector(".sl-p");
+      if(document.activeElement !== pin){ pin.value = r.p != null ? r.p : (lv != null ? lv : ""); }
+      pin.classList.toggle("over", r.p != null);
+      pin.placeholder = lv != null ? String(lv) : "price";
+      tr.querySelector(".sl-reset").hidden = r.p == null;
+      tr.querySelector('[data-k="live"]').textContent = lv != null ? fmt(lv) : "—";
+      if(u == null){ missing++; }
+      if(list === "buy"){
+        const t = u != null ? u*r.q : null;
+        cost += t || 0;
+        tr.querySelector('[data-k="tot"]').textContent = fmt(t);
+        const m = BY_ID[r.id], lim = m && m.limit;
+        const lc = tr.querySelector('[data-k="lim"]');
+        lc.textContent = lim ? fmt(lim) : "—";
+        lc.classList.toggle("negv", !!lim && r.q > lim);
+        lc.title = lim && r.q > lim ? `More than one 4h buy limit — about ${Math.ceil(r.q/lim)} windows (${Math.ceil(r.q/lim)*4 - 4}h+) to buy` : "";
+      } else {
+        const tx = u != null ? tax(r.id, u)*r.q : null, t = u != null ? u*r.q - tx : null;
+        rev += t || 0; taxSum += tx || 0;
+        tr.querySelector('[data-k="tax"]').textContent = tx ? "-" + fmt(tx) : (u != null ? "0" : "—");
+        tr.querySelector('[data-k="tot"]').textContent = fmt(t);
+      }
+    });
+  });
+  el("sl-buyTotal").textContent = fmt(cost) + " gp";
+  el("sl-revTotal").textContent = fmt(rev) + " gp";
+  el("sl-taxTotal").textContent = taxSum ? "-" + fmt(taxSum) : "0";
+  const hasMake = S.make.length > 0, profit = rev - cost;
+  const tiles = [
+    { k:"Items", v:fmt(S.buy.length), u:S.buy.length ? fmt(S.buy.reduce((s, r) => s + r.q, 0)) + " units to buy" : "add items below" },
+    { k:"Total cost", v:fmt(cost), u:"gp to buy everything" },
+    { k:"Revenue", v:hasMake ? fmt(rev) : "—", u:hasMake ? "gp after GE tax" : "add a product" },
+    { k:"Profit", v:hasMake ? (profit >= 0 ? "+" : "") + fmt(profit) : "—", u:hasMake ? (cost > 0 ? (profit/cost*100).toFixed(1) + "% return" : "no costs") : "revenue − cost", cls:hasMake ? (profit >= 0 ? "hero" : "hero loss") : "" },
+  ];
+  el("sl-tiles").innerHTML = tiles.map(t => `<div class="tile ${t.cls || ""}"><p class="k">${t.k}</p><div class="v">${t.v}</div><p class="u">${t.u}</p></div>`).join("");
+  el("sl-footer").textContent = missing ? `${missing} item${missing > 1 ? "s have" : " has"} no live price yet — type one in.` : "";
+}
+
+/* ---- table edits ---- */
+["buy", "make"].forEach(list => {
+  const tb = el(list === "buy" ? "sl-buyTbl" : "sl-makeTbl").tBodies[0];
+  const rowOf = e => { const tr = e.target.closest("tr"); return tr ? S[list][+tr.dataset.i] : null; };
+  tb.addEventListener("input", e => {
+    const r = rowOf(e); if(!r){ return; }
+    if(e.target.classList.contains("sl-q")){ const q = Math.round(+e.target.value); if(q > 0){ r.q = q; } }
+    if(e.target.classList.contains("sl-p")){
+      const v = e.target.value.trim();
+      r.p = v === "" ? null : Math.max(0, Math.round(+v) || 0);
+      if(r.p != null && r.p === live(list, r.id)){ r.p = null; }   // typed the live price: stay live
+    }
+    update(); saveState();
+  });
+  tb.addEventListener("change", e => {   // normalise the field once the user leaves it
+    const r = rowOf(e); if(!r){ return; }
+    if(e.target.classList.contains("sl-q")){ e.target.value = r.q; }
+    update();
+  });
+  tb.addEventListener("focusout", () => setTimeout(update, 0));
+  tb.addEventListener("click", e => {
+    const tr = e.target.closest("tr"); if(!tr){ return; }
+    const i = +tr.dataset.i;
+    if(e.target.closest(".sl-del")){ S[list].splice(i, 1); saveState(); renderTables(); }
+    else if(e.target.closest(".sl-reset")){ S[list][i].p = null; saveState(); update(); }
+  });
+});
+root.querySelectorAll(".sl-clear").forEach(b => b.addEventListener("click", () => {
+  const list = b.dataset.list;
+  if(!S[list].length){ return; }
+  if(!window.confirm(list === "buy" ? "Remove every item from your shopping list?" : "Remove every product?")){ return; }
+  S[list] = []; saveState(); renderTables();
+}));
+el("sl-copyStkpl").addEventListener("click", e => {
+  const ids = [...S.buy, ...S.make].map(r => r.id);
+  if(!ids.length || !window.Stockpile){ return; }
+  window.Stockpile.copy(e.currentTarget, ids, "Shopping list");
+});
+
+/* ---- item search ---- */
+function search(q){
+  if(!MAP){ return []; }
+  q = q.trim().toLowerCase(); if(!q){ return []; }
+  const starts = [], words = [], has = [];
+  for(const m of MAP){
+    const n = m.lc;
+    if(n === q || n.startsWith(q)){ starts.push(m); }
+    else if(n.includes(" " + q)){ words.push(m); }
+    else if(n.includes(q)){ has.push(m); }
+  }
+  const byLen = (a, b) => a.name.length - b.name.length || a.name.localeCompare(b.name);
+  return [...starts.sort(byLen), ...words.sort(byLen), ...has.sort(byLen)].slice(0, 10);
+}
+root.querySelectorAll(".sl-add").forEach(box => {
+  const list = box.dataset.list;
+  const inp = box.querySelector(".sl-search"), ul = box.querySelector(".sl-sugg"), qty = box.querySelector(".sl-qty"), price = box.querySelector(".sl-addp");
+  function setHint(m){ const lv = m ? live(list, m.id) : null; price.placeholder = lv != null ? fmt(lv) : "live"; }
+  let hits = [], sel = 0, picked = null;
+  function close(){ ul.hidden = true; inp.setAttribute("aria-expanded", "false"); }
+  function draw(){
+    if(!MAP){ ul.innerHTML = `<li class="sl-msg">loading item list…</li>`; ul.hidden = !inp.value.trim(); return; }
+    if(!hits.length){ ul.innerHTML = inp.value.trim() ? `<li class="sl-msg">no tradeable item matches</li>` : ""; ul.hidden = !inp.value.trim(); return; }
+    ul.innerHTML = hits.map((m, i) => {
+      const p = live(list, m.id);
+      return `<li role="option" data-i="${i}" class="${i === sel ? "on" : ""}" aria-selected="${i === sel}">${iconHtml(m.id)}<span class="sl-sn">${esc(m.name)}</span><span class="sl-sp">${p != null ? fmt(p) : ""}</span></li>`;
+    }).join("");
+    ul.hidden = false; inp.setAttribute("aria-expanded", "true");
+  }
+  function choose(m){ picked = m; inp.value = m.name; setHint(m); close(); qty.focus(); qty.select(); }
+  function add(){
+    let m = picked && picked.name === inp.value ? picked : null;
+    if(!m){ const h = search(inp.value); m = h.length && h[0].lc === inp.value.trim().toLowerCase() ? h[0] : (h.length === 1 ? h[0] : null); }
+    if(!m){ hits = search(inp.value); sel = 0; draw(); inp.focus(); return; }
+    const q = Math.max(1, Math.round(+qty.value) || 1);
+    const pv = price.value.trim();
+    let p = pv === "" ? null : Math.max(0, Math.round(+pv) || 0);
+    if(p != null && p === live(list, m.id)){ p = null; }   // typed the live price: stay live
+    const ex = S[list].find(r => r.id === m.id);
+    if(ex){ ex.q += q; if(pv !== ""){ ex.p = p; } } else { S[list].push({ id:m.id, name:m.name, q, p }); }
+    saveState(); renderTables();
+    inp.value = ""; picked = null; qty.value = 1; price.value = ""; setHint(null); inp.focus();
+  }
+  inp.addEventListener("input", () => { picked = null; setHint(null); hits = search(inp.value); sel = 0; draw(); });
+  inp.addEventListener("focus", () => { if(inp.value.trim() && !picked){ hits = search(inp.value); draw(); } });
+  inp.addEventListener("blur", () => setTimeout(close, 150));
+  inp.addEventListener("keydown", e => {
+    if(e.key === "ArrowDown" && hits.length){ e.preventDefault(); sel = (sel + 1) % hits.length; draw(); }
+    else if(e.key === "ArrowUp" && hits.length){ e.preventDefault(); sel = (sel - 1 + hits.length) % hits.length; draw(); }
+    else if(e.key === "Enter"){ e.preventDefault(); if(!ul.hidden && hits[sel]){ choose(hits[sel]); } else { add(); } }
+    else if(e.key === "Escape"){ close(); }
+  });
+  ul.addEventListener("mousedown", e => { const li = e.target.closest("li[data-i]"); if(li){ e.preventDefault(); choose(hits[+li.dataset.i]); } });
+  qty.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); add(); } });
+  price.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); add(); } });
+  box.querySelector(".sl-addbtn").addEventListener("click", add);
+});
+
+async function loadMapping(){
+  try {
+    const r = await fetch(MAP_API);
+    if(!r.ok){ throw new Error("HTTP " + r.status); }
+    const data = await r.json();
+    MAP = data.filter(it => it && it.id != null && it.name).map(it => ({ id:it.id, name:it.name, lc:it.name.toLowerCase(), limit:it.limit || 0, icon:it.icon || "" }));
+    BY_ID = {}; MAP.forEach(m => { BY_ID[m.id] = m; });
+    renderTables();   // icons + buy limits
+  } catch(e){
+    el("sl-footer").textContent = "couldn't load the item list (open locally, not in a sandbox) — " + (e.message || "error");
+  }
+}
+
+loadState();
+renderTables();
+loadMapping();
+if(window.PriceHub){ window.PriceHub.subscribe((raw, source) => { LAT = pickLAT(raw, source); update(); }); }
+})();
+</script>
 <script>
 (function(){
   "use strict";
@@ -11604,8 +11976,8 @@ const SPICON=["data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmc
     }, true);
   } catch(e){}
   const tabs = document.getElementById("navTabs");
-  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), hunter: document.getElementById("view-hunter"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron") };
-  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", hunter: "xp & gp per catch, every creature", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops" };
+  const views = { sanfew: document.getElementById("view-sanfew"), degrime: document.getElementById("view-degrime"), gem: document.getElementById("view-gem"), potions: document.getElementById("view-potions"), ha: document.getElementById("view-ha"), shops: document.getElementById("view-shops"), decant: document.getElementById("view-decant"), bolts: document.getElementById("view-bolts"), tanning: document.getElementById("view-tanning"), grinding: document.getElementById("view-grinding"), planks: document.getElementById("view-planks"), smithing: document.getElementById("view-smithing"), foundry: document.getElementById("view-foundry"), cooking: document.getElementById("view-cooking"), hunter: document.getElementById("view-hunter"), sailing: document.getElementById("view-sailing"), rune: document.getElementById("view-rune"), iron: document.getElementById("view-iron"), list: document.getElementById("view-list") };
+  const subs = { sanfew: "herblore \u00b7 snake weed bottleneck", degrime: "clean & flip grimy herbs", gem: "gem \u2192 jewellery \u2192 enchant", potions: "unf + secondary \u2192 potion", ha: "buy \u2192 high alch for coins", shops: "buy from NPC shops \u2192 sell on GE", decant: "dose arbitrage at Bob Barter", bolts: "tip \u2192 enchant \u2192 sell bolts", tanning: "hide \u2192 leather margins", grinding: "grind secondaries to dust", planks: "logs \u2192 planks margins", smithing: "cannonballs & bar smelting", foundry: "cheapest crucible metal per bar", cooking: "cook fish & meat \u2014 burn-adjusted", hunter: "xp & gp per catch, every creature", sailing: "keel parts & repair kits", rune: "spell runes \u2014 max casts per gp", iron: "no GE \u2014 coins from steals, alchs & shops", list: "your own buy list \u2192 profit" };
   const sel = document.getElementById("navSelect");
   const nav = tabs.parentElement;
   const navSub = document.getElementById("navSub");
